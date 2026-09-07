@@ -296,6 +296,45 @@
     .pill-no { background: #ffebee; color: #c62828; }
     .pill-pending { background: #fff3e0; color: #ef6c00; }
 
+    /* Estilos para Miniaturas e Imágenes Flotantes */
+    .photos-flex {
+      display: flex;
+      gap: 6px;
+      justify-content: center;
+    }
+
+    .img-container {
+      position: relative;
+      display: inline-block;
+      width: 45px;
+      height: 45px;
+    }
+
+    .thumb-img {
+      width: 45px;
+      height: 45px;
+      object-fit: cover;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+      transition: all 0.25s ease-in-out;
+      cursor: zoom-in;
+    }
+
+    .img-container:hover .thumb-img {
+      position: absolute;
+      right: 0;
+      top: -60px;
+      width: 220px;
+      height: 220px;
+      z-index: 999;
+      border-radius: 10px;
+      border: 3px solid var(--excel-green-header);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.35);
+      object-fit: contain;
+      background: #ffffff;
+    }
+
     .scrollable-table { max-height: 400px; overflow-y: auto; position: relative; }
     .no-data { padding: 20px; text-align: center; color: #888; font-style: italic; }
   </style>
@@ -703,6 +742,27 @@
       return raw;
     }
 
+    /* FUNCIÓN FORMATO DE FECHA DÍA Y MES (DD/MM) */
+    function formatDiaMes(dateStr) {
+      if (!dateStr || dateStr === '-' || dateStr.toLowerCase().includes('sin') || dateStr.toLowerCase().includes('programado')) {
+        return dateStr || '-';
+      }
+      const parsed = parseDate(dateStr);
+      if (parsed) {
+        const dia = String(parsed.getDate()).padStart(2, '0');
+        const mes = String(parsed.getMonth() + 1).padStart(2, '0');
+        return `${dia}/${mes}`;
+      }
+      
+      const cleaned = dateStr.split(' ')[0].replace(/\//g, '-');
+      const parts = cleaned.split('-');
+      if (parts.length === 3) {
+        if (parts[0].length === 4) return `${parts[2].padStart(2, '0')}/${parts[1].padStart(2, '0')}`;
+        if (parts[2].length === 4) return `${parts[0].padStart(2, '0')}/${parts[1].padStart(2, '0')}`;
+      }
+      return dateStr;
+    }
+
     $(document).ready(function() {
       flatpickr.localize(flatpickr.l10ns.es);
       flatpickr("#filter-fecha-inicio", { dateFormat: "Y-m-d", onChange: renderDashboard });
@@ -746,7 +806,6 @@
         loadSheetData();
       });
 
-      // Eventos Filtros GS Dropdown
       $('.gs-filter-box').on('click', function(e) {
         e.stopPropagation();
         const $group = $(this).closest('.filter-group');
@@ -789,7 +848,6 @@
 
         updateFilterBoxUI($group, filterKey);
         
-        // Si se modifica Oficina Comercial, refrescar las opciones del Jefe de Ventas en Cascada
         if (filterKey === 'oficina') {
           updateJefeVentasCascadaOptions();
         }
@@ -823,7 +881,6 @@
 
         updateFilterBoxUI($group, filterKey);
 
-        // Si cambia la Oficina Comercial, refrescar Cascada de Jefes de Ventas
         if (filterKey === 'oficina') {
           updateJefeVentasCascadaOptions();
         }
@@ -858,7 +915,6 @@
       }
     }
 
-    /* LÓGICA DE FILTROS EN CASCADA: Actualiza Jefes de Ventas según la Oficina Seleccionada */
     function updateJefeVentasCascadaOptions() {
       const fOficina = filtersState.oficina.selected;
       
@@ -877,11 +933,9 @@
       });
       jefesValidos = [...new Set(jefesValidos.filter(Boolean))].sort();
 
-      // Limpiar selecciones previas de Jefes de Ventas que ya no forman parte de la oficina filtrada
       filtersState.jefeVentas.selected = filtersState.jefeVentas.selected.filter(j => jefesValidos.includes(j));
       updateFilterBoxUI($('.filter-group[data-filter="jefeVentas"]'), 'jefeVentas');
 
-      // Volver a renderizar la lista de opciones
       fillFilterUI('jefeVentas', jefesValidos, filtersState.jefeVentas.selected);
     }
 
@@ -1258,6 +1312,7 @@
       document.getElementById('tabla-motivos-container').innerHTML = html;
     }
 
+    /* RENDER TABLA NO REALIZADAS CON FOTOS Y EFECTO HOVER/ZOOM */
     function renderTablaNoRealizadas(data) {
       const noRealizadas = data.filter(d => !isServicioRealizado(d));
       if (noRealizadas.length === 0) {
@@ -1265,22 +1320,58 @@
         return;
       }
 
-      let html = `<table><thead><tr><th class="left">Técnico</th><th class="left">Fecha</th><th class="left">Cliente</th><th class="left">Motivo / Resuelto</th><th class="left">Comentario No Resuelto</th></tr></thead><tbody>`;
+      let html = `
+        <table>
+          <thead>
+            <tr>
+              <th class="left">Técnico</th>
+              <th class="left">Fecha</th>
+              <th class="left">Cliente</th>
+              <th class="left">Motivo / Resuelto</th>
+              <th class="left">Comentario No Resuelto</th>
+              <th style="text-align:center;">Fotos</th>
+            </tr>
+          </thead>
+          <tbody>`;
 
       noRealizadas.forEach(d => {
         const tec = d['Usuario'] || d['Técnico'] || d['Tecnico'] || '-';
-        const fecha = d['Fecha/Hora Ejecución 1'] || d['Fecha Programada 2'] || d['Fecha'] || '-';
+        const fecha = d['Fecha/Hora Ejecución 1'] || d['Fecha Programada 2'] || d['Fecha'] || d['Fecha Realizado'] || d['Fecha/Hora'] || '-';
         const cliente = getNombreCliente(d);
         const motivo = getMotivoNoServicio(d);
         const comentario = d['Comentario No Resuelto'] || d['Comentario Motivo'] || d['Comentario'] || '-';
 
-        html += `<tr><td class="left"><strong>${tec}</strong></td><td class="left">${fecha}</td><td class="left">${cliente}</td><td class="left" style="color: #c62828; font-weight: 500;">${motivo}</td><td class="left" style="font-size: 11px; color: #555;">${comentario}</td></tr>`;
+        const fotoUrl1 = d['Foto Equipo'] || d['Foto Motivo'] || d['Foto Columnas o Post Mix'] || '';
+        const fotoUrl2 = d['Foto Equipo 2'] || d['Foto Salida FNE'] || '';
+
+        let fotosHtml = '<span style="color:#bbb;">Sin fotos</span>';
+        if ((fotoUrl1 && fotoUrl1.startsWith('http')) || (fotoUrl2 && fotoUrl2.startsWith('http'))) {
+          fotosHtml = '<div class="photos-flex">';
+          if (fotoUrl1 && fotoUrl1.startsWith('http')) {
+            fotosHtml += `<div class="img-container"><img src="${fotoUrl1}" class="thumb-img" alt="Foto 1" loading="lazy" onerror="this.src='https://via.placeholder.com/50?text=Error'"></div>`;
+          }
+          if (fotoUrl2 && fotoUrl2.startsWith('http')) {
+            fotosHtml += `<div class="img-container"><img src="${fotoUrl2}" class="thumb-img" alt="Foto 2" loading="lazy" onerror="this.src='https://via.placeholder.com/50?text=Error'"></div>`;
+          }
+          fotosHtml += '</div>';
+        }
+
+        html += `
+          <tr>
+            <td class="left"><strong>${tec}</strong></td>
+            <td class="left">${fecha}</td>
+            <td class="left">${cliente}</td>
+            <td class="left" style="color: #c62828; font-weight: 500;">${motivo}</td>
+            <td class="left" style="font-size: 11px; color: #555;">${comentario}</td>
+            <td style="text-align:center;">${fotosHtml}</td>
+          </tr>`;
       });
 
       html += `</tbody></table>`;
       document.getElementById('tabla-no-realizadas-container').innerHTML = html;
     }
 
+    /* RENDER TABLA SI REALIZADAS CON FOTOS Y EFECTO HOVER/ZOOM */
     function renderTablaSiRealizadas(data) {
       const siRealizadas = data.filter(d => isServicioRealizado(d));
       if (siRealizadas.length === 0) {
@@ -1288,23 +1379,56 @@
         return;
       }
 
-      let html = `<table><thead><tr><th class="left">Técnico</th><th class="left">Fecha</th><th class="left">ID CCU</th><th class="left">Cliente (Nombre Fantasía)</th><th class="left">Nombre Receptor</th><th class="left">Comentario Cliente</th></tr></thead><tbody>`;
+      let html = `
+        <table>
+          <thead>
+            <tr>
+              <th class="left">Técnico</th>
+              <th class="left">Fecha</th>
+              <th class="left">ID CCU</th>
+              <th class="left">Cliente (Nombre Fantasía)</th>
+              <th class="left">Nombre Receptor</th>
+              <th class="left">Comentario Cliente</th>
+              <th style="text-align:center;">Foto Columnas / Post Mix</th>
+            </tr>
+          </thead>
+          <tbody>`;
 
       siRealizadas.forEach(d => {
         const tec = d['Usuario'] || d['Técnico'] || d['Tecnico'] || '-';
-        const fecha = d['Fecha/Hora Ejecución 1'] || d['Fecha Programada 2'] || d['Fecha'] || '-';
+        const fecha = d['Fecha/Hora Ejecución 1'] || d['Fecha Programada 2'] || d['Fecha'] || d['Fecha Realizado'] || d['Fecha/Hora'] || '-';
         const idCCU = getIdCCU(d);
         const cliente = getNombreCliente(d);
         const receptor = getNombreReceptor(d);
         const comentario = getComentarioCliente(d);
 
-        html += `<tr><td class="left"><strong>${tec}</strong></td><td class="left">${fecha}</td><td class="left">${idCCU}</td><td class="left">${cliente}</td><td class="left">${receptor}</td><td class="left" style="font-size: 11px; color: #2e7d32;">${comentario}</td></tr>`;
+        const fotoUrl = d['Foto Columnas o Post Mix'] || d['Foto Equipo'] || d['Foto Motivo'] || d['Foto Salida FNE'] || '';
+
+        let fotoHtml = '<span style="color:#bbb;">Sin fotos</span>';
+        if (fotoUrl && fotoUrl.startsWith('http')) {
+          fotoHtml = `
+            <div class="img-container">
+              <img src="${fotoUrl}" class="thumb-img" alt="Foto Columnas o Post Mix" loading="lazy" onerror="this.src='https://via.placeholder.com/50?text=Error'">
+            </div>`;
+        }
+
+        html += `
+          <tr>
+            <td class="left"><strong>${tec}</strong></td>
+            <td class="left">${fecha}</td>
+            <td class="left">${idCCU}</td>
+            <td class="left">${cliente}</td>
+            <td class="left">${receptor}</td>
+            <td class="left" style="font-size: 11px; color: #2e7d32;">${comentario}</td>
+            <td style="text-align:center;">${fotoHtml}</td>
+          </tr>`;
       });
 
       html += `</tbody></table>`;
       document.getElementById('tabla-si-realizadas-container').innerHTML = html;
     }
 
+    /* RENDER TABLA HISTORIAL CLIENTE CON ESTRUCTURA EXACTA PEDIDA */
     function renderTablaHistorialCliente(filteredData) {
       if (filteredData.length === 0) {
         document.getElementById('tabla-historial-container').innerHTML = `<div class="no-data">Sin registros para mostrar historial.</div>`;
@@ -1313,28 +1437,48 @@
 
       const clientesMap = {};
 
+      // Agrupar todas las mantenciones por ID CCU
       filteredData.forEach(d => {
         const idCCU = getIdCCU(d);
+        const codLocal = d['Local'] || d['local'] || '-';
         const cliente = getNombreCliente(d);
         const oficina = d['Oficina'] || d['OFICINA'] || '-';
         const jefe = d['Jefe de Ventas'] || d['JEFE DE VENTAS'] || '-';
-        const mes = d['Mes'] || d['mes'] || 'Mes Actual';
-        const estado = isServicioRealizado(d) ? 'REALIZADO' : 'PENDIENTE';
+        
+        const rawFecha = d['Fecha Realizado'] || d['Fecha/Hora Ejecución 1'] || d['Fecha Programada 2'] || d['Fecha'] || '';
+        const parsedDate = parseDate(rawFecha);
+        const realizado = isServicioRealizado(d);
+        const motivo = realizado ? '' : getMotivoNoServicio(d);
 
         if (!clientesMap[idCCU]) {
-          clientesMap[idCCU] = { idCCU, cliente, oficina, jefe, historial: {}, proxima: 'Sin Programación' };
+          clientesMap[idCCU] = {
+            idCCU,
+            codLocal,
+            cliente,
+            oficina,
+            jefe,
+            mantenciones: [],
+            proxima: 'Sin Programación'
+          };
         }
-        clientesMap[idCCU].historial[mes] = estado;
+
+        if (rawFecha) {
+          clientesMap[idCCU].mantenciones.push({
+            rawFecha,
+            parsedDate,
+            realizado,
+            motivo
+          });
+        }
       });
 
+      // Cruzar con el Maestro de Frecuencias para la Próxima Mantención
       if (maestroFrecuencias && maestroFrecuencias.length > 0) {
         maestroFrecuencias.forEach(m => {
           const mCCU = m['ID CCU'] || m['ID'] || m['Id CCU'] || m['id_ccu'];
           if (mCCU && clientesMap[mCCU]) {
-            const sem = m['Semana'] || '';
-            const freq = m['Frecuencia'] || '';
-            const proxFecha = m['Fecha Programada'] || m['Fecha Realizado'] || '';
-            clientesMap[mCCU].proxima = proxFecha ? proxFecha : (sem ? `Semana ${sem} (${freq})` : 'Programado');
+            const proxFecha = m['Fecha Realizado'] || m['Fecha Programada'] || m['Fecha'] || '';
+            clientesMap[mCCU].proxima = proxFecha ? proxFecha : (m['Semana'] ? `Semana ${m['Semana']}` : 'Programado');
           }
         });
       }
@@ -1344,29 +1488,67 @@
           <thead>
             <tr>
               <th class="left">ID CCU</th>
-              <th class="left">Cliente / Nombre Fantasía</th>
+              <th class="left">Cod. Local</th>
+              <th class="left">Nombre Fantasía</th>
               <th class="left">Oficina Comercial</th>
               <th class="left">Jefe de Ventas</th>
-              <th style="text-align:center;">Estado Ult. Mantención</th>
+              <th style="text-align:center;">Penúltima Mantención</th>
+              <th style="text-align:center;">Última Mantención</th>
               <th style="text-align:center;">Próxima Mantención</th>
             </tr>
           </thead>
           <tbody>`;
 
       Object.values(clientesMap).forEach(c => {
-        const ultEstado = Object.values(c.historial).pop() || 'SIN DATOS';
-        let pillClass = 'pill-pending';
-        if (ultEstado === 'REALIZADO') pillClass = 'pill-ok';
-        if (ultEstado === 'PENDIENTE') pillClass = 'pill-no';
+        // Ordenar mantenciones históricas por fecha ascendente
+        c.mantenciones.sort((a, b) => {
+          if (!a.parsedDate) return -1;
+          if (!b.parsedDate) return 1;
+          return a.parsedDate - b.parsedDate;
+        });
+
+        // Extraer última y penúltima mantención
+        const totalRegistros = c.mantenciones.length;
+        const ult = totalRegistros > 0 ? c.mantenciones[totalRegistros - 1] : null;
+        const penult = totalRegistros > 1 ? c.mantenciones[totalRegistros - 2] : null;
+
+        // Formatear celda Penúltima Mantención
+        let penultHtml = '<span style="color:#bbb;">-</span>';
+        if (penult) {
+          const fStr = formatDiaMes(penult.rawFecha);
+          if (penult.realizado) {
+            penultHtml = `<div><strong>${fStr}</strong> <span class="status-pill pill-ok">REALIZADO</span></div>`;
+          } else {
+            penultHtml = `<div><strong>${fStr}</strong> <span class="status-pill pill-no">PENDIENTE</span></div>
+                          <div style="font-size:10px; color:#c62828; margin-top:2px;">${penult.motivo}</div>`;
+          }
+        }
+
+        // Formatear celda Última Mantención
+        let ultHtml = '<span style="color:#bbb;">-</span>';
+        if (ult) {
+          const fStr = formatDiaMes(ult.rawFecha);
+          if (ult.realizado) {
+            ultHtml = `<div><strong>${fStr}</strong> <span class="status-pill pill-ok">REALIZADO</span></div>`;
+          } else {
+            ultHtml = `<div><strong>${fStr}</strong> <span class="status-pill pill-no">PENDIENTE</span></div>
+                       <div style="font-size:10px; color:#c62828; margin-top:2px;">${ult.motivo}</div>`;
+          }
+        }
+
+        // Formatear Próxima Mantención
+        const proxStr = formatDiaMes(c.proxima);
 
         html += `
           <tr>
             <td class="left"><strong>${c.idCCU}</strong></td>
+            <td class="left" style="font-weight: 500;">${c.codLocal}</td>
             <td class="left">${c.cliente}</td>
             <td class="left">${c.oficina}</td>
             <td class="left">${c.jefe}</td>
-            <td style="text-align:center;"><span class="status-pill ${pillClass}">${ultEstado}</span></td>
-            <td style="text-align:center;"><strong style="color: var(--pepsi-blue);">${c.proxima}</strong></td>
+            <td style="text-align:center;">${penultHtml}</td>
+            <td style="text-align:center;">${ultHtml}</td>
+            <td style="text-align:center;"><strong style="color: var(--pepsi-blue);">${proxStr}</strong></td>
           </tr>`;
       });
 
