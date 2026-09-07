@@ -685,14 +685,14 @@
         <path d="M 33,26 L 36,100" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/>
       </svg>
     </div>
-    <div class="loader-text"><i class="fa-solid fa-beer-mug-empty fa-bounce" style="color: #d35400;"></i> Sirviendo información de ventas...</div>
+    <div class="loader-text"><i class="fa-solid fa-beer-mug-empty fa-bounce" style="color: #d35400;"></i> Sirviendo información...</div>
   </div>
 
   <!-- Encabezado Principal -->
   <div class="header-bar">
     <div class="header-left">
       <div class="header-title">
-        <h1 id="main-title"><i class="fa-solid fa-chart-line" style="font-size: 20px; color: var(--primary-green);"></i> Dashboard Ejecutivo de Ventas</h1>
+        <h1 id="main-title"><i class="fa-solid fa-chart-line" style="font-size: 20px; color: var(--primary-green);"></i> Dashboard Ejecutivo - Ventas</h1>
       </div>
       <!-- Texto Informativo en Gris Estilo Submenú -->
       <div class="update-subtext">
@@ -707,13 +707,13 @@
   <!-- Navegación por Pestañas -->
   <div class="dashboard-tabs">
     <button class="tab-btn active" data-sheet="preventiva">
-      <i class="fa-solid fa-handshake"></i> Pipeline de Ventas
+      <i class="fa-solid fa-calendar-check"></i> Ruta Preventiva
     </button>
     <button class="tab-btn" data-sheet="urgencias">
-      <i class="fa-solid fa-dollar-sign"></i> Ventas Especiales / Oportunidades
+      <i class="fa-solid fa-truck-medical"></i> Urgencias
     </button>
     <button class="tab-btn" data-sheet="ejecuciones">
-      <i class="fa-solid fa-gears"></i> Ejecuciones Comerciales
+      <i class="fa-solid fa-gears"></i> Ejecuciones
     </button>
   </div>
 
@@ -721,7 +721,7 @@
   <div class="kpi-container">
     <div class="kpi-card chart-card">
       <div>
-        <div class="kpi-title" id="kpi-label-1">Total Oportunidades</div>
+        <div class="kpi-title" id="kpi-label-1">Total Servicios</div>
         <div class="kpi-value" id="kpi-total">0</div>
         <div class="kpi-subtext" id="kpi-subtext-legend">
           <span style="color:#006100; font-weight:bold;">● Schop</span> | 
@@ -734,19 +734,19 @@
     </div>
 
     <div class="kpi-card">
-      <div class="kpi-title" id="kpi-label-2">Efectividad de Ventas</div>
+      <div class="kpi-title" id="kpi-label-2">Cumplimiento Global</div>
       <div class="kpi-value" id="kpi-cumplimiento">0%</div>
-      <div class="kpi-subtext" id="kpi-ejecutados-count" style="color: #888;">0 Ganadas</div>
+      <div class="kpi-subtext" id="kpi-ejecutados-count" style="color: #888;">0 Ejecutadas</div>
     </div>
 
     <div class="kpi-card alert">
-      <div class="kpi-title" id="kpi-label-3">Oportunidades Perdidas / Pendientes</div>
+      <div class="kpi-title" id="kpi-label-3">Visitas No Realizadas</div>
       <div class="kpi-value" id="kpi-pendientes">0%</div>
       <div class="kpi-subtext" id="kpi-no-count" style="color: #888;">0 Pendientes</div>
     </div>
 
     <div class="kpi-card" style="border-left-color: var(--pepsi-blue);">
-      <div class="kpi-title" id="trend-card-title"><i class="fa-solid fa-chart-column"></i> Evolución Mensual (% Ventas)</div>
+      <div class="kpi-title" id="trend-card-title"><i class="fa-solid fa-chart-column"></i> Evolución Mensual (% SI)</div>
       <div class="mini-trend-box">
         <canvas id="trendChart"></canvas>
       </div>
@@ -789,7 +789,7 @@
     </div>
 
     <div class="filter-group" data-filter="usuario">
-      <label><i class="fa-solid fa-user-tie"></i> Vendedor / Ejecutivo</label>
+      <label><i class="fa-solid fa-id-badge"></i> Usuario</label>
       <div class="gs-filter-box">
         <span class="gs-filter-text">Todos (filtrar...)</span>
         <i class="fa-solid fa-caret-down gs-filter-icon"></i>
@@ -835,7 +835,7 @@
     </div>
 
     <div class="filter-group" data-filter="cliente">
-      <label><i class="fa-solid fa-store"></i> Cliente / Cuenta</label>
+      <label><i class="fa-solid fa-store"></i> Cliente</label>
       <div class="gs-filter-box">
         <span class="gs-filter-text">Todos (filtrar...)</span>
         <i class="fa-solid fa-caret-down gs-filter-icon"></i>
@@ -858,15 +858,15 @@
     </div>
   </div>
 
-  <!-- Grid Principal -->
+  <!-- Grid Principal Reestructurado -->
   <div class="dashboard-grid">
     
-    <!-- FILA 1 -->
+    <!-- FILA 1: Resumen Tipo Activo (Izquierda) + Resumen Motivos No Realizados (Derecha) -->
     <div class="grid-row-two-col">
       <div class="grid-col-half">
         <div class="table-container">
           <div class="table-header">
-            <span id="tabla-1-title">Resumen por Línea de Producto</span>
+            <span id="tabla-1-title">Resumen por Tipo de Activo</span>
           </div>
           <div id="tabla-1-container"></div>
         </div>
@@ -875,19 +875,19 @@
       <div class="grid-col-half">
         <div class="table-container">
           <div class="table-header" style="background-color: #fff8e1; color: #b78103;">
-            <span id="tabla-motivos-title"><i class="fa-solid fa-list-check"></i> Resumen de Motivos (No Concretadas / Pérdidas)</span>
+            <span id="tabla-motivos-title"><i class="fa-solid fa-list-check"></i> Resumen de Motivos (No Realizados / No Resueltos)</span>
           </div>
           <div id="tabla-motivos-container"></div>
         </div>
       </div>
     </div>
 
-    <!-- FILA 2 -->
+    <!-- FILA 2: Detalle Servicios Realizados (Izquierda) + Justificación Visita No Realizada (Derecha) -->
     <div class="grid-row-two-col">
       <div class="grid-col-half" id="container-si-realizadas">
         <div class="table-container">
           <div class="table-header" style="background-color: #e8f5e9; color: var(--excel-green-dark);">
-            <span id="tabla-si-title"><i class="fa-solid fa-circle-check"></i> Detalle de Ventas Concretadas (SI)</span>
+            <span id="tabla-si-title"><i class="fa-solid fa-circle-check"></i> Detalle de Servicios Realizados (SI)</span>
           </div>
           <div class="scrollable-table" id="tabla-si-realizadas-container"></div>
         </div>
@@ -896,18 +896,18 @@
       <div class="grid-col-half">
         <div class="table-container">
           <div class="table-header" style="background-color: #fff3f3; color: #c62828;">
-            <span id="tabla-no-title"><i class="fa-solid fa-triangle-exclamation"></i> Justificación de Ventas No Concretadas</span>
+            <span id="tabla-no-title"><i class="fa-solid fa-triangle-exclamation"></i> Justificación Visita No Realizada</span>
           </div>
           <div class="scrollable-table" id="tabla-no-realizadas-container"></div>
         </div>
       </div>
     </div>
 
-    <!-- FILA 3 -->
+    <!-- FILA 3 (ABAJO DEL TODO): Desglose por Categoría y Técnico a Ancho Completo -->
     <div class="grid-row-full">
       <div class="table-container">
         <div class="table-header">
-          <span>Desglose por Categoría y Vendedor</span>
+          <span>Desglose por Categoría y Técnico</span>
         </div>
         <div id="tabla-2-container"></div>
       </div>
@@ -968,23 +968,24 @@
 
     function getServiciosQty(d) {
       if (currentSheetKey === "urgencias") return 1;
-      const val = d['Servicios'] || d['servicios'] || d['SERVICIOS'] || d['Cant'] || d['Cantidad'] || d['Monto'] || d['Monto Venta'];
+      const val = d['Servicios'] || d['servicios'] || d['SERVICIOS'] || d['Cant'] || d['Cantidad'];
       const num = parseInt(val, 10);
       return isNaN(num) ? 1 : num;
     }
 
+    // VALIDACIÓN OFICIAL DE REALIZADA EN RUTA PREVENTIVA
     function isServicioRealizado(d) {
       if (currentSheetKey === "urgencias") {
-        const res = String(d['Pudo Resolver Problema'] || d['Pudo resolver problema'] || d['Resuelto'] || d['Estado'] || '').toUpperCase().trim();
-        return res === "SI" || res === "1" || res === "RESUELTO" || res === "GANADA";
+        const res = String(d['Pudo Resolver Problema'] || d['Pudo resolver problema'] || d['Resuelto'] || '').toUpperCase().trim();
+        return res === "SI" || res === "1" || res === "RESUELTO";
       } else {
-        const realizada = String(d['Realizada'] || d['Realizada 2'] || d['Cumplimiento'] || d['Estado'] || '').toUpperCase().trim();
-        return realizada === "SI" || realizada === "1" || realizada === "EJECUTADA" || realizada === "REALIZADA" || realizada === "GANADA";
+        const realizada = String(d['Realizada'] || d['Realizada 2'] || d['Cumplimiento'] || '').toUpperCase().trim();
+        return realizada === "SI" || realizada === "1" || realizada === "EJECUTADA" || realizada === "REALIZADA";
       }
     }
 
     function getTipoActivo(d) {
-      const val = d['Tipo de Activo'] || d['Tipo de Activo '] || d['Activos'] || d['Categoria'] || d['Categoría'] || d['Línea Producto'] || '';
+      const val = d['Tipo de Activo'] || d['Tipo de Activo '] || d['Activos'] || d['Categoria'] || d['Categoría'] || d['Tipo Urgencia'] || '';
       const str = String(val).toUpperCase();
       if (str.includes('SCHOP')) return 'Schop';
       if (str.includes('POST')) return 'Post Mix';
@@ -993,7 +994,7 @@
 
     function getCategoriaTecnico(d) {
       if (currentSheetKey === "urgencias") {
-        const usr = String(d['Usuario'] || d['usuario'] || d['Vendedor'] || '').toUpperCase().trim();
+        const usr = String(d['Usuario'] || d['usuario'] || '').toUpperCase().trim();
         if (usr === "STCYG11" || usr === "STCYG12" || usr === "STCYG13") {
           return "Camionetas";
         }
@@ -1004,7 +1005,7 @@
     }
 
     function getNombreCliente(d) {
-      return d['Nombre Fantasía'] || d['Nombre Fantasía '] || d['Nombre de Fantasia'] || d['Nombre Fantasia'] || d['Cliente'] || d['Nombre Receptor'] || d['Cuenta'] || '-';
+      return d['Nombre Fantasía'] || d['Nombre Fantasía '] || d['Nombre de Fantasia'] || d['Nombre Fantasia'] || d['Cliente'] || d['Nombre Receptor'] || d['Oficina'] || '-';
     }
 
     function getIdCCU(d) {
@@ -1012,7 +1013,7 @@
     }
 
     function getNombreReceptor(d) {
-      return d['Nombre Receptor'] || d['Nombre Receptor Local'] || d['Receptor'] || d['Contacto'] || '-';
+      return d['Nombre Receptor'] || d['Nombre Receptor Local'] || d['Receptor'] || '-';
     }
 
     function getComentarioCliente(d) {
@@ -1024,7 +1025,7 @@
     }
 
     function getMotivoNoServicio(d) {
-      const raw = (d['Motivo No Servicio'] || d['motivo_no_servicio'] || d['Resuelto'] || d['Motivo'] || d['Motivo Pérdida'] || '').trim();
+      const raw = (d['Motivo No Servicio'] || d['motivo_no_servicio'] || d['Resuelto'] || d['Motivo'] || '').trim();
       const strUpper = raw.toUpperCase();
 
       if (!raw || strUpper === 'SIN ESPECIFICAR' || strUpper === 'SIN INFORMACIÓN' || strUpper === 'SIN INFORMACION' || strUpper === '-') {
@@ -1044,6 +1045,7 @@
       flatpickr("#filter-fecha-inicio", { dateFormat: "Y-m-d", onChange: renderDashboard });
       flatpickr("#filter-fecha-fin", { dateFormat: "Y-m-d", onChange: renderDashboard });
 
+      // Cambio de Pestañas
       $('.tab-btn').on('click', function() {
         const targetSheet = $(this).data('sheet');
         
@@ -1058,34 +1060,35 @@
         currentSheetKey = targetSheet;
 
         if (currentSheetKey === "urgencias") {
-          $('#main-title').html('<i class="fa-solid fa-dollar-sign" style="font-size: 20px; color: var(--primary-green);"></i> Dashboard Ventas Especiales');
-          $('#kpi-label-1').text('Total Oportunidades');
-          $('#kpi-label-2').text('Efectividad Cierre');
-          $('#kpi-label-3').text('Casos No Concretados');
+          $('#main-title').html('<i class="fa-solid fa-truck-medical" style="font-size: 20px; color: #d32f2f;"></i> Dashboard Urgencias Atendidas');
+          $('#kpi-label-1').text('Total Urgencias');
+          $('#kpi-label-2').text('Resolutividad Global');
+          $('#kpi-label-3').text('Casos No Resueltos');
           $('#kpi-subtext-legend').html('<span style="color:#006100; font-weight:bold;">● Schop</span> | <span style="color:#004b93; font-weight:bold;">● Post Mix</span>');
-          $('#tabla-1-title').text('Resumen por Línea de Producto');
-          $('#tabla-motivos-title').html('<i class="fa-solid fa-list-check"></i> Resumen Motivos de Pérdida');
-          $('#trend-card-title').html('<i class="fa-solid fa-chart-column"></i> Evolución Mensual (% Ventas)');
-          $('#tabla-no-title').html('<i class="fa-solid fa-triangle-exclamation"></i> Detalle Oportunidades Perdidas');
+          $('#tabla-1-title').text('Resumen por Tipo de Activo');
+          $('#tabla-motivos-title').html('<i class="fa-solid fa-list-check"></i> Resumen de Motivos No Resueltos');
+          $('#trend-card-title').html('<i class="fa-solid fa-chart-column"></i> Evolución Mensual (% Resueltas)');
+          $('#tabla-no-title').html('<i class="fa-solid fa-triangle-exclamation"></i> Detalle de Urgencias No Resueltas');
           $('#container-si-realizadas').hide();
         } else {
-          $('#main-title').html('<i class="fa-solid fa-chart-line" style="font-size: 20px; color: var(--primary-green);"></i> Dashboard Ejecutivo de Ventas');
-          $('#kpi-label-1').text('Total Oportunidades');
-          $('#kpi-label-2').text('Efectividad de Ventas');
-          $('#kpi-label-3').text('Oportunidades Perdidas / Pendientes');
+          $('#main-title').html('<i class="fa-solid fa-chart-line" style="font-size: 20px; color: var(--primary-green);"></i> Dashboard Ejecutivo - Ventas');
+          $('#kpi-label-1').text('Total Servicios');
+          $('#kpi-label-2').text('Cumplimiento Global');
+          $('#kpi-label-3').text('Visitas No Realizadas');
           $('#kpi-subtext-legend').html('<span style="color:#006100; font-weight:bold;">● Schop</span> | <span style="color:#004b93; font-weight:bold;">● Post Mix</span>');
-          $('#tabla-1-title').text('Resumen por Línea de Producto');
-          $('#tabla-motivos-title').html('<i class="fa-solid fa-list-check"></i> Resumen de Motivos (No Concretadas)');
-          $('#trend-card-title').html('<i class="fa-solid fa-chart-column"></i> Evolución Mensual (% Ventas)');
-          $('#tabla-no-title').html('<i class="fa-solid fa-triangle-exclamation"></i> Justificación de Ventas No Concretadas');
+          $('#tabla-1-title').text('Resumen por Tipo de Activo');
+          $('#tabla-motivos-title').html('<i class="fa-solid fa-list-check"></i> Resumen de Motivos No Realizados');
+          $('#trend-card-title').html('<i class="fa-solid fa-chart-column"></i> Evolución Mensual (% SI)');
+          $('#tabla-no-title').html('<i class="fa-solid fa-triangle-exclamation"></i> Justificación Visita No Realizada');
           $('#container-si-realizadas').show();
-          $('#tabla-si-title').html('<i class="fa-solid fa-circle-check"></i> Detalle de Ventas Concretadas (SI)');
+          $('#tabla-si-title').html('<i class="fa-solid fa-circle-check"></i> Detalle de Servicios Realizados (SI)');
         }
 
         resetFiltersState();
         loadSheetData();
       });
 
+      // Pop-up Filtros
       $('.gs-filter-box').on('click', function(e) {
         e.stopPropagation();
         const $group = $(this).closest('.filter-group');
@@ -1252,9 +1255,9 @@
       };
 
       fillFilterUI('mes', getUnique(['Mes', 'mes']));
-      fillFilterUI('usuario', getUnique(['Vendedor', 'Ejecutivo', 'Usuario', 'STCYG', 'usuario']));
+      fillFilterUI('usuario', getUnique(['Usuario', 'STCYG', 'usuario']));
       fillFilterUI('localId', getUniqueLocalAndCCU());
-      fillFilterUI('cliente', getUnique(['Nombre Fantasía', 'Nombre Fantasía ', 'Nombre de Fantasia', 'Nombre Fantasia', 'Nombre Receptor', 'Cliente', 'cliente', 'Cuenta', 'Oficina']));
+      fillFilterUI('cliente', getUnique(['Nombre Fantasía', 'Nombre Fantasía ', 'Nombre de Fantasia', 'Nombre Fantasia', 'Nombre Receptor', 'Cliente', 'cliente', 'Oficina']));
     }
 
     function setMesActualDefault() {
@@ -1282,6 +1285,7 @@
       return null;
     }
 
+    /* OMITIR EL FILTRO DE MES PARA EL GRÁFICO DE EVOLUCIÓN MENSUAL */
     function getFilteredDataWithoutMonth() {
       const fUsuario = filtersState.usuario.selected;
       const fLocalId = filtersState.localId.selected;
@@ -1293,12 +1297,12 @@
       const fFin = fFinStr ? new Date(fFinStr) : null;
 
       return rawData.filter(d => {
-        const dUsuario = String(d['Vendedor'] || d['Ejecutivo'] || d['Usuario'] || d['usuario'] || '').trim();
+        const dUsuario = String(d['Usuario'] || d['usuario'] || '').trim();
         const dLocal = String(d['Local'] || '').trim();
         const dIdCCU = String(d['ID CCU'] || d['ID'] || d['Id CCU'] || d['ID Cliente (Escaneado)'] || d['ID Cliente (Manual)'] || '').trim();
         const dCliente = String(getNombreCliente(d)).trim();
         
-        const rawFecha = d['Fecha/Hora Ejecución 1'] || d['Fecha Programada 2'] || d['Fecha'] || d['Fecha Realizado'] || d['Fecha/Hora'];
+        const rawFecha = d['Fecha/Hora Ejecución 1'] || d['Fecha Programada 2'] || d['Fecha'] || d['Fecha Realizado'] || d['Fecha/Hora'] || d['Fecha'];
         const dFecha = parseDate(rawFecha);
 
         const matchUsuario = fUsuario.length === 0 || fUsuario.includes(dUsuario);
@@ -1358,11 +1362,11 @@
       document.getElementById('kpi-cumplimiento').innerText = pctSI + '%';
       
       if (currentSheetKey === "urgencias") {
-        document.getElementById('kpi-ejecutados-count').innerText = `${totalSI.toLocaleString()} Ganadas`;
-        document.getElementById('kpi-no-count').innerText = `${totalNO.toLocaleString()} No Concretadas`;
+        document.getElementById('kpi-ejecutados-count').innerText = `${totalSI.toLocaleString()} Casos Resueltos`;
+        document.getElementById('kpi-no-count').innerText = `${totalNO.toLocaleString()} Casos No Resueltos`;
       } else {
-        document.getElementById('kpi-ejecutados-count').innerText = `${totalSI.toLocaleString()} Ventas Concretadas`;
-        document.getElementById('kpi-no-count').innerText = `${totalNO.toLocaleString()} Oportunidades Pendientes`;
+        document.getElementById('kpi-ejecutados-count').innerText = `${totalSI.toLocaleString()} Servicios Realizados`;
+        document.getElementById('kpi-no-count').innerText = `${totalNO.toLocaleString()} Servicios Pendientes`;
       }
 
       document.getElementById('kpi-pendientes').innerText = pctNO + '%';
@@ -1432,6 +1436,7 @@
       });
     }
 
+    /* Gráfico de Evolución Mensual IGNORA FILTRO DE MES PERO MANTIENE CLIENTE, TÉCNICO, LOCAL, DATES */
     function renderTrendChart() {
       const monthlyStats = {};
       const dataWithoutMonth = getFilteredDataWithoutMonth();
@@ -1462,59 +1467,133 @@
         trendChartInstance.destroy();
       }
 
-      trendChartInstance = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: labels,
-          datasets: [
-            {
-              label: '% Efectividad SI',
-              data: labels.map(m => {
-                const tot = (monthlyStats[m] ? monthlyStats[m].SI : 0) + (monthlyStats[m] ? monthlyStats[m].NO : 0);
-                return tot > 0 ? parseFloat(((monthlyStats[m].SI / tot) * 100).toFixed(1)) : 0;
-              }),
-              backgroundColor: '#006100',
-              borderRadius: 3
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            x: {
-              grid: { display: false },
-              ticks: { font: { size: 10, weight: 'bold' }, color: '#333333' }
-            },
-            y: { display: false, max: 110 }
-          },
-          plugins: {
-            legend: { display: false },
-            datalabels: {
-              display: true,
-              color: '#ffffff',
-              textStrokeColor: '#000000',
-              textStrokeWidth: 2,
-              font: { weight: 'bold', size: 10 },
-              formatter: function(value) {
-                return `${value}%`;
-              },
-              align: 'center',
-              anchor: 'center'
-            },
-            tooltip: {
-              callbacks: {
-                label: function(ctx) {
-                  const m = ctx.label;
-                  const cantSI = monthlyStats[m] ? monthlyStats[m].SI : 0;
+      if (currentSheetKey === "urgencias") {
+        trendChartInstance = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: labels,
+            datasets: [
+              {
+                label: '% Efectividad SI',
+                data: labels.map(m => {
                   const tot = (monthlyStats[m] ? monthlyStats[m].SI : 0) + (monthlyStats[m] ? monthlyStats[m].NO : 0);
-                  return `${m}: ${cantSI}/${tot} concretados (${ctx.raw}%)`;
+                  return tot > 0 ? parseFloat(((monthlyStats[m].SI / tot) * 100).toFixed(1)) : 0;
+                }),
+                backgroundColor: '#006100',
+                borderRadius: 3
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              x: {
+                grid: { display: false },
+                ticks: { font: { size: 10, weight: 'bold' }, color: '#333333' }
+              },
+              y: { display: false, max: 110 }
+            },
+            plugins: {
+              legend: { display: false },
+              datalabels: {
+                display: true,
+                color: '#ffffff',
+                textStrokeColor: '#000000',
+                textStrokeWidth: 2,
+                font: { weight: 'bold', size: 10 },
+                formatter: function(value) {
+                  return `${value}%`;
+                },
+                align: 'center',
+                anchor: 'center'
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(ctx) {
+                    const m = ctx.label;
+                    const cantSI = monthlyStats[m] ? monthlyStats[m].SI : 0;
+                    const tot = (monthlyStats[m] ? monthlyStats[m].SI : 0) + (monthlyStats[m] ? monthlyStats[m].NO : 0);
+                    return `${m}: ${cantSI}/${tot} resueltos (${ctx.raw}%)`;
+                  }
+                }
+              }
+            }
+          },
+          plugins: [ChartDataLabels, {
+            id: 'customTotalSubtext',
+            afterDraw: function(chart) {
+              const ctxChart = chart.ctx;
+              ctxChart.save();
+              ctxChart.font = 'bold 10px Roboto, sans-serif';
+              ctxChart.fillStyle = '#555555';
+              ctxChart.textAlign = 'center';
+
+              const meta = chart.getDatasetMeta(0);
+              meta.data.forEach((bar, index) => {
+                const mes = labels[index];
+                const totalM = (monthlyStats[mes] ? monthlyStats[mes].SI : 0) + (monthlyStats[mes] ? monthlyStats[mes].NO : 0);
+                if (totalM > 0) {
+                  ctxChart.fillText(`(${totalM})`, bar.x, bar.y + 14);
+                }
+              });
+              ctxChart.restore();
+            }
+          }]
+        });
+      } else {
+        trendChartInstance = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: labels,
+            datasets: [
+              {
+                label: '% Cumplimiento SI',
+                data: labels.map(m => {
+                  const tot = (monthlyStats[m] ? monthlyStats[m].SI : 0) + (monthlyStats[m] ? monthlyStats[m].NO : 0);
+                  return tot > 0 ? parseFloat(((monthlyStats[m].SI / tot) * 100).toFixed(1)) : 0;
+                }),
+                backgroundColor: '#006100',
+                borderRadius: 3
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              x: {
+                grid: { display: false },
+                ticks: { font: { size: 11, weight: 'bold' }, color: '#333333' }
+              },
+              y: { display: false, max: 100 }
+            },
+            plugins: {
+              legend: { display: false },
+              datalabels: {
+                display: true,
+                color: '#ffffff',
+                textStrokeColor: '#000000',
+                textStrokeWidth: 2,
+                font: { weight: 'bold', size: 11 },
+                formatter: (v) => v + '%',
+                align: 'center',
+                anchor: 'center'
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(ctx) {
+                    const m = ctx.label;
+                    const cantSI = monthlyStats[m] ? monthlyStats[m].SI : 0;
+                    const tot = (monthlyStats[m] ? monthlyStats[m].SI : 0) + (monthlyStats[m] ? monthlyStats[m].NO : 0);
+                    return `${m}: ${cantSI}/${tot} (${ctx.raw}%)`;
+                  }
                 }
               }
             }
           }
-        }
-      });
+        });
+      }
     }
 
     function renderTabla1(data) {
@@ -1539,10 +1618,10 @@
         <table>
           <thead>
             <tr>
-              <th class="left">Línea de Producto / Activo</th>
+              <th class="left">Tipo de Activo</th>
               <th>NO (Cant. / %)</th>
               <th>SI (Cant. / %)</th>
-              <th>Total Oportunidades</th>
+              <th>Total Servicios</th>
             </tr>
           </thead>
           <tbody>`;
@@ -1579,6 +1658,7 @@
       document.getElementById('tabla-1-container').innerHTML = html1;
     }
 
+    /* TABLA RESUMEN DE MOTIVOS CON ORDEN Y AGRUPACIÓN SOLICITADA */
     function renderTablaMotivos(data, totalNO, grandTotal) {
       const motivosStats = {
         'Local Cerrado': 0,
@@ -1612,8 +1692,8 @@
         <table>
           <thead>
             <tr>
-              <th class="left">Motivo / Causa No Concretada</th>
-              <th>Cantidad</th>
+              <th class="left">Motivo No Servicio / Causa</th>
+              <th>Cantidad Servicios</th>
               <th>% del Total NO</th>
               <th>% del Total General</th>
             </tr>
@@ -1638,7 +1718,7 @@
 
       html += `
         <tr class="total-general">
-          <td class="left">Total No Concretadas</td>
+          <td class="left">Total No Atendidos / No Resueltos</td>
           <td>${totalNO}</td>
           <td>100%</td>
           <td>${totalPctNO_General}</td>
@@ -1648,13 +1728,14 @@
       document.getElementById('tabla-motivos-container').innerHTML = html;
     }
 
+    /* REGLA DE RUTA PREVENTIVA: ORDEN POR CÓDIGO Y TRATAMIENTO DE STCYG34 EN "HÍBRIDO" */
     function renderTabla2(data) {
       const t2Stats = {};
       data.forEach(d => {
         const qty = getServiciosQty(d);
         const cat = getCategoriaTecnico(d);
-        const usr = d['Vendedor'] || d['Ejecutivo'] || d['Usuario'] || 'Sin Vendedor';
-        const tec = d['Jefe de Ventas'] || d['Técnico'] || d['Tecnico'] || 'Ejecutivo Comercial';
+        const usr = d['Usuario'] || 'Sin Usuario';
+        const tec = d['Técnico'] || d['Tecnico'] || d['Jefe de Ventas'] || 'Sin Técnico';
 
         if(!t2Stats[cat]) t2Stats[cat] = {};
         if(!t2Stats[cat][usr]) t2Stats[cat][usr] = { tecnico: tec, SI: 0, NO: 0 };
@@ -1671,21 +1752,42 @@
           <thead>
             <tr>
               <th class="left">Categoría</th>
-              <th class="left">Usuario / Vendedor</th>
-              <th class="left">Cargo / Rol</th>
+              <th class="left">Usuario</th>
+              <th class="left">Técnico</th>
               <th>NO (Cant. / %)</th>
               <th>SI (Cant. / %)</th>
-              <th>Total Oportunidades</th>
+              <th>Total Servicios</th>
             </tr>
           </thead>
           <tbody>`;
 
       let grandNO = 0, grandSI = 0;
 
+      let stcyg34Data = null;
+      if (currentSheetKey === "preventiva") {
+        stcyg34Data = { Schop: null, PostMix: null };
+        if (t2Stats['Schop'] && t2Stats['Schop']['STCYG34']) {
+          stcyg34Data.Schop = jQuery.extend(true, {}, t2Stats['Schop']['STCYG34']);
+          delete t2Stats['Schop']['STCYG34'];
+        }
+        if (t2Stats['Post Mix'] && t2Stats['Post Mix']['STCYG34']) {
+          stcyg34Data.PostMix = jQuery.extend(true, {}, t2Stats['Post Mix']['STCYG34']);
+          delete t2Stats['Post Mix']['STCYG34'];
+        }
+      }
+
       let categoriasOrdenadas = Object.keys(t2Stats);
+      if (currentSheetKey === "preventiva") {
+        categoriasOrdenadas.sort((a, b) => {
+          if (a.toUpperCase().includes('POST')) return -1;
+          if (b.toUpperCase().includes('POST')) return 1;
+          return a.localeCompare(b);
+        });
+      }
 
       categoriasOrdenadas.forEach(cat => {
         let catSI = 0, catNO = 0;
+        
         const usuariosOrdenados = Object.keys(t2Stats[cat]).sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
 
         usuariosOrdenados.forEach(usr => {
@@ -1729,6 +1831,63 @@
           </tr>`;
       });
 
+      if (currentSheetKey === "preventiva" && stcyg34Data && (stcyg34Data.Schop || stcyg34Data.PostMix)) {
+        let hibridoSI = 0, hibridoNO = 0;
+
+        if (stcyg34Data.Schop) {
+          const uData = stcyg34Data.Schop;
+          const tot = uData.SI + uData.NO;
+          hibridoSI += uData.SI;
+          hibridoNO += uData.NO;
+          const pctSI_num = tot > 0 ? (uData.SI / tot) * 100 : 0;
+          const pctNO_num = tot > 0 ? (uData.NO / tot) * 100 : 0;
+
+          html2 += `
+            <tr>
+              <td class="left">• Híbrido (Schop)</td>
+              <td class="left">• STCYG34</td>
+              <td class="left">${uData.tecnico}</td>
+              <td class="${pctSI_num < 92 ? 'alert-red' : ''}">${uData.NO} <span class="qty-badge">(${pctNO_num.toFixed(1)}%)</span></td>
+              <td>${uData.SI} <span class="qty-badge">(${pctSI_num.toFixed(1)}%)</span></td>
+              <td><strong>${tot}</strong> <span class="qty-badge">(100%)</span></td>
+            </tr>`;
+        }
+
+        if (stcyg34Data.PostMix) {
+          const uData = stcyg34Data.PostMix;
+          const tot = uData.SI + uData.NO;
+          hibridoSI += uData.SI;
+          hibridoNO += uData.NO;
+          const pctSI_num = tot > 0 ? (uData.SI / tot) * 100 : 0;
+          const pctNO_num = tot > 0 ? (uData.NO / tot) * 100 : 0;
+
+          html2 += `
+            <tr>
+              <td class="left">• Híbrido (Post Mix)</td>
+              <td class="left">• STCYG34</td>
+              <td class="left">${uData.tecnico}</td>
+              <td class="${pctSI_num < 92 ? 'alert-red' : ''}">${uData.NO} <span class="qty-badge">(${pctNO_num.toFixed(1)}%)</span></td>
+              <td>${uData.SI} <span class="qty-badge">(${pctSI_num.toFixed(1)}%)</span></td>
+              <td><strong>${tot}</strong> <span class="qty-badge">(100%)</span></td>
+            </tr>`;
+        }
+
+        grandSI += hibridoSI;
+        grandNO += hibridoNO;
+
+        const hibTot = hibridoSI + hibridoNO;
+        const hibPctNO = hibTot > 0 ? ((hibridoNO / hibTot) * 100).toFixed(1) + '%' : '0.0%';
+        const hibPctSI = hibTot > 0 ? ((hibridoSI / hibTot) * 100).toFixed(1) + '%' : '0.0%';
+
+        html2 += `
+          <tr class="subtotal" style="background-color: #e3f2fd; color: #0d47a1;">
+            <td colspan="3" class="left">Total Híbrido</td>
+            <td>${hibridoNO} (${hibPctNO})</td>
+            <td>${hibridoSI} (${hibPctSI})</td>
+            <td>${hibTot} (100%)</td>
+          </tr>`;
+      }
+
       const grandALL = grandSI + grandNO;
       const grandPctNO = grandALL > 0 ? ((grandNO / grandALL) * 100).toFixed(1) + '%' : '0.0%';
       const grandPctSI = grandALL > 0 ? ((grandSI / grandALL) * 100).toFixed(1) + '%' : '0.0%';
@@ -1757,18 +1916,18 @@
         <table>
           <thead>
             <tr>
-              <th class="left">Vendedor</th>
+              <th class="left">Técnico</th>
               <th class="left">Fecha</th>
               <th class="left">Cliente</th>
-              <th class="left">Motivo / Causa</th>
-              <th class="left">Comentario</th>
+              <th class="left">Motivo / Resuelto</th>
+              <th class="left">Comentario No Resuelto</th>
               <th style="text-align:center;">Fotos</th>
             </tr>
           </thead>
           <tbody>`;
 
       noRealizadas.forEach(d => {
-        const tec = d['Vendedor'] || d['Ejecutivo'] || d['Usuario'] || d['Técnico'] || '-';
+        const tec = d['Usuario'] || d['Técnico'] || d['Tecnico'] || '-';
         const fecha = d['Fecha/Hora Ejecución 1'] || d['Fecha Programada 2'] || d['Fecha'] || d['Fecha Realizado'] || d['Fecha/Hora'] || '-';
         const cliente = getNombreCliente(d);
         
@@ -1805,11 +1964,12 @@
       document.getElementById('tabla-no-realizadas-container').innerHTML = html;
     }
 
+    /* DETALLE DE SERVICIOS REALIZADOS (SI) EN RUTA PREVENTIVA */
     function renderTablaSiRealizadas(data) {
       const siRealizadas = data.filter(d => isServicioRealizado(d));
 
       if (siRealizadas.length === 0) {
-        document.getElementById('tabla-si-realizadas-container').innerHTML = `<div class="no-data">Sin ventas concretadas con los filtros seleccionados.</div>`;
+        document.getElementById('tabla-si-realizadas-container').innerHTML = `<div class="no-data">Sin servicios realizados con los filtros seleccionados.</div>`;
         return;
       }
 
@@ -1817,19 +1977,19 @@
         <table>
           <thead>
             <tr>
-              <th class="left">Vendedor</th>
+              <th class="left">Técnico</th>
               <th class="left">Fecha</th>
               <th class="left">ID CCU</th>
               <th class="left">Cliente (Nombre Fantasía)</th>
-              <th class="left">Contacto / Receptor</th>
+              <th class="left">Nombre Receptor</th>
               <th class="left">Comentario Cliente</th>
-              <th style="text-align:center;">Foto</th>
+              <th style="text-align:center;">Foto Columnas / Post Mix</th>
             </tr>
           </thead>
           <tbody>`;
 
       siRealizadas.forEach(d => {
-        const tec = d['Vendedor'] || d['Ejecutivo'] || d['Usuario'] || d['Técnico'] || '-';
+        const tec = d['Usuario'] || d['Técnico'] || d['Tecnico'] || '-';
         const fecha = d['Fecha/Hora Ejecución 1'] || d['Fecha Programada 2'] || d['Fecha'] || d['Fecha Realizado'] || d['Fecha/Hora'] || '-';
         const idCCU = getIdCCU(d);
         const cliente = getNombreCliente(d);
@@ -1842,7 +2002,7 @@
         if (fotoUrl && fotoUrl.startsWith('http')) {
           fotoHtml = `
             <div class="img-container">
-              <img src="${fotoUrl}" class="thumb-img" alt="Foto" loading="lazy" onerror="this.src='https://via.placeholder.com/50?text=Error'">
+              <img src="${fotoUrl}" class="thumb-img" alt="Foto Columnas o Post Mix" loading="lazy" onerror="this.src='https://via.placeholder.com/50?text=Error'">
             </div>`;
         }
 
