@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard Ejecutivo - Gestión de Ventas</title>
+  <title>Dashboard Ejecutivo - Ventas</title>
 
   <!-- Google Fonts & Icons -->
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-  <!-- jQuery, Flatpickr, Chart.js & Plugins -->
+  <!-- jQuery, Flatpickr, Chart.js & DataLabels Plugin -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -21,15 +21,16 @@
 
   <style>
     :root {
-      --sales-blue-header: #0d47a1;
-      --sales-blue-dark: #0a3578;
-      --sales-total-black: #1a1a1a;
+      --excel-green-header: #006100;
+      --excel-green-dark: #004b00;
+      --excel-total-black: #1a1a1a;
+      --excel-subtotal-gray: #6c757d;
       --excel-red-highlight: #ffc7ce;
       --excel-red-text: #9c0006;
-      --sales-green-light: #e8f5e9;
-      --sales-green-dark: #2e7d32;
+      --pepsi-blue: #004b93;
       --bg-gray: #f4f6f9;
       --card-bg: #ffffff;
+      --primary-green: #2e7d32;
     }
 
     body {
@@ -40,11 +41,13 @@
       color: #333;
     }
 
-    /* Loader Overlay */
+    /* Overlay del Loader Temático */
     #loader-overlay {
       position: fixed;
-      top: 0; left: 0;
-      width: 100vw; height: 100vh;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
       background: rgba(255, 255, 255, 0.94);
       backdrop-filter: blur(6px);
       z-index: 99999;
@@ -56,11 +59,69 @@
       transition: opacity 0.3s ease;
     }
 
+    /* Vaso de Cerveza / Chopp Ultra Realista en SVG */
+    .beer-loader-wrap {
+      width: 110px;
+      height: 130px;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .beer-svg {
+      width: 100%;
+      height: 100%;
+      filter: drop-shadow(0px 8px 16px rgba(0,0,0,0.18));
+    }
+
+    /* Animación del líquido sirviéndose */
+    .beer-liquid-path {
+      animation: fillBeerAnimation 2s infinite ease-in-out;
+      transform-origin: bottom;
+    }
+
+    @keyframes fillBeerAnimation {
+      0% { transform: scaleY(0.05); }
+      70% { transform: scaleY(0.95); }
+      100% { transform: scaleY(0.95); }
+    }
+
+    /* Animación de la espuma rebalsando suavemente */
+    .beer-foam-group {
+      animation: foamRiseAnimation 2s infinite ease-in-out;
+    }
+
+    @keyframes foamRiseAnimation {
+      0% { transform: translateY(75px); opacity: 0; }
+      20% { opacity: 1; }
+      70% { transform: translateY(0px); opacity: 1; }
+      100% { transform: translateY(0px); opacity: 1; }
+    }
+
+    /* Animación de las Burbujas Flotantes */
+    .bubble {
+      animation: bubbleFloat 1.8s infinite linear;
+      fill: #ffffff;
+      opacity: 0.6;
+    }
+    .b1 { animation-delay: 0.2s; }
+    .b2 { animation-delay: 0.5s; }
+    .b3 { animation-delay: 0.9s; }
+    .b4 { animation-delay: 1.3s; }
+
+    @keyframes bubbleFloat {
+      0% { transform: translateY(0px); opacity: 0; }
+      30% { opacity: 0.8; }
+      100% { transform: translateY(-55px); opacity: 0; }
+    }
+
     .loader-text {
       margin-top: 14px;
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 700;
-      color: var(--sales-blue-dark);
+      color: var(--excel-green-dark);
+      letter-spacing: 0.3px;
       display: flex;
       align-items: center;
       gap: 8px;
@@ -86,14 +147,16 @@
 
     .header-title h1 {
       margin: 0;
-      color: var(--sales-blue-dark);
+      color: var(--excel-green-dark);
       font-size: 22px;
       font-weight: 700;
       display: flex;
       align-items: center;
       gap: 10px;
+      letter-spacing: -0.3px;
     }
 
+    /* Subtexto Informativo Gris */
     .update-subtext {
       font-size: 12px;
       color: #6c757d;
@@ -103,11 +166,12 @@
       gap: 6px;
       border-left: 2px solid #e0e0e0;
       padding-left: 14px;
+      margin-top: 2px;
     }
 
     .status-badge {
-      background: #e3f2fd;
-      color: var(--sales-blue-dark);
+      background: #e8f5e9;
+      color: var(--primary-green);
       padding: 6px 14px;
       border-radius: 20px;
       font-size: 13px;
@@ -117,7 +181,7 @@
       gap: 6px;
     }
 
-    /* Pestañas (Tabs) */
+    /* Navegación por Pestañas (Tabs) */
     .dashboard-tabs {
       display: flex;
       background: var(--card-bg);
@@ -143,12 +207,16 @@
       transition: all 0.2s ease;
     }
 
-    .tab-btn:hover, .tab-btn.active {
-      color: var(--sales-blue-dark);
-      border-bottom-color: var(--sales-blue-header);
+    .tab-btn:hover {
+      color: var(--excel-green-dark);
     }
 
-    /* Tarjetas KPI */
+    .tab-btn.active {
+      color: var(--excel-green-dark);
+      border-bottom-color: var(--excel-green-header);
+    }
+
+    /* Tarjetas KPI (4 Columnas) */
     .kpi-container {
       display: grid;
       grid-template-columns: 1fr 0.8fr 0.8fr 1.6fr;
@@ -161,7 +229,7 @@
       padding: 16px 18px;
       border-radius: 12px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-      border-left: 5px solid var(--sales-blue-header);
+      border-left: 5px solid var(--excel-green-header);
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -189,7 +257,7 @@
     }
 
     .kpi-value {
-      font-size: 24px;
+      font-size: 26px;
       font-weight: 700;
       color: #1a1a1a;
     }
@@ -203,6 +271,10 @@
       width: 95px;
       height: 95px;
       position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
       margin-left: auto;
     }
 
@@ -230,7 +302,7 @@
       display: flex;
       flex-direction: column;
       gap: 6px;
-      min-width: 150px;
+      min-width: 160px;
       flex: 1;
       position: relative;
     }
@@ -251,11 +323,12 @@
       font-size: 13px;
       outline: none;
       background: #ffffff;
+      color: #333;
       height: 38px;
       box-sizing: border-box;
     }
 
-    /* Componente GS Filter Box */
+    /* Componente de Filtro Estilo Google Sheets */
     .gs-filter-box {
       border: 1px solid #dcdfe6;
       border-radius: 6px;
@@ -267,14 +340,20 @@
       justify-content: space-between;
       cursor: pointer;
       font-size: 13px;
+      user-select: none;
       box-sizing: border-box;
+      transition: border-color 0.2s;
+    }
+
+    .gs-filter-box:hover {
+      border-color: var(--excel-green-header);
     }
 
     .gs-filter-box.is-filtered {
-      border-color: var(--sales-blue-header);
-      background-color: #e3f2fd;
+      border-color: var(--excel-green-header);
+      background-color: #f0f7f0;
       font-weight: 700;
-      color: var(--sales-blue-dark);
+      color: var(--excel-green-dark);
     }
 
     .gs-filter-text {
@@ -282,6 +361,16 @@
       overflow: hidden;
       text-overflow: ellipsis;
       max-width: 85%;
+    }
+
+    .gs-filter-icon {
+      color: #888;
+      font-size: 12px;
+    }
+
+    .gs-filter-box.is-filtered .gs-filter-icon {
+      color: var(--excel-green-header);
+      font-weight: bold;
     }
 
     .gs-dropdown {
@@ -300,7 +389,9 @@
       box-sizing: border-box;
     }
 
-    .gs-dropdown.show { display: block; }
+    .gs-dropdown.show {
+      display: block;
+    }
 
     .gs-bulk-actions {
       display: flex;
@@ -310,10 +401,14 @@
     }
 
     .gs-link-btn {
-      color: var(--sales-blue-header);
+      color: var(--pepsi-blue);
       cursor: pointer;
       font-weight: bold;
       text-decoration: underline;
+    }
+
+    .gs-link-btn:hover {
+      color: var(--excel-green-dark);
     }
 
     .gs-search-input-wrap {
@@ -328,6 +423,7 @@
       border-radius: 4px;
       font-size: 12px;
       box-sizing: border-box;
+      outline: none;
     }
 
     .gs-search-input-wrap i {
@@ -357,7 +453,14 @@
       cursor: pointer;
     }
 
-    .gs-option-item:hover { background-color: #f1f3f5; }
+    .gs-option-item:hover {
+      background-color: #f1f3f5;
+    }
+
+    .gs-option-item input {
+      margin: 0;
+      cursor: pointer;
+    }
 
     .gs-actions-footer {
       display: flex;
@@ -374,10 +477,17 @@
       border: none;
     }
 
-    .gs-btn-cancel { background: #e0e0e0; color: #333; }
-    .gs-btn-accept { background: var(--sales-blue-header); color: #fff; }
+    .gs-btn-cancel {
+      background: #e0e0e0;
+      color: #333;
+    }
 
-    /* Grilla & Tablas */
+    .gs-btn-accept {
+      background: var(--excel-green-header);
+      color: #fff;
+    }
+
+    /* Layout principal reestructurado */
     .dashboard-grid {
       display: flex;
       flex-direction: column;
@@ -389,10 +499,17 @@
       display: flex;
       gap: 24px;
       flex-wrap: wrap;
+      align-items: flex-start;
     }
 
-    .grid-col-half { flex: 1; min-width: 380px; }
-    .grid-row-full { width: 100%; }
+    .grid-col-half {
+      flex: 1;
+      min-width: 380px;
+    }
+
+    .grid-row-full {
+      width: 100%;
+    }
 
     .table-container {
       background: var(--card-bg);
@@ -406,47 +523,180 @@
       background: #f8f9fa;
       border-bottom: 1px solid #e9ecef;
       font-weight: 700;
-      color: var(--sales-blue-dark);
+      color: var(--excel-green-dark);
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
 
-    table { border-collapse: collapse; width: 100%; font-size: 13px; }
-    th, td { padding: 8px 12px; text-align: right; border-bottom: 1px solid #eef0f2; vertical-align: middle; }
-    th.left, td.left { text-align: left; }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 13px;
+    }
 
+    th, td {
+      padding: 8px 12px;
+      text-align: right;
+      border-bottom: 1px solid #eef0f2;
+      vertical-align: middle;
+    }
+
+    th.left, td.left {
+      text-align: left;
+    }
+
+    /* Títulos Fijos (Sticky Header) al Hacer Scroll */
     thead tr th {
-      background-color: var(--sales-blue-header);
+      background-color: var(--excel-green-header);
       color: #ffffff;
       font-weight: 600;
       font-size: 12px;
-      position: sticky; top: 0; z-index: 10;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
     }
 
-    tr.subtotal { background-color: #f1f3f5; color: #212529; font-weight: bold; }
-    tr.total-general { background-color: var(--sales-total-black); color: #ffffff; font-weight: bold; }
+    tr.subtotal {
+      background-color: #f1f3f5;
+      color: #212529;
+      font-weight: bold;
+    }
 
-    .scrollable-table { max-height: 380px; overflow-y: auto; }
-    .no-data { padding: 20px; text-align: center; color: #888; font-style: italic; }
+    tr.total-general {
+      background-color: var(--excel-total-black);
+      color: #ffffff;
+      font-weight: bold;
+    }
+
+    td.alert-red {
+      background-color: var(--excel-red-highlight);
+      color: var(--excel-red-text);
+      font-weight: bold;
+    }
+
+    .qty-badge {
+      font-size: 11px;
+      color: #666;
+      display: block;
+    }
+
+    .photos-flex {
+      display: flex;
+      gap: 6px;
+      justify-content: center;
+    }
+
+    .img-container {
+      position: relative;
+      display: inline-block;
+      width: 45px;
+      height: 45px;
+    }
+
+    .thumb-img {
+      width: 45px;
+      height: 45px;
+      object-fit: cover;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+      transition: all 0.25s ease-in-out;
+      cursor: zoom-in;
+    }
+
+    .img-container:hover .thumb-img {
+      position: absolute;
+      right: 0;
+      top: -60px;
+      width: 220px;
+      height: 220px;
+      z-index: 999;
+      border-radius: 10px;
+      border: 3px solid var(--excel-green-header);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.35);
+      object-fit: contain;
+      background: #ffffff;
+    }
+
+    .scrollable-table {
+      max-height: 380px;
+      overflow-y: auto;
+      position: relative;
+    }
+
+    .no-data {
+      padding: 20px;
+      text-align: center;
+      color: #888;
+      font-style: italic;
+    }
   </style>
 </head>
 <body>
 
-  <!-- Overlay Loader -->
+  <!-- Overlay Loader Temático de Cerveza -->
   <div id="loader-overlay">
-    <i class="fa-solid fa-chart-pie fa-spin fa-3x" style="color: var(--sales-blue-header);"></i>
-    <div class="loader-text">Cargando indicadores de ventas...</div>
+    <div class="beer-loader-wrap">
+      <svg class="beer-svg" viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="beerGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#f39c12"/>
+            <stop offset="30%" stop-color="#f1c40f"/>
+            <stop offset="70%" stop-color="#e67e22"/>
+            <stop offset="100%" stop-color="#d35400"/>
+          </linearGradient>
+
+          <linearGradient id="glassGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="rgba(255,255,255,0.6)"/>
+            <stop offset="20%" stop-color="rgba(255,255,255,0.2)"/>
+            <stop offset="80%" stop-color="rgba(255,255,255,0.1)"/>
+            <stop offset="100%" stop-color="rgba(255,255,255,0.5)"/>
+          </linearGradient>
+
+          <mask id="glassMask">
+            <path d="M 25,20 L 30,105 C 30,110 35,112 40,112 L 68,112 C 73,112 78,110 78,105 L 83,20 Z" fill="#ffffff"/>
+          </mask>
+        </defs>
+
+        <path d="M 26,32 C 8,32 6,75 27,82" fill="none" stroke="#2c3e50" stroke-width="7" stroke-linecap="round"/>
+        <path d="M 26,32 C 8,32 6,75 27,82" fill="none" stroke="#ecf0f1" stroke-width="3" stroke-linecap="round"/>
+
+        <path d="M 25,20 L 30,105 C 30,110 35,112 40,112 L 68,112 C 73,112 78,110 78,105 L 83,20 Z" fill="#ffffff" opacity="0.3" stroke="#2c3e50" stroke-width="3"/>
+
+        <g mask="url(#glassMask)">
+          <rect class="beer-liquid-path" x="10" y="20" width="88" height="95" fill="url(#beerGrad)"/>
+          
+          <circle class="bubble b1" cx="42" cy="100" r="2.5"/>
+          <circle class="bubble b2" cx="58" cy="105" r="2"/>
+          <circle class="bubble b3" cx="50" cy="98" r="3"/>
+          <circle class="bubble b4" cx="66" cy="102" r="1.8"/>
+
+          <g class="beer-foam-group">
+            <path d="M 20,25 C 25,15 35,15 40,22 C 45,14 58,14 62,22 C 68,15 78,16 82,25 L 85,35 L 20,35 Z" fill="#ffffff"/>
+            <ellipse cx="36" cy="22" rx="7" ry="5" fill="#ffffff"/>
+            <ellipse cx="52" cy="20" rx="9" ry="6" fill="#ffffff"/>
+            <ellipse cx="68" cy="22" rx="7" ry="5" fill="#ffffff"/>
+          </g>
+        </g>
+
+        <path d="M 25,20 L 30,105 C 30,110 35,112 40,112 L 68,112 C 73,112 78,110 78,105 L 83,20 Z" fill="url(#glassGrad)" stroke="#2c3e50" stroke-width="3.5"/>
+        <path d="M 33,26 L 36,100" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/>
+      </svg>
+    </div>
+    <div class="loader-text"><i class="fa-solid fa-beer-mug-empty fa-bounce" style="color: #d35400;"></i> Sirviendo información de ventas...</div>
   </div>
 
   <!-- Encabezado Principal -->
   <div class="header-bar">
     <div class="header-left">
       <div class="header-title">
-        <h1 id="main-title"><i class="fa-solid fa-chart-line" style="font-size: 20px; color: var(--sales-blue-header);"></i> Dashboard Ejecutivo de Ventas</h1>
+        <h1 id="main-title"><i class="fa-solid fa-chart-line" style="font-size: 20px; color: var(--primary-green);"></i> Dashboard Ejecutivo de Ventas</h1>
       </div>
+      <!-- Texto Informativo en Gris Estilo Submenú -->
       <div class="update-subtext">
-        <i class="fa-regular fa-clock"></i> Información comercial actualizada en tiempo real.
+        <i class="fa-regular fa-clock"></i> Esta información se actualiza todos los martes a medio día.
       </div>
     </div>
     <div class="status-badge" id="status-box">
@@ -454,28 +704,28 @@
     </div>
   </div>
 
-  <!-- Pestañas de Navegación de Ventas -->
+  <!-- Navegación por Pestañas -->
   <div class="dashboard-tabs">
-    <button class="tab-btn active" data-sheet="resumen">
+    <button class="tab-btn active" data-sheet="preventiva">
       <i class="fa-solid fa-handshake"></i> Pipeline de Ventas
     </button>
-    <button class="tab-btn" data-sheet="oportunidades">
-      <i class="fa-solid fa-dollar-sign"></i> Oportunidades Ganadas
+    <button class="tab-btn" data-sheet="urgencias">
+      <i class="fa-solid fa-dollar-sign"></i> Ventas Especiales / Oportunidades
     </button>
-    <button class="tab-btn" data-sheet="perdidas">
-      <i class="fa-solid fa-circle-xmark"></i> Negociaciones Perdidas
+    <button class="tab-btn" data-sheet="ejecuciones">
+      <i class="fa-solid fa-gears"></i> Ejecuciones Comerciales
     </button>
   </div>
 
-  <!-- Tarjetas KPI -->
+  <!-- Tarjetas KPI (4 Columnas) -->
   <div class="kpi-container">
     <div class="kpi-card chart-card">
       <div>
-        <div class="kpi-title" id="kpi-label-1">Venta Total / Oportunidades</div>
-        <div class="kpi-value" id="kpi-total">$0</div>
+        <div class="kpi-title" id="kpi-label-1">Total Oportunidades</div>
+        <div class="kpi-value" id="kpi-total">0</div>
         <div class="kpi-subtext" id="kpi-subtext-legend">
-          <span style="color:#0d47a1; font-weight:bold;">● Categoría A</span> | 
-          <span style="color:#2e7d32; font-weight:bold;">● Categoría B</span>
+          <span style="color:#006100; font-weight:bold;">● Schop</span> | 
+          <span style="color:#004b93; font-weight:bold;">● Post Mix</span>
         </div>
       </div>
       <div class="chart-box">
@@ -484,19 +734,19 @@
     </div>
 
     <div class="kpi-card">
-      <div class="kpi-title" id="kpi-label-2">Tasa de Conversión (Cierre)</div>
+      <div class="kpi-title" id="kpi-label-2">Efectividad de Ventas</div>
       <div class="kpi-value" id="kpi-cumplimiento">0%</div>
-      <div class="kpi-subtext" id="kpi-ejecutados-count" style="color: #888;">0 Ventas Ganadas</div>
+      <div class="kpi-subtext" id="kpi-ejecutados-count" style="color: #888;">0 Ganadas</div>
     </div>
 
     <div class="kpi-card alert">
-      <div class="kpi-title" id="kpi-label-3">Oportunidades Perdidas</div>
+      <div class="kpi-title" id="kpi-label-3">Oportunidades Perdidas / Pendientes</div>
       <div class="kpi-value" id="kpi-pendientes">0%</div>
-      <div class="kpi-subtext" id="kpi-no-count" style="color: #888;">0 Negociaciones Perdidas</div>
+      <div class="kpi-subtext" id="kpi-no-count" style="color: #888;">0 Pendientes</div>
     </div>
 
-    <div class="kpi-card">
-      <div class="kpi-title" id="trend-card-title"><i class="fa-solid fa-chart-column"></i> Evolución Mensual ($ / Ventas)</div>
+    <div class="kpi-card" style="border-left-color: var(--pepsi-blue);">
+      <div class="kpi-title" id="trend-card-title"><i class="fa-solid fa-chart-column"></i> Evolución Mensual (% Ventas)</div>
       <div class="mini-trend-box">
         <canvas id="trendChart"></canvas>
       </div>
@@ -562,7 +812,7 @@
     </div>
 
     <div class="filter-group" data-filter="localId">
-      <label><i class="fa-solid fa-hashtag"></i> ID Cliente / CCU</label>
+      <label><i class="fa-solid fa-hashtag"></i> Local / ID CCU</label>
       <div class="gs-filter-box">
         <span class="gs-filter-text">Todos (filtrar...)</span>
         <i class="fa-solid fa-caret-down gs-filter-icon"></i>
@@ -585,7 +835,7 @@
     </div>
 
     <div class="filter-group" data-filter="cliente">
-      <label><i class="fa-solid fa-building"></i> Cliente / Cuenta</label>
+      <label><i class="fa-solid fa-store"></i> Cliente / Cuenta</label>
       <div class="gs-filter-box">
         <span class="gs-filter-text">Todos (filtrar...)</span>
         <i class="fa-solid fa-caret-down gs-filter-icon"></i>
@@ -610,6 +860,8 @@
 
   <!-- Grid Principal -->
   <div class="dashboard-grid">
+    
+    <!-- FILA 1 -->
     <div class="grid-row-two-col">
       <div class="grid-col-half">
         <div class="table-container">
@@ -623,18 +875,19 @@
       <div class="grid-col-half">
         <div class="table-container">
           <div class="table-header" style="background-color: #fff8e1; color: #b78103;">
-            <span id="tabla-motivos-title"><i class="fa-solid fa-list-check"></i> Resumen Motivos de Pérdida</span>
+            <span id="tabla-motivos-title"><i class="fa-solid fa-list-check"></i> Resumen de Motivos (No Concretadas / Pérdidas)</span>
           </div>
           <div id="tabla-motivos-container"></div>
         </div>
       </div>
     </div>
 
+    <!-- FILA 2 -->
     <div class="grid-row-two-col">
       <div class="grid-col-half" id="container-si-realizadas">
         <div class="table-container">
-          <div class="table-header" style="background-color: #e8f5e9; color: var(--sales-green-dark);">
-            <span id="tabla-si-title"><i class="fa-solid fa-circle-check"></i> Oportunidades Ganadas</span>
+          <div class="table-header" style="background-color: #e8f5e9; color: var(--excel-green-dark);">
+            <span id="tabla-si-title"><i class="fa-solid fa-circle-check"></i> Detalle de Ventas Concretadas (SI)</span>
           </div>
           <div class="scrollable-table" id="tabla-si-realizadas-container"></div>
         </div>
@@ -643,13 +896,14 @@
       <div class="grid-col-half">
         <div class="table-container">
           <div class="table-header" style="background-color: #fff3f3; color: #c62828;">
-            <span id="tabla-no-title"><i class="fa-solid fa-triangle-exclamation"></i> Negociaciones No Cerradas / Perdidas</span>
+            <span id="tabla-no-title"><i class="fa-solid fa-triangle-exclamation"></i> Justificación de Ventas No Concretadas</span>
           </div>
           <div class="scrollable-table" id="tabla-no-realizadas-container"></div>
         </div>
       </div>
     </div>
 
+    <!-- FILA 3 -->
     <div class="grid-row-full">
       <div class="table-container">
         <div class="table-header">
@@ -658,17 +912,18 @@
         <div id="tabla-2-container"></div>
       </div>
     </div>
+
   </div>
 
   <script>
-    // Configura la URL de tu Google Sheet (exportado en CSV) con datos de Ventas
+    // URLs de los Libros de Google Sheets
     const SHEETS_URLS = {
-      resumen: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQHJUM26MwbPurx5FdJGQc-I-vlfwyEZYbPGeYE0F5HxEWpbMyhVeJpJKK7XjCD6No8RZCfeHgWaxZZ/pub?output=csv",
-      oportunidades: "",
-      perdidas: ""
+      preventiva: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQHJUM26MwbPurx5FdJGQc-I-vlfwyEZYbPGeYE0F5HxEWpbMyhVeJpJKK7XjCD6No8RZCfeHgWaxZZ/pub?output=csv",
+      urgencias: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTTNzXfjkM4mtZrHyPjzSVqjYOTG0tVFReUG3FPpR-nkyCud1hoR8rRPpqPToiz82Vmp0A5ubJqz3zx/pub?output=csv",
+      ejecuciones: ""
     };
 
-    let currentSheetKey = "resumen";
+    let currentSheetKey = "preventiva";
     let rawData = [];
     let activosChartInstance = null;
     let trendChartInstance = null;
@@ -684,12 +939,16 @@
       cliente: { selected: [], searchText: "" }
     };
 
-    function formatCurrency(value) {
-      return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 }).format(value);
+    function showLoader() {
+      $('#loader-overlay').css('display', 'flex').css('opacity', '1');
     }
 
-    function showLoader() { $('#loader-overlay').css('display', 'flex').css('opacity', '1'); }
-    function hideLoader() { $('#loader-overlay').css('opacity', '0'); setTimeout(() => { $('#loader-overlay').css('display', 'none'); }, 300); }
+    function hideLoader() {
+      $('#loader-overlay').css('opacity', '0');
+      setTimeout(() => {
+        $('#loader-overlay').css('display', 'none');
+      }, 300);
+    }
 
     function resetFiltersState() {
       filtersState = {
@@ -707,27 +966,77 @@
       });
     }
 
-    function getMontoVenta(d) {
-      const val = d['Monto'] || d['Monto Venta'] || d['Monto Oportunidad'] || d['Valor'] || d['Servicios'] || 1;
-      const num = parseFloat(String(val).replace(/[^0-9.-]+/g, ""));
+    function getServiciosQty(d) {
+      if (currentSheetKey === "urgencias") return 1;
+      const val = d['Servicios'] || d['servicios'] || d['SERVICIOS'] || d['Cant'] || d['Cantidad'] || d['Monto'] || d['Monto Venta'];
+      const num = parseInt(val, 10);
       return isNaN(num) ? 1 : num;
     }
 
-    function isVentaGanada(d) {
-      const estado = String(d['Estado'] || d['Etapa'] || d['Realizada'] || d['Resuelto'] || '').toUpperCase().trim();
-      return estado === "GANADA" || estado === "CERRADA GANADA" || estado === "SI" || estado === "1" || estado === "EJECUTADA";
+    function isServicioRealizado(d) {
+      if (currentSheetKey === "urgencias") {
+        const res = String(d['Pudo Resolver Problema'] || d['Pudo resolver problema'] || d['Resuelto'] || d['Estado'] || '').toUpperCase().trim();
+        return res === "SI" || res === "1" || res === "RESUELTO" || res === "GANADA";
+      } else {
+        const realizada = String(d['Realizada'] || d['Realizada 2'] || d['Cumplimiento'] || d['Estado'] || '').toUpperCase().trim();
+        return realizada === "SI" || realizada === "1" || realizada === "EJECUTADA" || realizada === "REALIZADA" || realizada === "GANADA";
+      }
     }
 
-    function getTipoProducto(d) {
-      return d['Línea Producto'] || d['Categoría'] || d['Tipo de Activo'] || 'General';
+    function getTipoActivo(d) {
+      const val = d['Tipo de Activo'] || d['Tipo de Activo '] || d['Activos'] || d['Categoria'] || d['Categoría'] || d['Línea Producto'] || '';
+      const str = String(val).toUpperCase();
+      if (str.includes('SCHOP')) return 'Schop';
+      if (str.includes('POST')) return 'Post Mix';
+      return val || 'Post Mix';
+    }
+
+    function getCategoriaTecnico(d) {
+      if (currentSheetKey === "urgencias") {
+        const usr = String(d['Usuario'] || d['usuario'] || d['Vendedor'] || '').toUpperCase().trim();
+        if (usr === "STCYG11" || usr === "STCYG12" || usr === "STCYG13") {
+          return "Camionetas";
+        }
+        return "Ruta";
+      } else {
+        return getTipoActivo(d);
+      }
     }
 
     function getNombreCliente(d) {
-      return d['Cliente'] || d['Nombre Fantasía'] || d['Cuenta'] || '-';
+      return d['Nombre Fantasía'] || d['Nombre Fantasía '] || d['Nombre de Fantasia'] || d['Nombre Fantasia'] || d['Cliente'] || d['Nombre Receptor'] || d['Cuenta'] || '-';
     }
 
-    function getIdCliente(d) {
-      return d['ID CCU'] || d['ID Cliente'] || d['ID'] || '-';
+    function getIdCCU(d) {
+      return d['ID CCU'] || d['ID'] || d['Id CCU'] || d['ID Cliente (Manual)'] || d['ID Cliente (Escaneado)'] || d['id_ccu'] || '-';
+    }
+
+    function getNombreReceptor(d) {
+      return d['Nombre Receptor'] || d['Nombre Receptor Local'] || d['Receptor'] || d['Contacto'] || '-';
+    }
+
+    function getComentarioCliente(d) {
+      return d['Comentario'] || d['Comentario Motivo'] || d['Comentario Producto dete'] || d['Observaciones'] || '-';
+    }
+
+    function getFotoEquipoColumna(d) {
+      return d['Foto Columnas o Post Mix'] || d['Foto Equipo'] || d['Foto Motivo'] || d['Foto Salida FNE'] || '';
+    }
+
+    function getMotivoNoServicio(d) {
+      const raw = (d['Motivo No Servicio'] || d['motivo_no_servicio'] || d['Resuelto'] || d['Motivo'] || d['Motivo Pérdida'] || '').trim();
+      const strUpper = raw.toUpperCase();
+
+      if (!raw || strUpper === 'SIN ESPECIFICAR' || strUpper === 'SIN INFORMACIÓN' || strUpper === 'SIN INFORMACION' || strUpper === '-') {
+        return 'Sin Información';
+      }
+
+      if (strUpper.includes('LOCAL CERRADO')) return 'Local Cerrado';
+      if (strUpper.includes('CLIENTE NO PERMITE')) return 'Cliente no permite';
+      if (strUpper.includes('DESPROGRAMAR CLIENTE')) return 'Desprogramar Cliente';
+      if (strUpper.includes('OTRO')) return 'Otro';
+
+      return raw;
     }
 
     $(document).ready(function() {
@@ -737,9 +1046,42 @@
 
       $('.tab-btn').on('click', function() {
         const targetSheet = $(this).data('sheet');
+        
+        if (targetSheet === "ejecuciones" && !SHEETS_URLS.ejecuciones) {
+          alert("La hoja de Ejecuciones estará disponible próximamente.");
+          return;
+        }
+
         $('.tab-btn').removeClass('active');
         $(this).addClass('active');
+
         currentSheetKey = targetSheet;
+
+        if (currentSheetKey === "urgencias") {
+          $('#main-title').html('<i class="fa-solid fa-dollar-sign" style="font-size: 20px; color: var(--primary-green);"></i> Dashboard Ventas Especiales');
+          $('#kpi-label-1').text('Total Oportunidades');
+          $('#kpi-label-2').text('Efectividad Cierre');
+          $('#kpi-label-3').text('Casos No Concretados');
+          $('#kpi-subtext-legend').html('<span style="color:#006100; font-weight:bold;">● Schop</span> | <span style="color:#004b93; font-weight:bold;">● Post Mix</span>');
+          $('#tabla-1-title').text('Resumen por Línea de Producto');
+          $('#tabla-motivos-title').html('<i class="fa-solid fa-list-check"></i> Resumen Motivos de Pérdida');
+          $('#trend-card-title').html('<i class="fa-solid fa-chart-column"></i> Evolución Mensual (% Ventas)');
+          $('#tabla-no-title').html('<i class="fa-solid fa-triangle-exclamation"></i> Detalle Oportunidades Perdidas');
+          $('#container-si-realizadas').hide();
+        } else {
+          $('#main-title').html('<i class="fa-solid fa-chart-line" style="font-size: 20px; color: var(--primary-green);"></i> Dashboard Ejecutivo de Ventas');
+          $('#kpi-label-1').text('Total Oportunidades');
+          $('#kpi-label-2').text('Efectividad de Ventas');
+          $('#kpi-label-3').text('Oportunidades Perdidas / Pendientes');
+          $('#kpi-subtext-legend').html('<span style="color:#006100; font-weight:bold;">● Schop</span> | <span style="color:#004b93; font-weight:bold;">● Post Mix</span>');
+          $('#tabla-1-title').text('Resumen por Línea de Producto');
+          $('#tabla-motivos-title').html('<i class="fa-solid fa-list-check"></i> Resumen de Motivos (No Concretadas)');
+          $('#trend-card-title').html('<i class="fa-solid fa-chart-column"></i> Evolución Mensual (% Ventas)');
+          $('#tabla-no-title').html('<i class="fa-solid fa-triangle-exclamation"></i> Justificación de Ventas No Concretadas');
+          $('#container-si-realizadas').show();
+          $('#tabla-si-title').html('<i class="fa-solid fa-circle-check"></i> Detalle de Ventas Concretadas (SI)');
+        }
+
         resetFiltersState();
         loadSheetData();
       });
@@ -758,14 +1100,60 @@
         }
       });
 
-      $('.gs-btn-accept').on('click', function() {
+      $('.gs-dropdown').on('click', function(e) { e.stopPropagation(); });
+
+      $('.gs-search-input').on('keyup', function() {
+        const query = $(this).val().toLowerCase();
+        const $list = $(this).closest('.gs-dropdown').find('.gs-options-list');
+        $list.find('.gs-option-item').each(function() {
+          const txt = $(this).text().toLowerCase();
+          $(this).toggle(txt.includes(query));
+        });
+      });
+
+      $('.btn-select-filtered').on('click', function() {
         const $group = $(this).closest('.filter-group');
         const filterKey = $group.data('filter');
+        const query = $group.find('.gs-search-input').val().trim();
+
+        $group.find('.gs-option-item:visible input[type="checkbox"]').prop('checked', true);
+
         const selected = [];
         $group.find('.gs-options-list input[type="checkbox"]:checked').each(function() {
           selected.push($(this).val());
         });
+
         filtersState[filterKey].selected = selected;
+        filtersState[filterKey].searchText = query;
+
+        updateFilterBoxUI($group, filterKey);
+        $group.find('.gs-dropdown').removeClass('show');
+        renderDashboard();
+      });
+
+      $('.btn-clear-all').on('click', function() {
+        const $group = $(this).closest('.filter-group');
+        $group.find('.gs-options-list input[type="checkbox"]').prop('checked', false);
+        $group.find('.gs-search-input').val('').trigger('keyup');
+      });
+
+      $('.gs-btn-cancel').on('click', function() {
+        $(this).closest('.gs-dropdown').removeClass('show');
+      });
+
+      $('.gs-btn-accept').on('click', function() {
+        const $group = $(this).closest('.filter-group');
+        const filterKey = $group.data('filter');
+        const query = $group.find('.gs-search-input').val().trim();
+
+        const selected = [];
+        $group.find('.gs-options-list input[type="checkbox"]:checked').each(function() {
+          selected.push($(this).val());
+        });
+
+        filtersState[filterKey].selected = selected;
+        filtersState[filterKey].searchText = query;
+
         updateFilterBoxUI($group, filterKey);
         $group.find('.gs-dropdown').removeClass('show');
         renderDashboard();
@@ -779,19 +1167,27 @@
       const count = state.selected.length;
       const $box = $group.find('.gs-filter-box');
       const $text = $box.find('.gs-filter-text');
+      const $icon = $box.find('.gs-filter-icon');
 
       if (count === 0) {
         $box.removeClass('is-filtered');
         $text.text('Todos (filtrar...)');
+        $icon.attr('class', 'fa-solid fa-caret-down gs-filter-icon');
       } else {
         $box.addClass('is-filtered');
-        $text.text(count === 1 ? state.selected[0] : `${count} seleccionados`);
+        $icon.attr('class', 'fa-solid fa-filter gs-filter-icon');
+
+        let textLabel = count === 1 ? state.selected[0] : `${count} seleccionados`;
+        if (state.searchText !== "") {
+          textLabel += ` ("${state.searchText}")`;
+        }
+        $text.text(textLabel);
       }
     }
 
     function loadSheetData() {
       showLoader();
-      const targetUrl = SHEETS_URLS[currentSheetKey] || SHEETS_URLS.resumen;
+      const targetUrl = SHEETS_URLS[currentSheetKey];
 
       document.getElementById('status-box').innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Cargando base...`;
 
@@ -801,12 +1197,15 @@
         skipEmptyLines: true,
         complete: function(results) {
           rawData = results.data;
-          document.getElementById('status-box').innerHTML = `<i class="fa-solid fa-circle-check"></i> ${rawData.length} registros`;
+          document.getElementById('status-box').innerHTML = `<i class="fa-solid fa-circle-check"></i> Base Actualizada (${rawData.length} registros)`;
           populateFilterLists();
+          setMesActualDefault();
           renderDashboard();
           hideLoader();
         },
         error: function(err) {
+          document.getElementById('status-box').style.background = "#ffebee";
+          document.getElementById('status-box').style.color = "#c62828";
           document.getElementById('status-box').innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Error al conectar base`;
           hideLoader();
         }
@@ -826,10 +1225,22 @@
         return [...new Set(values.filter(Boolean))].sort();
       };
 
+      const getUniqueLocalAndCCU = () => {
+        let values = [];
+        rawData.forEach(d => {
+          const loc = d['Local'] || d['local'];
+          const ccu = d['ID CCU'] || d['ID'] || d['Id CCU'] || d['id_ccu'] || d['ID Cliente (Escaneado)'] || d['ID Cliente (Manual)'];
+          if (loc) values.push(String(loc).trim());
+          if (ccu) values.push(String(ccu).trim());
+        });
+        return [...new Set(values.filter(Boolean))].sort();
+      };
+
       const fillFilterUI = (filterKey, valuesArray) => {
         const $group = $(`.filter-group[data-filter="${filterKey}"]`);
         const $list = $group.find('.gs-options-list');
         $list.empty();
+
         valuesArray.forEach((val, idx) => {
           $list.append(`
             <label class="gs-option-item">
@@ -841,164 +1252,614 @@
       };
 
       fillFilterUI('mes', getUnique(['Mes', 'mes']));
-      fillFilterUI('usuario', getUnique(['Vendedor', 'Ejecutivo', 'Usuario', 'usuario']));
-      fillFilterUI('localId', getUnique(['ID CCU', 'ID Cliente', 'ID']));
-      fillFilterUI('cliente', getUnique(['Cliente', 'Nombre Fantasía', 'Cuenta']));
+      fillFilterUI('usuario', getUnique(['Vendedor', 'Ejecutivo', 'Usuario', 'STCYG', 'usuario']));
+      fillFilterUI('localId', getUniqueLocalAndCCU());
+      fillFilterUI('cliente', getUnique(['Nombre Fantasía', 'Nombre Fantasía ', 'Nombre de Fantasia', 'Nombre Fantasia', 'Nombre Receptor', 'Cliente', 'cliente', 'Cuenta', 'Oficina']));
+    }
+
+    function setMesActualDefault() {
+      const currentMonthIndex = new Date().getMonth();
+      const currentMonthName = nombresMeses[currentMonthIndex];
+      const $group = $('.filter-group[data-filter="mes"]');
+
+      $group.find('.gs-options-list input[type="checkbox"]').each(function() {
+        if ($(this).val().toLowerCase() === currentMonthName.toLowerCase()) {
+          $(this).prop('checked', true);
+          filtersState.mes.selected = [$(this).val()];
+          updateFilterBoxUI($group, 'mes');
+        }
+      });
+    }
+
+    function parseDate(dateStr) {
+      if (!dateStr) return null;
+      const cleaned = dateStr.split(' ')[0].replace(/\//g, '-');
+      const parts = cleaned.split('-');
+      if (parts.length === 3) {
+        if (parts[0].length === 4) return new Date(parts[0], parts[1] - 1, parts[2]);
+        if (parts[2].length === 4) return new Date(parts[2], parts[1] - 1, parts[0]);
+      }
+      return null;
+    }
+
+    function getFilteredDataWithoutMonth() {
+      const fUsuario = filtersState.usuario.selected;
+      const fLocalId = filtersState.localId.selected;
+      const fCliente = filtersState.cliente.selected;
+
+      const fInicioStr = $('#filter-fecha-inicio').val();
+      const fFinStr = $('#filter-fecha-fin').val();
+      const fInicio = fInicioStr ? new Date(fInicioStr) : null;
+      const fFin = fFinStr ? new Date(fFinStr) : null;
+
+      return rawData.filter(d => {
+        const dUsuario = String(d['Vendedor'] || d['Ejecutivo'] || d['Usuario'] || d['usuario'] || '').trim();
+        const dLocal = String(d['Local'] || '').trim();
+        const dIdCCU = String(d['ID CCU'] || d['ID'] || d['Id CCU'] || d['ID Cliente (Escaneado)'] || d['ID Cliente (Manual)'] || '').trim();
+        const dCliente = String(getNombreCliente(d)).trim();
+        
+        const rawFecha = d['Fecha/Hora Ejecución 1'] || d['Fecha Programada 2'] || d['Fecha'] || d['Fecha Realizado'] || d['Fecha/Hora'];
+        const dFecha = parseDate(rawFecha);
+
+        const matchUsuario = fUsuario.length === 0 || fUsuario.includes(dUsuario);
+        const matchLocalId = fLocalId.length === 0 || fLocalId.includes(dLocal) || fLocalId.includes(dIdCCU);
+        const matchCliente = fCliente.length === 0 || fCliente.includes(dCliente);
+
+        let matchFecha = true;
+        if (dFecha) {
+          if (fInicio && dFecha < fInicio) matchFecha = false;
+          if (fFin && dFecha > fFin) matchFecha = false;
+        }
+
+        return matchUsuario && matchLocalId && matchCliente && matchFecha;
+      });
     }
 
     function getFilteredData() {
       const fMes = filtersState.mes.selected;
-      const fUsuario = filtersState.usuario.selected;
-      const fCliente = filtersState.cliente.selected;
+      const dataWithoutMonth = getFilteredDataWithoutMonth();
 
-      return rawData.filter(d => {
+      return dataWithoutMonth.filter(d => {
         const dMes = String(d['Mes'] || d['mes'] || '').trim();
-        const dUsuario = String(d['Vendedor'] || d['Usuario'] || '').trim();
-        const dCliente = String(getNombreCliente(d)).trim();
-
-        const matchMes = fMes.length === 0 || fMes.includes(dMes);
-        const matchUsuario = fUsuario.length === 0 || fUsuario.includes(dUsuario);
-        const matchCliente = fCliente.length === 0 || fCliente.includes(dCliente);
-
-        return matchMes && matchUsuario && matchCliente;
+        return fMes.length === 0 || fMes.includes(dMes);
       });
     }
 
     function renderDashboard() {
       const data = getFilteredData();
-      let totalMontoGanado = 0;
-      let totalMontoPerdido = 0;
-      let countGanadas = 0;
-      let countPerdidas = 0;
+
+      let totalSI = 0;
+      let totalNO = 0;
+      let countSchop = 0;
+      let countPostMix = 0;
 
       data.forEach(d => {
-        const monto = getMontoVenta(d);
-        if (isVentaGanada(d)) {
-          totalMontoGanado += monto;
-          countGanadas++;
+        const qty = getServiciosQty(d);
+        
+        if (isServicioRealizado(d)) {
+          totalSI += qty;
         } else {
-          totalMontoPerdido += monto;
-          countPerdidas++;
+          totalNO += qty;
+        }
+
+        const tipo = getTipoActivo(d).toUpperCase();
+        if (tipo.includes('SCHOP')) {
+          countSchop += qty;
+        } else if (tipo.includes('POST')) {
+          countPostMix += qty;
         }
       });
 
-      const totalOps = countGanadas + countPerdidas;
-      const pctGanado = totalOps > 0 ? ((countGanadas / totalOps) * 100).toFixed(1) : '0.0';
-      const pctPerdido = totalOps > 0 ? ((countPerdidas / totalOps) * 100).toFixed(1) : '0.0';
+      const grandTotal = totalSI + totalNO;
+      const pctSI = grandTotal > 0 ? ((totalSI / grandTotal) * 100).toFixed(1) : '0.0';
+      const pctNO = grandTotal > 0 ? ((totalNO / grandTotal) * 100).toFixed(1) : '0.0';
 
-      document.getElementById('kpi-total').innerText = formatCurrency(totalMontoGanado);
-      document.getElementById('kpi-cumplimiento').innerText = pctGanado + '%';
-      document.getElementById('kpi-pendientes').innerText = pctPerdido + '%';
+      document.getElementById('kpi-total').innerText = grandTotal.toLocaleString();
+      document.getElementById('kpi-cumplimiento').innerText = pctSI + '%';
+      
+      if (currentSheetKey === "urgencias") {
+        document.getElementById('kpi-ejecutados-count').innerText = `${totalSI.toLocaleString()} Ganadas`;
+        document.getElementById('kpi-no-count').innerText = `${totalNO.toLocaleString()} No Concretadas`;
+      } else {
+        document.getElementById('kpi-ejecutados-count').innerText = `${totalSI.toLocaleString()} Ventas Concretadas`;
+        document.getElementById('kpi-no-count').innerText = `${totalNO.toLocaleString()} Oportunidades Pendientes`;
+      }
 
-      document.getElementById('kpi-ejecutados-count').innerText = `${countGanadas} Ganadas (${formatCurrency(totalMontoGanado)})`;
-      document.getElementById('kpi-no-count').innerText = `${countPerdidas} Perdidas (${formatCurrency(totalMontoPerdido)})`;
+      document.getElementById('kpi-pendientes').innerText = pctNO + '%';
 
+      renderActivosChart(countSchop, countPostMix);
+      renderTrendChart();
       renderTabla1(data);
+      renderTablaMotivos(data, totalNO, grandTotal);
       renderTabla2(data);
       renderTablaNoRealizadas(data);
-      renderTablaSiRealizadas(data);
+      
+      if (currentSheetKey === "preventiva") {
+        renderTablaSiRealizadas(data);
+      }
+    }
+
+    function renderActivosChart(schop, postMix) {
+      const ctx = document.getElementById('activosChart').getContext('2d');
+
+      if (activosChartInstance) {
+        activosChartInstance.destroy();
+      }
+
+      activosChartInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Schop', 'Post Mix'],
+          datasets: [{
+            data: [schop, postMix],
+            backgroundColor: ['#006100', '#004b93'],
+            borderWidth: 2,
+            borderColor: '#ffffff'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          layout: { padding: 2 },
+          plugins: {
+            legend: { display: false },
+            datalabels: {
+              color: '#ffffff',
+              textStrokeColor: '#000000',
+              textStrokeWidth: 2,
+              font: { weight: 'bold', size: 10 },
+              formatter: function(value, context) {
+                let total = schop + postMix;
+                if (total === 0 || value === 0) return '';
+                let pct = ((value / total) * 100).toFixed(1) + '%';
+                return pct;
+              }
+            },
+            tooltip: {
+              enabled: true,
+              callbacks: {
+                label: function(context) {
+                  let total = schop + postMix;
+                  let val = context.raw;
+                  let pct = total > 0 ? ((val / total) * 100).toFixed(1) : 0;
+                  return `${context.label}: ${val} casos (${pct}%)`;
+                }
+              }
+            }
+          },
+          cutout: '55%'
+        }
+      });
+    }
+
+    function renderTrendChart() {
+      const monthlyStats = {};
+      const dataWithoutMonth = getFilteredDataWithoutMonth();
+
+      dataWithoutMonth.forEach(d => {
+        const mes = d['Mes'] || d['mes'];
+        if (!mes) return;
+
+        const qty = getServiciosQty(d);
+        if (!monthlyStats[mes]) monthlyStats[mes] = { SI: 0, NO: 0 };
+
+        if (isServicioRealizado(d)) {
+          monthlyStats[mes].SI += qty;
+        } else {
+          monthlyStats[mes].NO += qty;
+        }
+      });
+
+      let labels = Object.keys(monthlyStats);
+
+      if (labels.length > 13) {
+        labels = labels.slice(-13);
+      }
+
+      const ctx = document.getElementById('trendChart').getContext('2d');
+
+      if (trendChartInstance) {
+        trendChartInstance.destroy();
+      }
+
+      trendChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: '% Efectividad SI',
+              data: labels.map(m => {
+                const tot = (monthlyStats[m] ? monthlyStats[m].SI : 0) + (monthlyStats[m] ? monthlyStats[m].NO : 0);
+                return tot > 0 ? parseFloat(((monthlyStats[m].SI / tot) * 100).toFixed(1)) : 0;
+              }),
+              backgroundColor: '#006100',
+              borderRadius: 3
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: { font: { size: 10, weight: 'bold' }, color: '#333333' }
+            },
+            y: { display: false, max: 110 }
+          },
+          plugins: {
+            legend: { display: false },
+            datalabels: {
+              display: true,
+              color: '#ffffff',
+              textStrokeColor: '#000000',
+              textStrokeWidth: 2,
+              font: { weight: 'bold', size: 10 },
+              formatter: function(value) {
+                return `${value}%`;
+              },
+              align: 'center',
+              anchor: 'center'
+            },
+            tooltip: {
+              callbacks: {
+                label: function(ctx) {
+                  const m = ctx.label;
+                  const cantSI = monthlyStats[m] ? monthlyStats[m].SI : 0;
+                  const tot = (monthlyStats[m] ? monthlyStats[m].SI : 0) + (monthlyStats[m] ? monthlyStats[m].NO : 0);
+                  return `${m}: ${cantSI}/${tot} concretados (${ctx.raw}%)`;
+                }
+              }
+            }
+          }
+        }
+      });
     }
 
     function renderTabla1(data) {
-      let html = `<table><thead><tr><th class="left">Línea de Producto</th><th>Ganadas</th><th>Perdidas</th><th>Monto Ganado</th></tr></thead><tbody>`;
-      const stats = {};
+      const t1Stats = {};
+      let total1_SI = 0, total1_NO = 0;
 
       data.forEach(d => {
-        const tipo = getTipoProducto(d);
-        const monto = getMontoVenta(d);
-        if (!stats[tipo]) stats[tipo] = { ganadas: 0, perdidas: 0, monto: 0 };
-        if (isVentaGanada(d)) {
-          stats[tipo].ganadas++;
-          stats[tipo].monto += monto;
+        const qty = getServiciosQty(d);
+        const tipo = getTipoActivo(d);
+
+        if(!t1Stats[tipo]) t1Stats[tipo] = { SI: 0, NO: 0 };
+        if(isServicioRealizado(d)) {
+          t1Stats[tipo].SI += qty;
+          total1_SI += qty;
         } else {
-          stats[tipo].perdidas++;
+          t1Stats[tipo].NO += qty;
+          total1_NO += qty;
         }
       });
 
-      Object.keys(stats).forEach(tipo => {
-        html += `<tr>
-          <td class="left"><strong>${tipo}</strong></td>
-          <td>${stats[tipo].ganadas}</td>
-          <td>${stats[tipo].perdidas}</td>
-          <td><strong>${formatCurrency(stats[tipo].monto)}</strong></td>
-        </tr>`;
+      let html1 = `
+        <table>
+          <thead>
+            <tr>
+              <th class="left">Línea de Producto / Activo</th>
+              <th>NO (Cant. / %)</th>
+              <th>SI (Cant. / %)</th>
+              <th>Total Oportunidades</th>
+            </tr>
+          </thead>
+          <tbody>`;
+
+      Object.keys(t1Stats).forEach(tipo => {
+        const si = t1Stats[tipo].SI;
+        const no = t1Stats[tipo].NO;
+        const tot = si + no;
+        const pctNO = tot > 0 ? ((no / tot) * 100).toFixed(1) + '%' : '0.0%';
+        const pctSI = tot > 0 ? ((si / tot) * 100).toFixed(1) + '%' : '0.0%';
+
+        html1 += `
+          <tr>
+            <td class="left"><strong>${tipo}</strong></td>
+            <td>${no} <span class="qty-badge">(${pctNO})</span></td>
+            <td>${si} <span class="qty-badge">(${pctSI})</span></td>
+            <td><strong>${tot}</strong> <span class="qty-badge">(100%)</span></td>
+          </tr>`;
       });
 
-      html += `</tbody></table>`;
-      document.getElementById('tabla-1-container').innerHTML = html;
+      const tot1_ALL = total1_SI + total1_NO;
+      const pct1_NO = tot1_ALL > 0 ? ((total1_NO / tot1_ALL) * 100).toFixed(1) + '%' : '0.0%';
+      const pct1_SI = tot1_ALL > 0 ? ((total1_SI / tot1_ALL) * 100).toFixed(1) + '%' : '0.0%';
+
+      html1 += `
+        <tr class="total-general">
+          <td class="left">Total General</td>
+          <td>${total1_NO} (${pct1_NO})</td>
+          <td>${total1_SI} (${pct1_SI})</td>
+          <td>${tot1_ALL} (100%)</td>
+        </tr>
+        </tbody></table>`;
+
+      document.getElementById('tabla-1-container').innerHTML = html1;
+    }
+
+    function renderTablaMotivos(data, totalNO, grandTotal) {
+      const motivosStats = {
+        'Local Cerrado': 0,
+        'Cliente no permite': 0,
+        'Desprogramar Cliente': 0,
+        'Otro': 0,
+        'Sin Información': 0
+      };
+
+      const noRealizadasData = data.filter(d => !isServicioRealizado(d));
+
+      noRealizadasData.forEach(d => {
+        const qty = getServiciosQty(d);
+        const motivo = getMotivoNoServicio(d);
+        if (motivosStats.hasOwnProperty(motivo)) {
+          motivosStats[motivo] += qty;
+        } else {
+          motivosStats['Sin Información'] += qty;
+        }
+      });
+
+      const ordenEstricto = [
+        'Local Cerrado',
+        'Cliente no permite',
+        'Desprogramar Cliente',
+        'Otro',
+        'Sin Información'
+      ];
+
+      let html = `
+        <table>
+          <thead>
+            <tr>
+              <th class="left">Motivo / Causa No Concretada</th>
+              <th>Cantidad</th>
+              <th>% del Total NO</th>
+              <th>% del Total General</th>
+            </tr>
+          </thead>
+          <tbody>`;
+
+      ordenEstricto.forEach(motivo => {
+        const cant = motivosStats[motivo];
+        const pctDelNO = totalNO > 0 ? ((cant / totalNO) * 100).toFixed(1) + '%' : '0.0%';
+        const pctDelTotal = grandTotal > 0 ? ((cant / grandTotal) * 100).toFixed(1) + '%' : '0.0%';
+
+        html += `
+          <tr>
+            <td class="left">• <strong>${motivo}</strong></td>
+            <td><strong>${cant}</strong></td>
+            <td><span class="qty-badge" style="font-weight:bold; color:#c62828;">${pctDelNO}</span></td>
+            <td><span class="qty-badge" style="font-weight:bold; color:var(--excel-green-dark);">${pctDelTotal}</span></td>
+          </tr>`;
+      });
+
+      const totalPctNO_General = grandTotal > 0 ? ((totalNO / grandTotal) * 100).toFixed(1) + '%' : '0.0%';
+
+      html += `
+        <tr class="total-general">
+          <td class="left">Total No Concretadas</td>
+          <td>${totalNO}</td>
+          <td>100%</td>
+          <td>${totalPctNO_General}</td>
+        </tr>
+        </tbody></table>`;
+
+      document.getElementById('tabla-motivos-container').innerHTML = html;
     }
 
     function renderTabla2(data) {
-      let html = `<table><thead><tr><th class="left">Categoría</th><th class="left">Vendedor</th><th>Ganadas</th><th>Perdidas</th><th>Monto Total</th></tr></thead><tbody>`;
-      const stats = {};
-
+      const t2Stats = {};
       data.forEach(d => {
-        const cat = getTipoProducto(d);
-        const usr = d['Vendedor'] || d['Usuario'] || 'Sin Asignar';
-        const monto = getMontoVenta(d);
+        const qty = getServiciosQty(d);
+        const cat = getCategoriaTecnico(d);
+        const usr = d['Vendedor'] || d['Ejecutivo'] || d['Usuario'] || 'Sin Vendedor';
+        const tec = d['Jefe de Ventas'] || d['Técnico'] || d['Tecnico'] || 'Ejecutivo Comercial';
 
-        if (!stats[cat]) stats[cat] = {};
-        if (!stats[cat][usr]) stats[cat][usr] = { ganadas: 0, perdidas: 0, monto: 0 };
-
-        if (isVentaGanada(d)) {
-          stats[cat][usr].ganadas++;
-          stats[cat][usr].monto += monto;
+        if(!t2Stats[cat]) t2Stats[cat] = {};
+        if(!t2Stats[cat][usr]) t2Stats[cat][usr] = { tecnico: tec, SI: 0, NO: 0 };
+        
+        if(isServicioRealizado(d)) {
+          t2Stats[cat][usr].SI += qty;
         } else {
-          stats[cat][usr].perdidas++;
+          t2Stats[cat][usr].NO += qty;
         }
       });
 
-      Object.keys(stats).forEach(cat => {
-        Object.keys(stats[cat]).forEach(usr => {
-          const u = stats[cat][usr];
-          html += `<tr>
-            <td class="left">${cat}</td>
-            <td class="left"><strong>${usr}</strong></td>
-            <td>${u.ganadas}</td>
-            <td>${u.perdidas}</td>
-            <td><strong>${formatCurrency(u.monto)}</strong></td>
-          </tr>`;
+      let html2 = `
+        <table>
+          <thead>
+            <tr>
+              <th class="left">Categoría</th>
+              <th class="left">Usuario / Vendedor</th>
+              <th class="left">Cargo / Rol</th>
+              <th>NO (Cant. / %)</th>
+              <th>SI (Cant. / %)</th>
+              <th>Total Oportunidades</th>
+            </tr>
+          </thead>
+          <tbody>`;
+
+      let grandNO = 0, grandSI = 0;
+
+      let categoriasOrdenadas = Object.keys(t2Stats);
+
+      categoriasOrdenadas.forEach(cat => {
+        let catSI = 0, catNO = 0;
+        const usuariosOrdenados = Object.keys(t2Stats[cat]).sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
+
+        usuariosOrdenados.forEach(usr => {
+          const uData = t2Stats[cat][usr];
+          const tot = uData.SI + uData.NO;
+          catSI += uData.SI;
+          catNO += uData.NO;
+
+          const pctSI_num = tot > 0 ? (uData.SI / tot) * 100 : 0;
+          const pctNO_num = tot > 0 ? (uData.NO / tot) * 100 : 0;
+          
+          const pctNO = pctNO_num.toFixed(1) + '%';
+          const pctSI = pctSI_num.toFixed(1) + '%';
+
+          const alertClass = pctSI_num < 92 ? 'alert-red' : '';
+
+          html2 += `
+            <tr>
+              <td class="left">• ${cat}</td>
+              <td class="left">• ${usr}</td>
+              <td class="left">${uData.tecnico}</td>
+              <td class="${alertClass}">${uData.NO} <span class="qty-badge">(${pctNO})</span></td>
+              <td>${uData.SI} <span class="qty-badge">(${pctSI})</span></td>
+              <td><strong>${tot}</strong> <span class="qty-badge">(100%)</span></td>
+            </tr>`;
         });
+
+        grandSI += catSI;
+        grandNO += catNO;
+
+        const catTot = catSI + catNO;
+        const catPctNO = catTot > 0 ? ((catNO / catTot) * 100).toFixed(1) + '%' : '0.0%';
+        const catPctSI = catTot > 0 ? ((catSI / catTot) * 100).toFixed(1) + '%' : '0.0%';
+
+        html2 += `
+          <tr class="subtotal">
+            <td colspan="3" class="left">Total ${cat}</td>
+            <td>${catNO} (${catPctNO})</td>
+            <td>${catSI} (${catPctSI})</td>
+            <td>${catTot} (100%)</td>
+          </tr>`;
       });
 
-      html += `</tbody></table>`;
-      document.getElementById('tabla-2-container').innerHTML = html;
-    }
+      const grandALL = grandSI + grandNO;
+      const grandPctNO = grandALL > 0 ? ((grandNO / grandALL) * 100).toFixed(1) + '%' : '0.0%';
+      const grandPctSI = grandALL > 0 ? ((grandSI / grandALL) * 100).toFixed(1) + '%' : '0.0%';
 
-    function renderTablaSiRealizadas(data) {
-      const ganadas = data.filter(d => isVentaGanada(d));
-      if (ganadas.length === 0) {
-        document.getElementById('tabla-si-realizadas-container').innerHTML = `<div class="no-data">Sin ventas ganadas.</div>`;
-        return;
-      }
-      let html = `<table><thead><tr><th class="left">Vendedor</th><th class="left">Cliente</th><th>Monto</th></tr></thead><tbody>`;
-      ganadas.forEach(d => {
-        html += `<tr>
-          <td class="left">${d['Vendedor'] || d['Usuario'] || '-'}</td>
-          <td class="left">${getNombreCliente(d)}</td>
-          <td><strong>${formatCurrency(getMontoVenta(d))}</strong></td>
-        </tr>`;
-      });
-      html += `</tbody></table>`;
-      document.getElementById('tabla-si-realizadas-container').innerHTML = html;
+      html2 += `
+        <tr class="total-general">
+          <td colspan="3" class="left">Total General</td>
+          <td>${grandNO} (${grandPctNO})</td>
+          <td>${grandSI} (${grandPctSI})</td>
+          <td>${grandALL} (100%)</td>
+        </tr>
+        </tbody></table>`;
+
+      document.getElementById('tabla-2-container').innerHTML = html2;
     }
 
     function renderTablaNoRealizadas(data) {
-      const perdidas = data.filter(d => !isVentaGanada(d));
-      if (perdidas.length === 0) {
-        document.getElementById('tabla-no-realizadas-container').innerHTML = `<div class="no-data">Sin ventas perdidas.</div>`;
+      const noRealizadas = data.filter(d => !isServicioRealizado(d));
+
+      if (noRealizadas.length === 0) {
+        document.getElementById('tabla-no-realizadas-container').innerHTML = `<div class="no-data">🎉 No hay casuística pendiente.</div>`;
         return;
       }
-      let html = `<table><thead><tr><th class="left">Vendedor</th><th class="left">Cliente</th><th class="left">Motivo Pérdida</th></tr></thead><tbody>`;
-      perdidas.forEach(d => {
-        html += `<tr>
-          <td class="left">${d['Vendedor'] || d['Usuario'] || '-'}</td>
-          <td class="left">${getNombreCliente(d)}</td>
-          <td class="left" style="color: #c62828;">${d['Motivo Pérdida'] || d['Motivo'] || 'Sin Especificar'}</td>
-        </tr>`;
+
+      let html = `
+        <table>
+          <thead>
+            <tr>
+              <th class="left">Vendedor</th>
+              <th class="left">Fecha</th>
+              <th class="left">Cliente</th>
+              <th class="left">Motivo / Causa</th>
+              <th class="left">Comentario</th>
+              <th style="text-align:center;">Fotos</th>
+            </tr>
+          </thead>
+          <tbody>`;
+
+      noRealizadas.forEach(d => {
+        const tec = d['Vendedor'] || d['Ejecutivo'] || d['Usuario'] || d['Técnico'] || '-';
+        const fecha = d['Fecha/Hora Ejecución 1'] || d['Fecha Programada 2'] || d['Fecha'] || d['Fecha Realizado'] || d['Fecha/Hora'] || '-';
+        const cliente = getNombreCliente(d);
+        
+        const motivo = getMotivoNoServicio(d);
+        const comentario = d['Comentario No Resuelto'] || d['Comentario Motivo'] || d['Comentario'] || '-';
+        
+        const fotoUrl1 = d['Foto Equipo'] || d['Foto Motivo'] || d['Foto Columnas o Post Mix'] || '';
+        const fotoUrl2 = d['Foto Equipo 2'] || d['Foto Salida FNE'] || '';
+
+        let fotosHtml = '<span style="color:#bbb;">Sin fotos</span>';
+        if ((fotoUrl1 && fotoUrl1.startsWith('http')) || (fotoUrl2 && fotoUrl2.startsWith('http'))) {
+          fotosHtml = '<div class="photos-flex">';
+          if (fotoUrl1 && fotoUrl1.startsWith('http')) {
+            fotosHtml += `<div class="img-container"><img src="${fotoUrl1}" class="thumb-img" alt="Foto 1" loading="lazy" onerror="this.src='https://via.placeholder.com/50?text=Error'"></div>`;
+          }
+          if (fotoUrl2 && fotoUrl2.startsWith('http')) {
+            fotosHtml += `<div class="img-container"><img src="${fotoUrl2}" class="thumb-img" alt="Foto 2" loading="lazy" onerror="this.src='https://via.placeholder.com/50?text=Error'"></div>`;
+          }
+          fotosHtml += '</div>';
+        }
+
+        html += `
+          <tr>
+            <td class="left"><strong>${tec}</strong></td>
+            <td class="left">${fecha}</td>
+            <td class="left">${cliente}</td>
+            <td class="left" style="color: #c62828; font-weight: 500;">${motivo}</td>
+            <td class="left" style="font-size: 11px; color: #555;">${comentario}</td>
+            <td style="text-align:center;">${fotosHtml}</td>
+          </tr>`;
       });
+
       html += `</tbody></table>`;
       document.getElementById('tabla-no-realizadas-container').innerHTML = html;
+    }
+
+    function renderTablaSiRealizadas(data) {
+      const siRealizadas = data.filter(d => isServicioRealizado(d));
+
+      if (siRealizadas.length === 0) {
+        document.getElementById('tabla-si-realizadas-container').innerHTML = `<div class="no-data">Sin ventas concretadas con los filtros seleccionados.</div>`;
+        return;
+      }
+
+      let html = `
+        <table>
+          <thead>
+            <tr>
+              <th class="left">Vendedor</th>
+              <th class="left">Fecha</th>
+              <th class="left">ID CCU</th>
+              <th class="left">Cliente (Nombre Fantasía)</th>
+              <th class="left">Contacto / Receptor</th>
+              <th class="left">Comentario Cliente</th>
+              <th style="text-align:center;">Foto</th>
+            </tr>
+          </thead>
+          <tbody>`;
+
+      siRealizadas.forEach(d => {
+        const tec = d['Vendedor'] || d['Ejecutivo'] || d['Usuario'] || d['Técnico'] || '-';
+        const fecha = d['Fecha/Hora Ejecución 1'] || d['Fecha Programada 2'] || d['Fecha'] || d['Fecha Realizado'] || d['Fecha/Hora'] || '-';
+        const idCCU = getIdCCU(d);
+        const cliente = getNombreCliente(d);
+        const receptor = getNombreReceptor(d);
+        const comentario = getComentarioCliente(d);
+        
+        const fotoUrl = getFotoEquipoColumna(d);
+
+        let fotoHtml = '<span style="color:#bbb;">Sin fotos</span>';
+        if (fotoUrl && fotoUrl.startsWith('http')) {
+          fotoHtml = `
+            <div class="img-container">
+              <img src="${fotoUrl}" class="thumb-img" alt="Foto" loading="lazy" onerror="this.src='https://via.placeholder.com/50?text=Error'">
+            </div>`;
+        }
+
+        html += `
+          <tr>
+            <td class="left"><strong>${tec}</strong></td>
+            <td class="left">${fecha}</td>
+            <td class="left" style="font-weight: 500;">${idCCU}</td>
+            <td class="left">${cliente}</td>
+            <td class="left" style="font-weight: 500;">${receptor}</td>
+            <td class="left" style="font-size: 11px; color: #2e7d32;">${comentario}</td>
+            <td style="text-align:center;">${fotoHtml}</td>
+          </tr>`;
+      });
+
+      html += `</tbody></table>`;
+      document.getElementById('tabla-si-realizadas-container').innerHTML = html;
     }
   </script>
 </body>
