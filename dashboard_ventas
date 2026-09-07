@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Ejecutivo - Gestión de Ventas</title>
+
+  <!-- Google Fonts & Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- jQuery, Flatpickr, Chart.js & Plugins -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+
+  <style>
+    :root {
+      --sales-blue-header: #0d47a1;
+      --sales-blue-dark: #0a3578;
+      --sales-total-black: #1a1a1a;
+      --excel-red-highlight: #ffc7ce;
+      --excel-red-text: #9c0006;
+      --sales-green-light: #e8f5e9;
+      --sales-green-dark: #2e7d32;
+      --bg-gray: #f4f6f9;
+      --card-bg: #ffffff;
+    }
+
+    body {
+      font-family: 'Roboto', sans-serif;
+      background-color: var(--bg-gray);
+      margin: 0;
+      padding: 24px;
+      color: #333;
+    }
+
+    /* Loader Overlay */
+    #loader-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(6px);
+      z-index: 99999;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      opacity: 1;
+      transition: opacity 0.3s ease;
+    }
+
+    .loader-text {
+      margin-top: 14px;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--sales-blue-dark);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Encabezado Principal */
+    .header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      background: var(--card-bg);
+      padding: 16px 28px;
+      border-radius: 12px 12px 0 0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .header-title h1 {
+      margin: 0;
+      color: var(--sales-blue-dark);
+      font-size: 22px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .update-subtext {
+      font-size: 12px;
+      color: #6c757d;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border-left: 2px solid #e0e0e0;
+      padding-left: 14px;
+    }
+
+    .status-badge {
+      background: #e3f2fd;
+      color: var(--sales-blue-dark);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Pestañas (Tabs) */
+    .dashboard-tabs {
+      display: flex;
+      background: var(--card-bg);
+      padding: 0 28px;
+      border-radius: 0 0 12px 12px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.03);
+      border-top: 1px solid #eee;
+    }
+
+    .tab-btn {
+      padding: 14px 24px;
+      font-size: 14px;
+      font-weight: 700;
+      color: #666;
+      background: transparent;
+      border: none;
+      border-bottom: 3px solid transparent;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn:hover, .tab-btn.active {
+      color: var(--sales-blue-dark);
+      border-bottom-color: var(--sales-blue-header);
+    }
+
+    /* Tarjetas KPI */
+    .kpi-container {
+      display: grid;
+      grid-template-columns: 1fr 0.8fr 0.8fr 1.6fr;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .kpi-card {
+      background: var(--card-bg);
+      padding: 16px 18px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      border-left: 5px solid var(--sales-blue-header);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .kpi-card.chart-card {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 12px 16px;
+    }
+
+    .kpi-card.alert {
+      border-left-color: #d32f2f;
+    }
+
+    .kpi-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #666;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .kpi-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: #1a1a1a;
+    }
+
+    .kpi-subtext {
+      font-size: 12px;
+      margin-top: 4px;
+    }
+
+    .chart-box {
+      width: 95px;
+      height: 95px;
+      position: relative;
+      margin-left: auto;
+    }
+
+    .mini-trend-box {
+      width: 100%;
+      height: 85px;
+      position: relative;
+      margin-top: 4px;
+    }
+
+    /* Panel de Filtros */
+    .filter-card {
+      background: var(--card-bg);
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      margin-bottom: 24px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 150px;
+      flex: 1;
+      position: relative;
+    }
+
+    .filter-group label {
+      font-size: 12px;
+      font-weight: bold;
+      color: #444;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .date-input {
+      padding: 8px 12px;
+      border: 1px solid #dcdfe6;
+      border-radius: 6px;
+      font-size: 13px;
+      outline: none;
+      background: #ffffff;
+      height: 38px;
+      box-sizing: border-box;
+    }
+
+    /* Componente GS Filter Box */
+    .gs-filter-box {
+      border: 1px solid #dcdfe6;
+      border-radius: 6px;
+      height: 38px;
+      padding: 0 12px;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      font-size: 13px;
+      box-sizing: border-box;
+    }
+
+    .gs-filter-box.is-filtered {
+      border-color: var(--sales-blue-header);
+      background-color: #e3f2fd;
+      font-weight: 700;
+      color: var(--sales-blue-dark);
+    }
+
+    .gs-filter-text {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 85%;
+    }
+
+    .gs-dropdown {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      width: 280px;
+      background: #ffffff;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+      z-index: 9999;
+      display: none;
+      padding: 12px;
+      margin-top: 4px;
+      box-sizing: border-box;
+    }
+
+    .gs-dropdown.show { display: block; }
+
+    .gs-bulk-actions {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 12px;
+    }
+
+    .gs-link-btn {
+      color: var(--sales-blue-header);
+      cursor: pointer;
+      font-weight: bold;
+      text-decoration: underline;
+    }
+
+    .gs-search-input-wrap {
+      position: relative;
+      margin-bottom: 8px;
+    }
+
+    .gs-search-input-wrap input {
+      width: 100%;
+      padding: 6px 28px 6px 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 12px;
+      box-sizing: border-box;
+    }
+
+    .gs-search-input-wrap i {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #888;
+      font-size: 12px;
+    }
+
+    .gs-options-list {
+      max-height: 180px;
+      overflow-y: auto;
+      border: 1px solid #eee;
+      border-radius: 4px;
+      padding: 4px 0;
+      margin-bottom: 12px;
+    }
+
+    .gs-option-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 8px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .gs-option-item:hover { background-color: #f1f3f5; }
+
+    .gs-actions-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .gs-btn {
+      padding: 6px 14px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: bold;
+      cursor: pointer;
+      border: none;
+    }
+
+    .gs-btn-cancel { background: #e0e0e0; color: #333; }
+    .gs-btn-accept { background: var(--sales-blue-header); color: #fff; }
+
+    /* Grilla & Tablas */
+    .dashboard-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+
+    .grid-row-two-col {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .grid-col-half { flex: 1; min-width: 380px; }
+    .grid-row-full { width: 100%; }
+
+    .table-container {
+      background: var(--card-bg);
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      overflow: hidden;
+    }
+
+    .table-header {
+      padding: 14px 18px;
+      background: #f8f9fa;
+      border-bottom: 1px solid #e9ecef;
+      font-weight: 700;
+      color: var(--sales-blue-dark);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    table { border-collapse: collapse; width: 100%; font-size: 13px; }
+    th, td { padding: 8px 12px; text-align: right; border-bottom: 1px solid #eef0f2; vertical-align: middle; }
+    th.left, td.left { text-align: left; }
+
+    thead tr th {
+      background-color: var(--sales-blue-header);
+      color: #ffffff;
+      font-weight: 600;
+      font-size: 12px;
+      position: sticky; top: 0; z-index: 10;
+    }
+
+    tr.subtotal { background-color: #f1f3f5; color: #212529; font-weight: bold; }
+    tr.total-general { background-color: var(--sales-total-black); color: #ffffff; font-weight: bold; }
+
+    .scrollable-table { max-height: 380px; overflow-y: auto; }
+    .no-data { padding: 20px; text-align: center; color: #888; font-style: italic; }
+  </style>
+</head>
+<body>
+
+  <!-- Overlay Loader -->
+  <div id="loader-overlay">
+    <i class="fa-solid fa-chart-pie fa-spin fa-3x" style="color: var(--sales-blue-header);"></i>
+    <div class="loader-text">Cargando indicadores de ventas...</div>
+  </div>
+
+  <!-- Encabezado Principal -->
+  <div class="header-bar">
+    <div class="header-left">
+      <div class="header-title">
+        <h1 id="main-title"><i class="fa-solid fa-chart-line" style="font-size: 20px; color: var(--sales-blue-header);"></i> Dashboard Ejecutivo de Ventas</h1>
+      </div>
+      <div class="update-subtext">
+        <i class="fa-regular fa-clock"></i> Información comercial actualizada en tiempo real.
+      </div>
+    </div>
+    <div class="status-badge" id="status-box">
+      <i class="fa-solid fa-spinner fa-spin"></i> Cargando datos...
+    </div>
+  </div>
+
+  <!-- Pestañas de Navegación de Ventas -->
+  <div class="dashboard-tabs">
+    <button class="tab-btn active" data-sheet="resumen">
+      <i class="fa-solid fa-handshake"></i> Pipeline de Ventas
+    </button>
+    <button class="tab-btn" data-sheet="oportunidades">
+      <i class="fa-solid fa-dollar-sign"></i> Oportunidades Ganadas
+    </button>
+    <button class="tab-btn" data-sheet="perdidas">
+      <i class="fa-solid fa-circle-xmark"></i> Negociaciones Perdidas
+    </button>
+  </div>
+
+  <!-- Tarjetas KPI -->
+  <div class="kpi-container">
+    <div class="kpi-card chart-card">
+      <div>
+        <div class="kpi-title" id="kpi-label-1">Venta Total / Oportunidades</div>
+        <div class="kpi-value" id="kpi-total">$0</div>
+        <div class="kpi-subtext" id="kpi-subtext-legend">
+          <span style="color:#0d47a1; font-weight:bold;">● Categoría A</span> | 
+          <span style="color:#2e7d32; font-weight:bold;">● Categoría B</span>
+        </div>
+      </div>
+      <div class="chart-box">
+        <canvas id="activosChart"></canvas>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-title" id="kpi-label-2">Tasa de Conversión (Cierre)</div>
+      <div class="kpi-value" id="kpi-cumplimiento">0%</div>
+      <div class="kpi-subtext" id="kpi-ejecutados-count" style="color: #888;">0 Ventas Ganadas</div>
+    </div>
+
+    <div class="kpi-card alert">
+      <div class="kpi-title" id="kpi-label-3">Oportunidades Perdidas</div>
+      <div class="kpi-value" id="kpi-pendientes">0%</div>
+      <div class="kpi-subtext" id="kpi-no-count" style="color: #888;">0 Negociaciones Perdidas</div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-title" id="trend-card-title"><i class="fa-solid fa-chart-column"></i> Evolución Mensual ($ / Ventas)</div>
+      <div class="mini-trend-box">
+        <canvas id="trendChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel de Filtros -->
+  <div class="filter-card">
+    <div class="filter-group" data-filter="mes">
+      <label><i class="fa-regular fa-calendar"></i> Mes</label>
+      <div class="gs-filter-box">
+        <span class="gs-filter-text">Todos (filtrar...)</span>
+        <i class="fa-solid fa-caret-down gs-filter-icon"></i>
+      </div>
+      <div class="gs-dropdown">
+        <div class="gs-bulk-actions">
+          <span class="gs-link-btn btn-select-filtered">Seleccionar filtrados</span>
+          <span class="gs-link-btn btn-clear-all">Borrar</span>
+        </div>
+        <div class="gs-search-input-wrap">
+          <input type="text" placeholder="Buscar..." class="gs-search-input">
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </div>
+        <div class="gs-options-list"></div>
+        <div class="gs-actions-footer">
+          <button class="gs-btn gs-btn-cancel">Cancelar</button>
+          <button class="gs-btn gs-btn-accept">Aceptar</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <label for="filter-fecha-inicio"><i class="fa-regular fa-calendar-days"></i> Fecha Inicio</label>
+      <input type="text" id="filter-fecha-inicio" class="date-input" placeholder="Seleccionar inicio...">
+    </div>
+
+    <div class="filter-group">
+      <label for="filter-fecha-fin"><i class="fa-regular fa-calendar-check"></i> Fecha Término</label>
+      <input type="text" id="filter-fecha-fin" class="date-input" placeholder="Seleccionar término...">
+    </div>
+
+    <div class="filter-group" data-filter="usuario">
+      <label><i class="fa-solid fa-user-tie"></i> Vendedor / Ejecutivo</label>
+      <div class="gs-filter-box">
+        <span class="gs-filter-text">Todos (filtrar...)</span>
+        <i class="fa-solid fa-caret-down gs-filter-icon"></i>
+      </div>
+      <div class="gs-dropdown">
+        <div class="gs-bulk-actions">
+          <span class="gs-link-btn btn-select-filtered">Seleccionar filtrados</span>
+          <span class="gs-link-btn btn-clear-all">Borrar</span>
+        </div>
+        <div class="gs-search-input-wrap">
+          <input type="text" placeholder="Buscar..." class="gs-search-input">
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </div>
+        <div class="gs-options-list"></div>
+        <div class="gs-actions-footer">
+          <button class="gs-btn gs-btn-cancel">Cancelar</button>
+          <button class="gs-btn gs-btn-accept">Aceptar</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="filter-group" data-filter="localId">
+      <label><i class="fa-solid fa-hashtag"></i> ID Cliente / CCU</label>
+      <div class="gs-filter-box">
+        <span class="gs-filter-text">Todos (filtrar...)</span>
+        <i class="fa-solid fa-caret-down gs-filter-icon"></i>
+      </div>
+      <div class="gs-dropdown">
+        <div class="gs-bulk-actions">
+          <span class="gs-link-btn btn-select-filtered">Seleccionar filtrados</span>
+          <span class="gs-link-btn btn-clear-all">Borrar</span>
+        </div>
+        <div class="gs-search-input-wrap">
+          <input type="text" placeholder="Buscar..." class="gs-search-input">
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </div>
+        <div class="gs-options-list"></div>
+        <div class="gs-actions-footer">
+          <button class="gs-btn gs-btn-cancel">Cancelar</button>
+          <button class="gs-btn gs-btn-accept">Aceptar</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="filter-group" data-filter="cliente">
+      <label><i class="fa-solid fa-building"></i> Cliente / Cuenta</label>
+      <div class="gs-filter-box">
+        <span class="gs-filter-text">Todos (filtrar...)</span>
+        <i class="fa-solid fa-caret-down gs-filter-icon"></i>
+      </div>
+      <div class="gs-dropdown">
+        <div class="gs-bulk-actions">
+          <span class="gs-link-btn btn-select-filtered">Seleccionar filtrados</span>
+          <span class="gs-link-btn btn-clear-all">Borrar</span>
+        </div>
+        <div class="gs-search-input-wrap">
+          <input type="text" placeholder="Buscar..." class="gs-search-input">
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </div>
+        <div class="gs-options-list"></div>
+        <div class="gs-actions-footer">
+          <button class="gs-btn gs-btn-cancel">Cancelar</button>
+          <button class="gs-btn gs-btn-accept">Aceptar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Grid Principal -->
+  <div class="dashboard-grid">
+    <div class="grid-row-two-col">
+      <div class="grid-col-half">
+        <div class="table-container">
+          <div class="table-header">
+            <span id="tabla-1-title">Resumen por Línea de Producto</span>
+          </div>
+          <div id="tabla-1-container"></div>
+        </div>
+      </div>
+
+      <div class="grid-col-half">
+        <div class="table-container">
+          <div class="table-header" style="background-color: #fff8e1; color: #b78103;">
+            <span id="tabla-motivos-title"><i class="fa-solid fa-list-check"></i> Resumen Motivos de Pérdida</span>
+          </div>
+          <div id="tabla-motivos-container"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-row-two-col">
+      <div class="grid-col-half" id="container-si-realizadas">
+        <div class="table-container">
+          <div class="table-header" style="background-color: #e8f5e9; color: var(--sales-green-dark);">
+            <span id="tabla-si-title"><i class="fa-solid fa-circle-check"></i> Oportunidades Ganadas</span>
+          </div>
+          <div class="scrollable-table" id="tabla-si-realizadas-container"></div>
+        </div>
+      </div>
+
+      <div class="grid-col-half">
+        <div class="table-container">
+          <div class="table-header" style="background-color: #fff3f3; color: #c62828;">
+            <span id="tabla-no-title"><i class="fa-solid fa-triangle-exclamation"></i> Negociaciones No Cerradas / Perdidas</span>
+          </div>
+          <div class="scrollable-table" id="tabla-no-realizadas-container"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-row-full">
+      <div class="table-container">
+        <div class="table-header">
+          <span>Desglose por Categoría y Vendedor</span>
+        </div>
+        <div id="tabla-2-container"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Configura la URL de tu Google Sheet (exportado en CSV) con datos de Ventas
+    const SHEETS_URLS = {
+      resumen: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQHJUM26MwbPurx5FdJGQc-I-vlfwyEZYbPGeYE0F5HxEWpbMyhVeJpJKK7XjCD6No8RZCfeHgWaxZZ/pub?output=csv",
+      oportunidades: "",
+      perdidas: ""
+    };
+
+    let currentSheetKey = "resumen";
+    let rawData = [];
+    let activosChartInstance = null;
+    let trendChartInstance = null;
+
+    Chart.register(ChartDataLabels);
+
+    const nombresMeses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+
+    let filtersState = {
+      mes: { selected: [], searchText: "" },
+      usuario: { selected: [], searchText: "" },
+      localId: { selected: [], searchText: "" },
+      cliente: { selected: [], searchText: "" }
+    };
+
+    function formatCurrency(value) {
+      return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 }).format(value);
+    }
+
+    function showLoader() { $('#loader-overlay').css('display', 'flex').css('opacity', '1'); }
+    function hideLoader() { $('#loader-overlay').css('opacity', '0'); setTimeout(() => { $('#loader-overlay').css('display', 'none'); }, 300); }
+
+    function resetFiltersState() {
+      filtersState = {
+        mes: { selected: [], searchText: "" },
+        usuario: { selected: [], searchText: "" },
+        localId: { selected: [], searchText: "" },
+        cliente: { selected: [], searchText: "" }
+      };
+      $('.filter-group').find('.gs-search-input').val('');
+      $('#filter-fecha-inicio').val('');
+      $('#filter-fecha-fin').val('');
+      $('.filter-group').each(function() {
+        const key = $(this).data('filter');
+        if (key) updateFilterBoxUI($(this), key);
+      });
+    }
+
+    function getMontoVenta(d) {
+      const val = d['Monto'] || d['Monto Venta'] || d['Monto Oportunidad'] || d['Valor'] || d['Servicios'] || 1;
+      const num = parseFloat(String(val).replace(/[^0-9.-]+/g, ""));
+      return isNaN(num) ? 1 : num;
+    }
+
+    function isVentaGanada(d) {
+      const estado = String(d['Estado'] || d['Etapa'] || d['Realizada'] || d['Resuelto'] || '').toUpperCase().trim();
+      return estado === "GANADA" || estado === "CERRADA GANADA" || estado === "SI" || estado === "1" || estado === "EJECUTADA";
+    }
+
+    function getTipoProducto(d) {
+      return d['Línea Producto'] || d['Categoría'] || d['Tipo de Activo'] || 'General';
+    }
+
+    function getNombreCliente(d) {
+      return d['Cliente'] || d['Nombre Fantasía'] || d['Cuenta'] || '-';
+    }
+
+    function getIdCliente(d) {
+      return d['ID CCU'] || d['ID Cliente'] || d['ID'] || '-';
+    }
+
+    $(document).ready(function() {
+      flatpickr.localize(flatpickr.l10ns.es);
+      flatpickr("#filter-fecha-inicio", { dateFormat: "Y-m-d", onChange: renderDashboard });
+      flatpickr("#filter-fecha-fin", { dateFormat: "Y-m-d", onChange: renderDashboard });
+
+      $('.tab-btn').on('click', function() {
+        const targetSheet = $(this).data('sheet');
+        $('.tab-btn').removeClass('active');
+        $(this).addClass('active');
+        currentSheetKey = targetSheet;
+        resetFiltersState();
+        loadSheetData();
+      });
+
+      $('.gs-filter-box').on('click', function(e) {
+        e.stopPropagation();
+        const $group = $(this).closest('.filter-group');
+        const $dropdown = $group.find('.gs-dropdown');
+        $('.gs-dropdown').not($dropdown).removeClass('show');
+        $dropdown.toggleClass('show');
+      });
+
+      $(document).on('click', function(e) {
+        if (!$(e.target).closest('.filter-group').length) {
+          $('.gs-dropdown').removeClass('show');
+        }
+      });
+
+      $('.gs-btn-accept').on('click', function() {
+        const $group = $(this).closest('.filter-group');
+        const filterKey = $group.data('filter');
+        const selected = [];
+        $group.find('.gs-options-list input[type="checkbox"]:checked').each(function() {
+          selected.push($(this).val());
+        });
+        filtersState[filterKey].selected = selected;
+        updateFilterBoxUI($group, filterKey);
+        $group.find('.gs-dropdown').removeClass('show');
+        renderDashboard();
+      });
+
+      loadSheetData();
+    });
+
+    function updateFilterBoxUI($group, filterKey) {
+      const state = filtersState[filterKey];
+      const count = state.selected.length;
+      const $box = $group.find('.gs-filter-box');
+      const $text = $box.find('.gs-filter-text');
+
+      if (count === 0) {
+        $box.removeClass('is-filtered');
+        $text.text('Todos (filtrar...)');
+      } else {
+        $box.addClass('is-filtered');
+        $text.text(count === 1 ? state.selected[0] : `${count} seleccionados`);
+      }
+    }
+
+    function loadSheetData() {
+      showLoader();
+      const targetUrl = SHEETS_URLS[currentSheetKey] || SHEETS_URLS.resumen;
+
+      document.getElementById('status-box').innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Cargando base...`;
+
+      Papa.parse(targetUrl, {
+        download: true,
+        header: true,
+        skipEmptyLines: true,
+        complete: function(results) {
+          rawData = results.data;
+          document.getElementById('status-box').innerHTML = `<i class="fa-solid fa-circle-check"></i> ${rawData.length} registros`;
+          populateFilterLists();
+          renderDashboard();
+          hideLoader();
+        },
+        error: function(err) {
+          document.getElementById('status-box').innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Error al conectar base`;
+          hideLoader();
+        }
+      });
+    }
+
+    function populateFilterLists() {
+      if (rawData.length === 0) return;
+
+      const getUnique = (keyNames) => {
+        let values = [];
+        rawData.forEach(d => {
+          for (let k of keyNames) {
+            if (d[k]) { values.push(String(d[k]).trim()); break; }
+          }
+        });
+        return [...new Set(values.filter(Boolean))].sort();
+      };
+
+      const fillFilterUI = (filterKey, valuesArray) => {
+        const $group = $(`.filter-group[data-filter="${filterKey}"]`);
+        const $list = $group.find('.gs-options-list');
+        $list.empty();
+        valuesArray.forEach((val, idx) => {
+          $list.append(`
+            <label class="gs-option-item">
+              <input type="checkbox" value="${val}" id="${filterKey}-${idx}">
+              <span>${val}</span>
+            </label>
+          `);
+        });
+      };
+
+      fillFilterUI('mes', getUnique(['Mes', 'mes']));
+      fillFilterUI('usuario', getUnique(['Vendedor', 'Ejecutivo', 'Usuario', 'usuario']));
+      fillFilterUI('localId', getUnique(['ID CCU', 'ID Cliente', 'ID']));
+      fillFilterUI('cliente', getUnique(['Cliente', 'Nombre Fantasía', 'Cuenta']));
+    }
+
+    function getFilteredData() {
+      const fMes = filtersState.mes.selected;
+      const fUsuario = filtersState.usuario.selected;
+      const fCliente = filtersState.cliente.selected;
+
+      return rawData.filter(d => {
+        const dMes = String(d['Mes'] || d['mes'] || '').trim();
+        const dUsuario = String(d['Vendedor'] || d['Usuario'] || '').trim();
+        const dCliente = String(getNombreCliente(d)).trim();
+
+        const matchMes = fMes.length === 0 || fMes.includes(dMes);
+        const matchUsuario = fUsuario.length === 0 || fUsuario.includes(dUsuario);
+        const matchCliente = fCliente.length === 0 || fCliente.includes(dCliente);
+
+        return matchMes && matchUsuario && matchCliente;
+      });
+    }
+
+    function renderDashboard() {
+      const data = getFilteredData();
+      let totalMontoGanado = 0;
+      let totalMontoPerdido = 0;
+      let countGanadas = 0;
+      let countPerdidas = 0;
+
+      data.forEach(d => {
+        const monto = getMontoVenta(d);
+        if (isVentaGanada(d)) {
+          totalMontoGanado += monto;
+          countGanadas++;
+        } else {
+          totalMontoPerdido += monto;
+          countPerdidas++;
+        }
+      });
+
+      const totalOps = countGanadas + countPerdidas;
+      const pctGanado = totalOps > 0 ? ((countGanadas / totalOps) * 100).toFixed(1) : '0.0';
+      const pctPerdido = totalOps > 0 ? ((countPerdidas / totalOps) * 100).toFixed(1) : '0.0';
+
+      document.getElementById('kpi-total').innerText = formatCurrency(totalMontoGanado);
+      document.getElementById('kpi-cumplimiento').innerText = pctGanado + '%';
+      document.getElementById('kpi-pendientes').innerText = pctPerdido + '%';
+
+      document.getElementById('kpi-ejecutados-count').innerText = `${countGanadas} Ganadas (${formatCurrency(totalMontoGanado)})`;
+      document.getElementById('kpi-no-count').innerText = `${countPerdidas} Perdidas (${formatCurrency(totalMontoPerdido)})`;
+
+      renderTabla1(data);
+      renderTabla2(data);
+      renderTablaNoRealizadas(data);
+      renderTablaSiRealizadas(data);
+    }
+
+    function renderTabla1(data) {
+      let html = `<table><thead><tr><th class="left">Línea de Producto</th><th>Ganadas</th><th>Perdidas</th><th>Monto Ganado</th></tr></thead><tbody>`;
+      const stats = {};
+
+      data.forEach(d => {
+        const tipo = getTipoProducto(d);
+        const monto = getMontoVenta(d);
+        if (!stats[tipo]) stats[tipo] = { ganadas: 0, perdidas: 0, monto: 0 };
+        if (isVentaGanada(d)) {
+          stats[tipo].ganadas++;
+          stats[tipo].monto += monto;
+        } else {
+          stats[tipo].perdidas++;
+        }
+      });
+
+      Object.keys(stats).forEach(tipo => {
+        html += `<tr>
+          <td class="left"><strong>${tipo}</strong></td>
+          <td>${stats[tipo].ganadas}</td>
+          <td>${stats[tipo].perdidas}</td>
+          <td><strong>${formatCurrency(stats[tipo].monto)}</strong></td>
+        </tr>`;
+      });
+
+      html += `</tbody></table>`;
+      document.getElementById('tabla-1-container').innerHTML = html;
+    }
+
+    function renderTabla2(data) {
+      let html = `<table><thead><tr><th class="left">Categoría</th><th class="left">Vendedor</th><th>Ganadas</th><th>Perdidas</th><th>Monto Total</th></tr></thead><tbody>`;
+      const stats = {};
+
+      data.forEach(d => {
+        const cat = getTipoProducto(d);
+        const usr = d['Vendedor'] || d['Usuario'] || 'Sin Asignar';
+        const monto = getMontoVenta(d);
+
+        if (!stats[cat]) stats[cat] = {};
+        if (!stats[cat][usr]) stats[cat][usr] = { ganadas: 0, perdidas: 0, monto: 0 };
+
+        if (isVentaGanada(d)) {
+          stats[cat][usr].ganadas++;
+          stats[cat][usr].monto += monto;
+        } else {
+          stats[cat][usr].perdidas++;
+        }
+      });
+
+      Object.keys(stats).forEach(cat => {
+        Object.keys(stats[cat]).forEach(usr => {
+          const u = stats[cat][usr];
+          html += `<tr>
+            <td class="left">${cat}</td>
+            <td class="left"><strong>${usr}</strong></td>
+            <td>${u.ganadas}</td>
+            <td>${u.perdidas}</td>
+            <td><strong>${formatCurrency(u.monto)}</strong></td>
+          </tr>`;
+        });
+      });
+
+      html += `</tbody></table>`;
+      document.getElementById('tabla-2-container').innerHTML = html;
+    }
+
+    function renderTablaSiRealizadas(data) {
+      const ganadas = data.filter(d => isVentaGanada(d));
+      if (ganadas.length === 0) {
+        document.getElementById('tabla-si-realizadas-container').innerHTML = `<div class="no-data">Sin ventas ganadas.</div>`;
+        return;
+      }
+      let html = `<table><thead><tr><th class="left">Vendedor</th><th class="left">Cliente</th><th>Monto</th></tr></thead><tbody>`;
+      ganadas.forEach(d => {
+        html += `<tr>
+          <td class="left">${d['Vendedor'] || d['Usuario'] || '-'}</td>
+          <td class="left">${getNombreCliente(d)}</td>
+          <td><strong>${formatCurrency(getMontoVenta(d))}</strong></td>
+        </tr>`;
+      });
+      html += `</tbody></table>`;
+      document.getElementById('tabla-si-realizadas-container').innerHTML = html;
+    }
+
+    function renderTablaNoRealizadas(data) {
+      const perdidas = data.filter(d => !isVentaGanada(d));
+      if (perdidas.length === 0) {
+        document.getElementById('tabla-no-realizadas-container').innerHTML = `<div class="no-data">Sin ventas perdidas.</div>`;
+        return;
+      }
+      let html = `<table><thead><tr><th class="left">Vendedor</th><th class="left">Cliente</th><th class="left">Motivo Pérdida</th></tr></thead><tbody>`;
+      perdidas.forEach(d => {
+        html += `<tr>
+          <td class="left">${d['Vendedor'] || d['Usuario'] || '-'}</td>
+          <td class="left">${getNombreCliente(d)}</td>
+          <td class="left" style="color: #c62828;">${d['Motivo Pérdida'] || d['Motivo'] || 'Sin Especificar'}</td>
+        </tr>`;
+      });
+      html += `</tbody></table>`;
+      document.getElementById('tabla-no-realizadas-container').innerHTML = html;
+    }
+  </script>
+</body>
+</html>
