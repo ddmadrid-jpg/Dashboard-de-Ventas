@@ -445,7 +445,7 @@
       <input type="text" id="filter-fecha-fin" class="date-input" placeholder="Seleccionar término...">
     </div>
 
-    <!-- Filtro de Oficina Comercial -->
+    <!-- Filtro Padre: Oficina Comercial -->
     <div class="filter-group" data-filter="oficina">
       <label><i class="fa-solid fa-building"></i> Oficina Comercial</label>
       <div class="gs-filter-box">
@@ -469,7 +469,7 @@
       </div>
     </div>
 
-    <!-- Filtro de Jefe de Ventas -->
+    <!-- Filtro Hijo: Jefe de Ventas (Cascada) -->
     <div class="filter-group" data-filter="jefeVentas">
       <label><i class="fa-solid fa-user-tie"></i> Jefe de Ventas</label>
       <div class="gs-filter-box">
@@ -598,7 +598,6 @@
   </div>
 
   <script>
-    // URLs de las bases de datos en Google Sheets
     const SHEETS_URLS = {
       preventiva: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQHJUM26MwbPurx5FdJGQc-I-vlfwyEZYbPGeYE0F5HxEWpbMyhVeJpJKK7XjCD6No8RZCfeHgWaxZZ/pub?output=csv",
       urgencias: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTTNzXfjkM4mtZrHyPjzSVqjYOTG0tVFReUG3FPpR-nkyCud1hoR8rRPpqPToiz82Vmp0A5ubJqz3zx/pub?output=csv",
@@ -688,10 +687,6 @@
       return d['Comentario'] || d['Comentario Motivo'] || d['Comentario Producto dete'] || d['Observaciones'] || '-';
     }
 
-    function getFotoEquipoColumna(d) {
-      return d['Foto Columnas o Post Mix'] || d['Foto Equipo'] || d['Foto Motivo'] || d['Foto Salida FNE'] || '';
-    }
-
     function getMotivoNoServicio(d) {
       const raw = (d['Motivo No Servicio'] || d['motivo_no_servicio'] || d['Resuelto'] || d['Motivo'] || '').trim();
       const strUpper = raw.toUpperCase();
@@ -751,7 +746,7 @@
         loadSheetData();
       });
 
-      // Eventos Filtros GS
+      // Eventos Filtros GS Dropdown
       $('.gs-filter-box').on('click', function(e) {
         e.stopPropagation();
         const $group = $(this).closest('.filter-group');
@@ -793,6 +788,12 @@
         filtersState[filterKey].searchText = query;
 
         updateFilterBoxUI($group, filterKey);
+        
+        // Si se modifica Oficina Comercial, refrescar las opciones del Jefe de Ventas en Cascada
+        if (filterKey === 'oficina') {
+          updateJefeVentasCascadaOptions();
+        }
+
         $group.find('.gs-dropdown').removeClass('show');
         renderDashboard();
       });
@@ -821,6 +822,12 @@
         filtersState[filterKey].searchText = query;
 
         updateFilterBoxUI($group, filterKey);
+
+        // Si cambia la Oficina Comercial, refrescar Cascada de Jefes de Ventas
+        if (filterKey === 'oficina') {
+          updateJefeVentasCascadaOptions();
+        }
+
         $group.find('.gs-dropdown').removeClass('show');
         renderDashboard();
       });
@@ -851,13 +858,55 @@
       }
     }
 
+    /* LÓGICA DE FILTROS EN CASCADA: Actualiza Jefes de Ventas según la Oficina Seleccionada */
+    function updateJefeVentasCascadaOptions() {
+      const fOficina = filtersState.oficina.selected;
+      
+      let datasetFiltrado = rawData;
+      if (fOficina.length > 0) {
+        datasetFiltrado = rawData.filter(d => {
+          const dOficina = String(d['Oficina'] || d['OFICINA'] || '').trim();
+          return fOficina.includes(dOficina);
+        });
+      }
+
+      let jefesValidos = [];
+      datasetFiltrado.forEach(d => {
+        const jefe = d['Jefe de Ventas'] || d['JEFE DE VENTAS'] || d['Jefe Ventas'];
+        if (jefe) jefesValidos.push(String(jefe).trim());
+      });
+      jefesValidos = [...new Set(jefesValidos.filter(Boolean))].sort();
+
+      // Limpiar selecciones previas de Jefes de Ventas que ya no forman parte de la oficina filtrada
+      filtersState.jefeVentas.selected = filtersState.jefeVentas.selected.filter(j => jefesValidos.includes(j));
+      updateFilterBoxUI($('.filter-group[data-filter="jefeVentas"]'), 'jefeVentas');
+
+      // Volver a renderizar la lista de opciones
+      fillFilterUI('jefeVentas', jefesValidos, filtersState.jefeVentas.selected);
+    }
+
+    function fillFilterUI(filterKey, valuesArray, selectedValues = []) {
+      const $group = $(`.filter-group[data-filter="${filterKey}"]`);
+      const $list = $group.find('.gs-options-list');
+      $list.empty();
+
+      valuesArray.forEach((val, idx) => {
+        const isChecked = selectedValues.includes(val) ? 'checked' : '';
+        $list.append(`
+          <label class="gs-option-item">
+            <input type="checkbox" value="${val}" id="${filterKey}-${idx}" ${isChecked}>
+            <span>${val}</span>
+          </label>
+        `);
+      });
+    }
+
     function loadSheetData() {
       showLoader();
       const targetUrl = SHEETS_URLS[currentSheetKey];
 
       document.getElementById('status-box').innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Cargando base...`;
 
-      // Carga simultánea de la base activa y del Maestro de Frecuencias
       Papa.parse(targetUrl, {
         download: true,
         header: true,
@@ -865,7 +914,6 @@
         complete: function(results) {
           rawData = results.data;
 
-          // Cargar Maestro Frecuencias
           Papa.parse(SHEETS_URLS.frecuenciasMaestro, {
             download: true,
             header: true,
@@ -914,21 +962,6 @@
           if (ccu) values.push(String(ccu).trim());
         });
         return [...new Set(values.filter(Boolean))].sort();
-      };
-
-      const fillFilterUI = (filterKey, valuesArray) => {
-        const $group = $(`.filter-group[data-filter="${filterKey}"]`);
-        const $list = $group.find('.gs-options-list');
-        $list.empty();
-
-        valuesArray.forEach((val, idx) => {
-          $list.append(`
-            <label class="gs-option-item">
-              <input type="checkbox" value="${val}" id="${filterKey}-${idx}">
-              <span>${val}</span>
-            </label>
-          `);
-        });
       };
 
       fillFilterUI('mes', getUnique(['Mes', 'mes']));
@@ -1272,7 +1305,6 @@
       document.getElementById('tabla-si-realizadas-container').innerHTML = html;
     }
 
-    /* NUEVO MÓDULO: HISTORIAL DEL CLIENTE & PRÓXIMA MANTENCIÓN */
     function renderTablaHistorialCliente(filteredData) {
       if (filteredData.length === 0) {
         document.getElementById('tabla-historial-container').innerHTML = `<div class="no-data">Sin registros para mostrar historial.</div>`;
@@ -1295,7 +1327,6 @@
         clientesMap[idCCU].historial[mes] = estado;
       });
 
-      // Cruzar con la base Maestro de Frecuencias
       if (maestroFrecuencias && maestroFrecuencias.length > 0) {
         maestroFrecuencias.forEach(m => {
           const mCCU = m['ID CCU'] || m['ID'] || m['Id CCU'] || m['id_ccu'];
