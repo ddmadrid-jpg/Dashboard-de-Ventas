@@ -296,43 +296,18 @@
     .pill-no { background: #ffebee; color: #c62828; }
     .pill-pending { background: #fff3e0; color: #ef6c00; }
 
-    /* Estilos para Miniaturas e Imágenes Flotantes */
-    .photos-flex {
-      display: flex;
-      gap: 6px;
-      justify-content: center;
-    }
-
-    .img-container {
-      position: relative;
-      display: inline-block;
-      width: 45px;
-      height: 45px;
-    }
+    .photos-flex { display: flex; gap: 6px; justify-content: center; }
+    .img-container { position: relative; display: inline-block; width: 45px; height: 45px; }
 
     .thumb-img {
-      width: 45px;
-      height: 45px;
-      object-fit: cover;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-      transition: all 0.25s ease-in-out;
-      cursor: zoom-in;
+      width: 45px; height: 45px; object-fit: cover; border-radius: 6px; border: 1px solid #ccc;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2); transition: all 0.25s ease-in-out; cursor: zoom-in;
     }
 
     .img-container:hover .thumb-img {
-      position: absolute;
-      right: 0;
-      top: -60px;
-      width: 220px;
-      height: 220px;
-      z-index: 999;
-      border-radius: 10px;
-      border: 3px solid var(--excel-green-header);
-      box-shadow: 0 8px 20px rgba(0,0,0,0.35);
-      object-fit: contain;
-      background: #ffffff;
+      position: absolute; right: 0; top: -60px; width: 220px; height: 220px; z-index: 999;
+      border-radius: 10px; border: 3px solid var(--excel-green-header); box-shadow: 0 8px 20px rgba(0,0,0,0.35);
+      object-fit: contain; background: #ffffff;
     }
 
     .scrollable-table { max-height: 400px; overflow-y: auto; position: relative; }
@@ -653,6 +628,7 @@
     Chart.register(ChartDataLabels);
 
     const nombresMeses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+    const diasSemana = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
 
     let filtersState = {
       mes: { selected: [], searchText: "" },
@@ -742,16 +718,17 @@
       return raw;
     }
 
-    /* FUNCIÓN FORMATO DE FECHA DÍA Y MES (DD/MM) */
+    /* FORMATO DE FECHA CON DÍA DE LA SEMANA Y DÍA/MES (Ej: Mié 16/09) */
     function formatDiaMes(dateStr) {
       if (!dateStr || dateStr === '-' || dateStr.toLowerCase().includes('sin') || dateStr.toLowerCase().includes('programado')) {
         return dateStr || '-';
       }
       const parsed = parseDate(dateStr);
       if (parsed) {
+        const nomDia = diasSemana[parsed.getDay()];
         const dia = String(parsed.getDate()).padStart(2, '0');
         const mes = String(parsed.getMonth() + 1).padStart(2, '0');
-        return `${dia}/${mes}`;
+        return `${nomDia} ${dia}/${mes}`;
       }
       
       const cleaned = dateStr.split(' ')[0].replace(/\//g, '-');
@@ -1148,7 +1125,7 @@
         renderTablaSiRealizadas(data);
       }
 
-      renderTablaHistorialCliente(data);
+      renderTablaHistorialCliente();
     }
 
     function renderActivosChart(schop, postMix) {
@@ -1312,7 +1289,6 @@
       document.getElementById('tabla-motivos-container').innerHTML = html;
     }
 
-    /* RENDER TABLA NO REALIZADAS CON FOTOS Y EFECTO HOVER/ZOOM */
     function renderTablaNoRealizadas(data) {
       const noRealizadas = data.filter(d => !isServicioRealizado(d));
       if (noRealizadas.length === 0) {
@@ -1371,7 +1347,6 @@
       document.getElementById('tabla-no-realizadas-container').innerHTML = html;
     }
 
-    /* RENDER TABLA SI REALIZADAS CON FOTOS Y EFECTO HOVER/ZOOM */
     function renderTablaSiRealizadas(data) {
       const siRealizadas = data.filter(d => isServicioRealizado(d));
       if (siRealizadas.length === 0) {
@@ -1428,17 +1403,36 @@
       document.getElementById('tabla-si-realizadas-container').innerHTML = html;
     }
 
-    /* RENDER TABLA HISTORIAL CLIENTE CON ESTRUCTURA EXACTA PEDIDA */
-    function renderTablaHistorialCliente(filteredData) {
-      if (filteredData.length === 0) {
+    /* HISTORIAL COMPLETO INDEPENDIENTE DEL FILTRO DE FECHAS/MESES */
+    function renderTablaHistorialCliente() {
+      const fOficina = filtersState.oficina.selected;
+      const fJefeVentas = filtersState.jefeVentas.selected;
+      const fLocalId = filtersState.localId.selected;
+      const fCliente = filtersState.cliente.selected;
+
+      const baseHistorial = rawData.filter(d => {
+        const dOficina = String(d['Oficina'] || d['OFICINA'] || '').trim();
+        const dJefe = String(d['Jefe de Ventas'] || d['JEFE DE VENTAS'] || '').trim();
+        const dLocal = String(d['Local'] || '').trim();
+        const dIdCCU = String(d['ID CCU'] || d['ID'] || d['Id CCU'] || '').trim();
+        const dCliente = String(getNombreCliente(d)).trim();
+
+        const matchOficina = fOficina.length === 0 || fOficina.includes(dOficina);
+        const matchJefe = fJefeVentas.length === 0 || fJefeVentas.includes(dJefe);
+        const matchLocalId = fLocalId.length === 0 || fLocalId.includes(dLocal) || fLocalId.includes(dIdCCU);
+        const matchCliente = fCliente.length === 0 || fCliente.includes(dCliente);
+
+        return matchOficina && matchJefe && matchLocalId && matchCliente;
+      });
+
+      if (baseHistorial.length === 0) {
         document.getElementById('tabla-historial-container').innerHTML = `<div class="no-data">Sin registros para mostrar historial.</div>`;
         return;
       }
 
       const clientesMap = {};
 
-      // Agrupar todas las mantenciones por ID CCU
-      filteredData.forEach(d => {
+      baseHistorial.forEach(d => {
         const idCCU = getIdCCU(d);
         const codLocal = d['Local'] || d['local'] || '-';
         const cliente = getNombreCliente(d);
@@ -1472,13 +1466,21 @@
         }
       });
 
-      // Cruzar con el Maestro de Frecuencias para la Próxima Mantención
+      // Cruzar con la columna starts_at_date de la base Maestro
       if (maestroFrecuencias && maestroFrecuencias.length > 0) {
         maestroFrecuencias.forEach(m => {
           const mCCU = m['ID CCU'] || m['ID'] || m['Id CCU'] || m['id_ccu'];
           if (mCCU && clientesMap[mCCU]) {
-            const proxFecha = m['Fecha Realizado'] || m['Fecha Programada'] || m['Fecha'] || '';
-            clientesMap[mCCU].proxima = proxFecha ? proxFecha : (m['Semana'] ? `Semana ${m['Semana']}` : 'Programado');
+            const proxFecha = m['starts_at_date'] || m['Fecha Realizado'] || m['Fecha Programada'] || m['Fecha'] || '';
+            const sem = m['Semana'] ? `Semana ${m['Semana']}` : '';
+            
+            if (proxFecha) {
+              clientesMap[mCCU].proxima = proxFecha;
+            } else if (sem) {
+              clientesMap[mCCU].proxima = sem;
+            } else {
+              clientesMap[mCCU].proxima = 'Programado';
+            }
           }
         });
       }
@@ -1500,19 +1502,16 @@
           <tbody>`;
 
       Object.values(clientesMap).forEach(c => {
-        // Ordenar mantenciones históricas por fecha ascendente
         c.mantenciones.sort((a, b) => {
           if (!a.parsedDate) return -1;
           if (!b.parsedDate) return 1;
           return a.parsedDate - b.parsedDate;
         });
 
-        // Extraer última y penúltima mantención
         const totalRegistros = c.mantenciones.length;
         const ult = totalRegistros > 0 ? c.mantenciones[totalRegistros - 1] : null;
         const penult = totalRegistros > 1 ? c.mantenciones[totalRegistros - 2] : null;
 
-        // Formatear celda Penúltima Mantención
         let penultHtml = '<span style="color:#bbb;">-</span>';
         if (penult) {
           const fStr = formatDiaMes(penult.rawFecha);
@@ -1524,7 +1523,6 @@
           }
         }
 
-        // Formatear celda Última Mantención
         let ultHtml = '<span style="color:#bbb;">-</span>';
         if (ult) {
           const fStr = formatDiaMes(ult.rawFecha);
@@ -1536,7 +1534,6 @@
           }
         }
 
-        // Formatear Próxima Mantención
         const proxStr = formatDiaMes(c.proxima);
 
         html += `
