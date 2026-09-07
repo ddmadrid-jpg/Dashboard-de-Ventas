@@ -44,10 +44,8 @@
     /* Overlay del Loader Temático */
     #loader-overlay {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
       background: rgba(255, 255, 255, 0.94);
       backdrop-filter: blur(6px);
       z-index: 99999;
@@ -59,27 +57,14 @@
       transition: opacity 0.3s ease;
     }
 
-    /* Vaso de Cerveza / Chopp Ultra Realista en SVG */
     .beer-loader-wrap {
-      width: 110px;
-      height: 130px;
+      width: 110px; height: 130px;
       position: relative;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      display: flex; justify-content: center; align-items: center;
     }
 
-    .beer-svg {
-      width: 100%;
-      height: 100%;
-      filter: drop-shadow(0px 8px 16px rgba(0,0,0,0.18));
-    }
-
-    /* Animación del líquido sirviéndose */
-    .beer-liquid-path {
-      animation: fillBeerAnimation 2s infinite ease-in-out;
-      transform-origin: bottom;
-    }
+    .beer-svg { width: 100%; height: 100%; filter: drop-shadow(0px 8px 16px rgba(0,0,0,0.18)); }
+    .beer-liquid-path { animation: fillBeerAnimation 2s infinite ease-in-out; transform-origin: bottom; }
 
     @keyframes fillBeerAnimation {
       0% { transform: scaleY(0.05); }
@@ -87,11 +72,7 @@
       100% { transform: scaleY(0.95); }
     }
 
-    /* Animación de la espuma rebalsando suavemente */
-    .beer-foam-group {
-      animation: foamRiseAnimation 2s infinite ease-in-out;
-    }
-
+    .beer-foam-group { animation: foamRiseAnimation 2s infinite ease-in-out; }
     @keyframes foamRiseAnimation {
       0% { transform: translateY(75px); opacity: 0; }
       20% { opacity: 1; }
@@ -99,12 +80,7 @@
       100% { transform: translateY(0px); opacity: 1; }
     }
 
-    /* Animación de las Burbujas Flotantes */
-    .bubble {
-      animation: bubbleFloat 1.8s infinite linear;
-      fill: #ffffff;
-      opacity: 0.6;
-    }
+    .bubble { animation: bubbleFloat 1.8s infinite linear; fill: #ffffff; opacity: 0.6; }
     .b1 { animation-delay: 0.2s; }
     .b2 { animation-delay: 0.5s; }
     .b3 { animation-delay: 0.9s; }
@@ -122,9 +98,7 @@
       font-weight: 700;
       color: var(--excel-green-dark);
       letter-spacing: 0.3px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      display: flex; align-items: center; gap: 8px;
     }
 
     /* Encabezado Principal */
@@ -139,31 +113,22 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
 
-    .header-left {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
+    .header-left { display: flex; align-items: center; gap: 16px; }
 
     .header-title h1 {
       margin: 0;
       color: var(--excel-green-dark);
       font-size: 22px;
       font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 10px;
+      display: flex; align-items: center; gap: 10px;
       letter-spacing: -0.3px;
     }
 
-    /* Subtexto Informativo Gris */
     .update-subtext {
       font-size: 12px;
       color: #6c757d;
       font-weight: 500;
-      display: flex;
-      align-items: center;
-      gap: 6px;
+      display: flex; align-items: center; gap: 6px;
       border-left: 2px solid #e0e0e0;
       padding-left: 14px;
       margin-top: 2px;
@@ -176,9 +141,7 @@
       border-radius: 20px;
       font-size: 13px;
       font-weight: 500;
-      display: flex;
-      align-items: center;
-      gap: 6px;
+      display: flex; align-items: center; gap: 6px;
     }
 
     /* Navegación por Pestañas (Tabs) */
@@ -201,22 +164,14 @@
       border: none;
       border-bottom: 3px solid transparent;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      display: flex; align-items: center; gap: 8px;
       transition: all 0.2s ease;
     }
 
-    .tab-btn:hover {
-      color: var(--excel-green-dark);
-    }
+    .tab-btn:hover { color: var(--excel-green-dark); }
+    .tab-btn.active { color: var(--excel-green-dark); border-bottom-color: var(--excel-green-header); }
 
-    .tab-btn.active {
-      color: var(--excel-green-dark);
-      border-bottom-color: var(--excel-green-header);
-    }
-
-    /* Tarjetas KPI (4 Columnas) */
+    /* Tarjetas KPI */
     .kpi-container {
       display: grid;
       grid-template-columns: 1fr 0.8fr 0.8fr 1.6fr;
@@ -230,60 +185,17 @@
       border-radius: 12px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.04);
       border-left: 5px solid var(--excel-green-header);
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
+      display: flex; flex-direction: column; justify-content: center;
     }
 
-    .kpi-card.chart-card {
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      justify-content: flex-start;
-      padding: 12px 16px;
-    }
+    .kpi-card.chart-card { display: flex; flex-direction: row; align-items: center; justify-content: flex-start; padding: 12px 16px; }
+    .kpi-card.alert { border-left-color: #d32f2f; }
+    .kpi-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #666; font-weight: 700; margin-bottom: 4px; }
+    .kpi-value { font-size: 26px; font-weight: 700; color: #1a1a1a; }
+    .kpi-subtext { font-size: 12px; margin-top: 4px; }
 
-    .kpi-card.alert {
-      border-left-color: #d32f2f;
-    }
-
-    .kpi-title {
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: #666;
-      font-weight: 700;
-      margin-bottom: 4px;
-    }
-
-    .kpi-value {
-      font-size: 26px;
-      font-weight: 700;
-      color: #1a1a1a;
-    }
-
-    .kpi-subtext {
-      font-size: 12px;
-      margin-top: 4px;
-    }
-
-    .chart-box {
-      width: 95px;
-      height: 95px;
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      margin-left: auto;
-    }
-
-    .mini-trend-box {
-      width: 100%;
-      height: 85px;
-      position: relative;
-      margin-top: 4px;
-    }
+    .chart-box { width: 95px; height: 95px; position: relative; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-left: auto; }
+    .mini-trend-box { width: 100%; height: 85px; position: relative; margin-top: 4px; }
 
     /* Panel de Filtros */
     .filter-card {
@@ -292,29 +204,11 @@
       border-radius: 12px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.05);
       margin-bottom: 24px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 16px;
-      align-items: flex-start;
+      display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start;
     }
 
-    .filter-group {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      min-width: 160px;
-      flex: 1;
-      position: relative;
-    }
-
-    .filter-group label {
-      font-size: 12px;
-      font-weight: bold;
-      color: #444;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
+    .filter-group { display: flex; flex-direction: column; gap: 6px; min-width: 150px; flex: 1; position: relative; }
+    .filter-group label { font-size: 12px; font-weight: bold; color: #444; display: flex; align-items: center; gap: 6px; }
 
     .date-input {
       padding: 8px 12px;
@@ -328,16 +222,14 @@
       box-sizing: border-box;
     }
 
-    /* Componente de Filtro Estilo Google Sheets */
+    /* Componente GS Filter Box */
     .gs-filter-box {
       border: 1px solid #dcdfe6;
       border-radius: 6px;
       height: 38px;
       padding: 0 12px;
       background: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      display: flex; align-items: center; justify-content: space-between;
       cursor: pointer;
       font-size: 13px;
       user-select: none;
@@ -345,298 +237,72 @@
       transition: border-color 0.2s;
     }
 
-    .gs-filter-box:hover {
-      border-color: var(--excel-green-header);
-    }
-
-    .gs-filter-box.is-filtered {
-      border-color: var(--excel-green-header);
-      background-color: #f0f7f0;
-      font-weight: 700;
-      color: var(--excel-green-dark);
-    }
-
-    .gs-filter-text {
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 85%;
-    }
-
-    .gs-filter-icon {
-      color: #888;
-      font-size: 12px;
-    }
-
-    .gs-filter-box.is-filtered .gs-filter-icon {
-      color: var(--excel-green-header);
-      font-weight: bold;
-    }
+    .gs-filter-box:hover { border-color: var(--excel-green-header); }
+    .gs-filter-box.is-filtered { border-color: var(--excel-green-header); background-color: #f0f7f0; font-weight: 700; color: var(--excel-green-dark); }
+    .gs-filter-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 85%; }
+    .gs-filter-icon { color: #888; font-size: 12px; }
+    .gs-filter-box.is-filtered .gs-filter-icon { color: var(--excel-green-header); font-weight: bold; }
 
     .gs-dropdown {
-      position: absolute;
-      top: 100%;
-      left: 0;
-      width: 280px;
-      background: #ffffff;
-      border: 1px solid #ccc;
-      border-radius: 8px;
+      position: absolute; top: 100%; left: 0; width: 280px;
+      background: #ffffff; border: 1px solid #ccc; border-radius: 8px;
       box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-      z-index: 9999;
-      display: none;
-      padding: 12px;
-      margin-top: 4px;
-      box-sizing: border-box;
+      z-index: 9999; display: none; padding: 12px; margin-top: 4px; box-sizing: border-box;
     }
+    .gs-dropdown.show { display: block; }
+    .gs-bulk-actions { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 12px; }
+    .gs-link-btn { color: var(--pepsi-blue); cursor: pointer; font-weight: bold; text-decoration: underline; }
+    .gs-search-input-wrap { position: relative; margin-bottom: 8px; }
+    .gs-search-input-wrap input { width: 100%; padding: 6px 28px 6px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px; box-sizing: border-box; outline: none; }
+    .gs-search-input-wrap i { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); color: #888; font-size: 12px; }
 
-    .gs-dropdown.show {
-      display: block;
-    }
+    .gs-options-list { max-height: 180px; overflow-y: auto; border: 1px solid #eee; border-radius: 4px; padding: 4px 0; margin-bottom: 12px; }
+    .gs-option-item { display: flex; align-items: center; gap: 8px; padding: 4px 8px; font-size: 12px; cursor: pointer; }
+    .gs-option-item:hover { background-color: #f1f3f5; }
 
-    .gs-bulk-actions {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 8px;
-      font-size: 12px;
-    }
+    .gs-actions-footer { display: flex; justify-content: flex-end; gap: 8px; }
+    .gs-btn { padding: 6px 14px; border-radius: 4px; font-size: 12px; font-weight: bold; cursor: pointer; border: none; }
+    .gs-btn-cancel { background: #e0e0e0; color: #333; }
+    .gs-btn-accept { background: var(--excel-green-header); color: #fff; }
 
-    .gs-link-btn {
-      color: var(--pepsi-blue);
-      cursor: pointer;
-      font-weight: bold;
-      text-decoration: underline;
-    }
+    /* Layout principal */
+    .dashboard-grid { display: flex; flex-direction: column; gap: 24px; margin-bottom: 24px; }
+    .grid-row-two-col { display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; }
+    .grid-col-half { flex: 1; min-width: 380px; }
+    .grid-row-full { width: 100%; }
 
-    .gs-link-btn:hover {
-      color: var(--excel-green-dark);
-    }
+    .table-container { background: var(--card-bg); border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); overflow: hidden; }
+    .table-header { padding: 14px 18px; background: #f8f9fa; border-bottom: 1px solid #e9ecef; font-weight: 700; color: var(--excel-green-dark); display: flex; justify-content: space-between; align-items: center; }
 
-    .gs-search-input-wrap {
-      position: relative;
-      margin-bottom: 8px;
-    }
+    table { border-collapse: collapse; width: 100%; font-size: 13px; }
+    th, td { padding: 8px 12px; text-align: right; border-bottom: 1px solid #eef0f2; vertical-align: middle; }
+    th.left, td.left { text-align: left; }
 
-    .gs-search-input-wrap input {
-      width: 100%;
-      padding: 6px 28px 6px 8px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      font-size: 12px;
-      box-sizing: border-box;
-      outline: none;
-    }
-
-    .gs-search-input-wrap i {
-      position: absolute;
-      right: 8px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: #888;
-      font-size: 12px;
-    }
-
-    .gs-options-list {
-      max-height: 180px;
-      overflow-y: auto;
-      border: 1px solid #eee;
-      border-radius: 4px;
-      padding: 4px 0;
-      margin-bottom: 12px;
-    }
-
-    .gs-option-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 4px 8px;
-      font-size: 12px;
-      cursor: pointer;
-    }
-
-    .gs-option-item:hover {
-      background-color: #f1f3f5;
-    }
-
-    .gs-option-item input {
-      margin: 0;
-      cursor: pointer;
-    }
-
-    .gs-actions-footer {
-      display: flex;
-      justify-content: flex-end;
-      gap: 8px;
-    }
-
-    .gs-btn {
-      padding: 6px 14px;
-      border-radius: 4px;
-      font-size: 12px;
-      font-weight: bold;
-      cursor: pointer;
-      border: none;
-    }
-
-    .gs-btn-cancel {
-      background: #e0e0e0;
-      color: #333;
-    }
-
-    .gs-btn-accept {
-      background: var(--excel-green-header);
-      color: #fff;
-    }
-
-    /* Layout principal reestructurado */
-    .dashboard-grid {
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
-      margin-bottom: 24px;
-    }
-
-    .grid-row-two-col {
-      display: flex;
-      gap: 24px;
-      flex-wrap: wrap;
-      align-items: flex-start;
-    }
-
-    .grid-col-half {
-      flex: 1;
-      min-width: 380px;
-    }
-
-    .grid-row-full {
-      width: 100%;
-    }
-
-    .table-container {
-      background: var(--card-bg);
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-      overflow: hidden;
-    }
-
-    .table-header {
-      padding: 14px 18px;
-      background: #f8f9fa;
-      border-bottom: 1px solid #e9ecef;
-      font-weight: 700;
-      color: var(--excel-green-dark);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    table {
-      border-collapse: collapse;
-      width: 100%;
-      font-size: 13px;
-    }
-
-    th, td {
-      padding: 8px 12px;
-      text-align: right;
-      border-bottom: 1px solid #eef0f2;
-      vertical-align: middle;
-    }
-
-    th.left, td.left {
-      text-align: left;
-    }
-
-    /* Títulos Fijos (Sticky Header) al Hacer Scroll */
     thead tr th {
       background-color: var(--excel-green-header);
       color: #ffffff;
       font-weight: 600;
       font-size: 12px;
-      position: sticky;
-      top: 0;
-      z-index: 10;
+      position: sticky; top: 0; z-index: 10;
       box-shadow: 0 1px 2px rgba(0,0,0,0.1);
     }
 
-    tr.subtotal {
-      background-color: #f1f3f5;
-      color: #212529;
-      font-weight: bold;
-    }
+    tr.subtotal { background-color: #f1f3f5; color: #212529; font-weight: bold; }
+    tr.total-general { background-color: var(--excel-total-black); color: #ffffff; font-weight: bold; }
 
-    tr.total-general {
-      background-color: var(--excel-total-black);
-      color: #ffffff;
-      font-weight: bold;
-    }
+    .qty-badge { font-size: 11px; color: #666; display: block; }
+    .status-pill { padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; display: inline-block; text-align: center; }
+    .pill-ok { background: #e8f5e9; color: #2e7d32; }
+    .pill-no { background: #ffebee; color: #c62828; }
+    .pill-pending { background: #fff3e0; color: #ef6c00; }
 
-    td.alert-red {
-      background-color: var(--excel-red-highlight);
-      color: var(--excel-red-text);
-      font-weight: bold;
-    }
-
-    .qty-badge {
-      font-size: 11px;
-      color: #666;
-      display: block;
-    }
-
-    .photos-flex {
-      display: flex;
-      gap: 6px;
-      justify-content: center;
-    }
-
-    .img-container {
-      position: relative;
-      display: inline-block;
-      width: 45px;
-      height: 45px;
-    }
-
-    .thumb-img {
-      width: 45px;
-      height: 45px;
-      object-fit: cover;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-      transition: all 0.25s ease-in-out;
-      cursor: zoom-in;
-    }
-
-    .img-container:hover .thumb-img {
-      position: absolute;
-      right: 0;
-      top: -60px;
-      width: 220px;
-      height: 220px;
-      z-index: 999;
-      border-radius: 10px;
-      border: 3px solid var(--excel-green-header);
-      box-shadow: 0 8px 20px rgba(0,0,0,0.35);
-      object-fit: contain;
-      background: #ffffff;
-    }
-
-    .scrollable-table {
-      max-height: 380px;
-      overflow-y: auto;
-      position: relative;
-    }
-
-    .no-data {
-      padding: 20px;
-      text-align: center;
-      color: #888;
-      font-style: italic;
-    }
+    .scrollable-table { max-height: 400px; overflow-y: auto; position: relative; }
+    .no-data { padding: 20px; text-align: center; color: #888; font-style: italic; }
   </style>
 </head>
 <body>
 
-  <!-- Overlay Loader Temático de Cerveza -->
+  <!-- Overlay Loader -->
   <div id="loader-overlay">
     <div class="beer-loader-wrap">
       <svg class="beer-svg" viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
@@ -647,32 +313,25 @@
             <stop offset="70%" stop-color="#e67e22"/>
             <stop offset="100%" stop-color="#d35400"/>
           </linearGradient>
-
           <linearGradient id="glassGrad" x1="0%" y1="0%" x2="100%" y2="0%">
             <stop offset="0%" stop-color="rgba(255,255,255,0.6)"/>
             <stop offset="20%" stop-color="rgba(255,255,255,0.2)"/>
             <stop offset="80%" stop-color="rgba(255,255,255,0.1)"/>
             <stop offset="100%" stop-color="rgba(255,255,255,0.5)"/>
           </linearGradient>
-
           <mask id="glassMask">
             <path d="M 25,20 L 30,105 C 30,110 35,112 40,112 L 68,112 C 73,112 78,110 78,105 L 83,20 Z" fill="#ffffff"/>
           </mask>
         </defs>
-
         <path d="M 26,32 C 8,32 6,75 27,82" fill="none" stroke="#2c3e50" stroke-width="7" stroke-linecap="round"/>
         <path d="M 26,32 C 8,32 6,75 27,82" fill="none" stroke="#ecf0f1" stroke-width="3" stroke-linecap="round"/>
-
         <path d="M 25,20 L 30,105 C 30,110 35,112 40,112 L 68,112 C 73,112 78,110 78,105 L 83,20 Z" fill="#ffffff" opacity="0.3" stroke="#2c3e50" stroke-width="3"/>
-
         <g mask="url(#glassMask)">
           <rect class="beer-liquid-path" x="10" y="20" width="88" height="95" fill="url(#beerGrad)"/>
-          
           <circle class="bubble b1" cx="42" cy="100" r="2.5"/>
           <circle class="bubble b2" cx="58" cy="105" r="2"/>
           <circle class="bubble b3" cx="50" cy="98" r="3"/>
           <circle class="bubble b4" cx="66" cy="102" r="1.8"/>
-
           <g class="beer-foam-group">
             <path d="M 20,25 C 25,15 35,15 40,22 C 45,14 58,14 62,22 C 68,15 78,16 82,25 L 85,35 L 20,35 Z" fill="#ffffff"/>
             <ellipse cx="36" cy="22" rx="7" ry="5" fill="#ffffff"/>
@@ -680,7 +339,6 @@
             <ellipse cx="68" cy="22" rx="7" ry="5" fill="#ffffff"/>
           </g>
         </g>
-
         <path d="M 25,20 L 30,105 C 30,110 35,112 40,112 L 68,112 C 73,112 78,110 78,105 L 83,20 Z" fill="url(#glassGrad)" stroke="#2c3e50" stroke-width="3.5"/>
         <path d="M 33,26 L 36,100" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/>
       </svg>
@@ -694,7 +352,6 @@
       <div class="header-title">
         <h1 id="main-title"><i class="fa-solid fa-chart-line" style="font-size: 20px; color: var(--primary-green);"></i> Dashboard Ejecutivo - Ventas</h1>
       </div>
-      <!-- Texto Informativo en Gris Estilo Submenú -->
       <div class="update-subtext">
         <i class="fa-regular fa-clock"></i> Esta información se actualiza todos los martes a medio día.
       </div>
@@ -717,7 +374,7 @@
     </button>
   </div>
 
-  <!-- Tarjetas KPI (4 Columnas) -->
+  <!-- Tarjetas KPI -->
   <div class="kpi-container">
     <div class="kpi-card chart-card">
       <div>
@@ -788,8 +445,33 @@
       <input type="text" id="filter-fecha-fin" class="date-input" placeholder="Seleccionar término...">
     </div>
 
-    <div class="filter-group" data-filter="usuario">
-      <label><i class="fa-solid fa-id-badge"></i> Usuario</label>
+    <!-- Filtro de Oficina Comercial -->
+    <div class="filter-group" data-filter="oficina">
+      <label><i class="fa-solid fa-building"></i> Oficina Comercial</label>
+      <div class="gs-filter-box">
+        <span class="gs-filter-text">Todas (filtrar...)</span>
+        <i class="fa-solid fa-caret-down gs-filter-icon"></i>
+      </div>
+      <div class="gs-dropdown">
+        <div class="gs-bulk-actions">
+          <span class="gs-link-btn btn-select-filtered">Seleccionar filtrados</span>
+          <span class="gs-link-btn btn-clear-all">Borrar</span>
+        </div>
+        <div class="gs-search-input-wrap">
+          <input type="text" placeholder="Buscar..." class="gs-search-input">
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </div>
+        <div class="gs-options-list"></div>
+        <div class="gs-actions-footer">
+          <button class="gs-btn gs-btn-cancel">Cancelar</button>
+          <button class="gs-btn gs-btn-accept">Aceptar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filtro de Jefe de Ventas -->
+    <div class="filter-group" data-filter="jefeVentas">
+      <label><i class="fa-solid fa-user-tie"></i> Jefe de Ventas</label>
       <div class="gs-filter-box">
         <span class="gs-filter-text">Todos (filtrar...)</span>
         <i class="fa-solid fa-caret-down gs-filter-icon"></i>
@@ -858,10 +540,10 @@
     </div>
   </div>
 
-  <!-- Grid Principal Reestructurado -->
+  <!-- Grid Principal -->
   <div class="dashboard-grid">
     
-    <!-- FILA 1: Resumen Tipo Activo (Izquierda) + Resumen Motivos No Realizados (Derecha) -->
+    <!-- FILA 1 -->
     <div class="grid-row-two-col">
       <div class="grid-col-half">
         <div class="table-container">
@@ -882,7 +564,7 @@
       </div>
     </div>
 
-    <!-- FILA 2: Detalle Servicios Realizados (Izquierda) + Justificación Visita No Realizada (Derecha) -->
+    <!-- FILA 2 -->
     <div class="grid-row-two-col">
       <div class="grid-col-half" id="container-si-realizadas">
         <div class="table-container">
@@ -903,28 +585,30 @@
       </div>
     </div>
 
-    <!-- FILA 3 (ABAJO DEL TODO): Desglose por Categoría y Técnico a Ancho Completo -->
+    <!-- FILA 3: HISTORIAL DEL CLIENTE & PRÓXIMA MANTENCIÓN -->
     <div class="grid-row-full">
       <div class="table-container">
-        <div class="table-header">
-          <span>Desglose por Categoría y Técnico</span>
+        <div class="table-header" style="background-color: #0d47a1; color: #ffffff;">
+          <span><i class="fa-solid fa-clock-rotate-left"></i> Historial de Mantención del Cliente (-2 Meses y Próxima Mantención)</span>
         </div>
-        <div id="tabla-2-container"></div>
+        <div class="scrollable-table" id="tabla-historial-container"></div>
       </div>
     </div>
 
   </div>
 
   <script>
-    // URLs de los Libros de Google Sheets
+    // URLs de las bases de datos en Google Sheets
     const SHEETS_URLS = {
       preventiva: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQHJUM26MwbPurx5FdJGQc-I-vlfwyEZYbPGeYE0F5HxEWpbMyhVeJpJKK7XjCD6No8RZCfeHgWaxZZ/pub?output=csv",
       urgencias: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTTNzXfjkM4mtZrHyPjzSVqjYOTG0tVFReUG3FPpR-nkyCud1hoR8rRPpqPToiz82Vmp0A5ubJqz3zx/pub?output=csv",
-      ejecuciones: ""
+      ejecuciones: "",
+      frecuenciasMaestro: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQpO3A3QI0Na_JPUWPuLNalUZeVirnbhnvss-4j4_suvnD2OcKhbXeO7jJ7SKtbS8KWeTWp-GECe9i2/pub?output=csv"
     };
 
     let currentSheetKey = "preventiva";
     let rawData = [];
+    let maestroFrecuencias = [];
     let activosChartInstance = null;
     let trendChartInstance = null;
 
@@ -934,26 +618,23 @@
 
     let filtersState = {
       mes: { selected: [], searchText: "" },
-      usuario: { selected: [], searchText: "" },
+      oficina: { selected: [], searchText: "" },
+      jefeVentas: { selected: [], searchText: "" },
       localId: { selected: [], searchText: "" },
       cliente: { selected: [], searchText: "" }
     };
 
-    function showLoader() {
-      $('#loader-overlay').css('display', 'flex').css('opacity', '1');
-    }
-
+    function showLoader() { $('#loader-overlay').css('display', 'flex').css('opacity', '1'); }
     function hideLoader() {
       $('#loader-overlay').css('opacity', '0');
-      setTimeout(() => {
-        $('#loader-overlay').css('display', 'none');
-      }, 300);
+      setTimeout(() => { $('#loader-overlay').css('display', 'none'); }, 300);
     }
 
     function resetFiltersState() {
       filtersState = {
         mes: { selected: [], searchText: "" },
-        usuario: { selected: [], searchText: "" },
+        oficina: { selected: [], searchText: "" },
+        jefeVentas: { selected: [], searchText: "" },
         localId: { selected: [], searchText: "" },
         cliente: { selected: [], searchText: "" }
       };
@@ -973,7 +654,6 @@
       return isNaN(num) ? 1 : num;
     }
 
-    // VALIDACIÓN OFICIAL DE REALIZADA EN RUTA PREVENTIVA
     function isServicioRealizado(d) {
       if (currentSheetKey === "urgencias") {
         const res = String(d['Pudo Resolver Problema'] || d['Pudo resolver problema'] || d['Resuelto'] || '').toUpperCase().trim();
@@ -990,18 +670,6 @@
       if (str.includes('SCHOP')) return 'Schop';
       if (str.includes('POST')) return 'Post Mix';
       return val || 'Post Mix';
-    }
-
-    function getCategoriaTecnico(d) {
-      if (currentSheetKey === "urgencias") {
-        const usr = String(d['Usuario'] || d['usuario'] || '').toUpperCase().trim();
-        if (usr === "STCYG11" || usr === "STCYG12" || usr === "STCYG13") {
-          return "Camionetas";
-        }
-        return "Ruta";
-      } else {
-        return getTipoActivo(d);
-      }
     }
 
     function getNombreCliente(d) {
@@ -1045,10 +713,8 @@
       flatpickr("#filter-fecha-inicio", { dateFormat: "Y-m-d", onChange: renderDashboard });
       flatpickr("#filter-fecha-fin", { dateFormat: "Y-m-d", onChange: renderDashboard });
 
-      // Cambio de Pestañas
       $('.tab-btn').on('click', function() {
         const targetSheet = $(this).data('sheet');
-        
         if (targetSheet === "ejecuciones" && !SHEETS_URLS.ejecuciones) {
           alert("La hoja de Ejecuciones estará disponible próximamente.");
           return;
@@ -1056,7 +722,6 @@
 
         $('.tab-btn').removeClass('active');
         $(this).addClass('active');
-
         currentSheetKey = targetSheet;
 
         if (currentSheetKey === "urgencias") {
@@ -1064,7 +729,6 @@
           $('#kpi-label-1').text('Total Urgencias');
           $('#kpi-label-2').text('Resolutividad Global');
           $('#kpi-label-3').text('Casos No Resueltos');
-          $('#kpi-subtext-legend').html('<span style="color:#006100; font-weight:bold;">● Schop</span> | <span style="color:#004b93; font-weight:bold;">● Post Mix</span>');
           $('#tabla-1-title').text('Resumen por Tipo de Activo');
           $('#tabla-motivos-title').html('<i class="fa-solid fa-list-check"></i> Resumen de Motivos No Resueltos');
           $('#trend-card-title').html('<i class="fa-solid fa-chart-column"></i> Evolución Mensual (% Resueltas)');
@@ -1075,7 +739,6 @@
           $('#kpi-label-1').text('Total Servicios');
           $('#kpi-label-2').text('Cumplimiento Global');
           $('#kpi-label-3').text('Visitas No Realizadas');
-          $('#kpi-subtext-legend').html('<span style="color:#006100; font-weight:bold;">● Schop</span> | <span style="color:#004b93; font-weight:bold;">● Post Mix</span>');
           $('#tabla-1-title').text('Resumen por Tipo de Activo');
           $('#tabla-motivos-title').html('<i class="fa-solid fa-list-check"></i> Resumen de Motivos No Realizados');
           $('#trend-card-title').html('<i class="fa-solid fa-chart-column"></i> Evolución Mensual (% SI)');
@@ -1088,7 +751,7 @@
         loadSheetData();
       });
 
-      // Pop-up Filtros
+      // Eventos Filtros GS
       $('.gs-filter-box').on('click', function(e) {
         e.stopPropagation();
         const $group = $(this).closest('.filter-group');
@@ -1194,17 +857,31 @@
 
       document.getElementById('status-box').innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Cargando base...`;
 
+      // Carga simultánea de la base activa y del Maestro de Frecuencias
       Papa.parse(targetUrl, {
         download: true,
         header: true,
         skipEmptyLines: true,
         complete: function(results) {
           rawData = results.data;
-          document.getElementById('status-box').innerHTML = `<i class="fa-solid fa-circle-check"></i> Base Actualizada (${rawData.length} registros)`;
-          populateFilterLists();
-          setMesActualDefault();
-          renderDashboard();
-          hideLoader();
+
+          // Cargar Maestro Frecuencias
+          Papa.parse(SHEETS_URLS.frecuenciasMaestro, {
+            download: true,
+            header: true,
+            skipEmptyLines: true,
+            complete: function(mResults) {
+              maestroFrecuencias = mResults.data;
+              document.getElementById('status-box').innerHTML = `<i class="fa-solid fa-circle-check"></i> Base Actualizada (${rawData.length} registros)`;
+              populateFilterLists();
+              setMesActualDefault();
+              renderDashboard();
+              hideLoader();
+            },
+            error: function() {
+              hideLoader();
+            }
+          });
         },
         error: function(err) {
           document.getElementById('status-box').style.background = "#ffebee";
@@ -1255,9 +932,10 @@
       };
 
       fillFilterUI('mes', getUnique(['Mes', 'mes']));
-      fillFilterUI('usuario', getUnique(['Usuario', 'STCYG', 'usuario']));
+      fillFilterUI('oficina', getUnique(['Oficina', 'OFICINA', 'Oficina Comercial']));
+      fillFilterUI('jefeVentas', getUnique(['Jefe de Ventas', 'JEFE DE VENTAS', 'Jefe Ventas']));
       fillFilterUI('localId', getUniqueLocalAndCCU());
-      fillFilterUI('cliente', getUnique(['Nombre Fantasía', 'Nombre Fantasía ', 'Nombre de Fantasia', 'Nombre Fantasia', 'Nombre Receptor', 'Cliente', 'cliente', 'Oficina']));
+      fillFilterUI('cliente', getUnique(['Nombre Fantasía', 'Nombre Fantasía ', 'Nombre de Fantasia', 'Nombre Fantasia', 'Nombre Receptor', 'Cliente', 'cliente']));
     }
 
     function setMesActualDefault() {
@@ -1285,9 +963,9 @@
       return null;
     }
 
-    /* OMITIR EL FILTRO DE MES PARA EL GRÁFICO DE EVOLUCIÓN MENSUAL */
     function getFilteredDataWithoutMonth() {
-      const fUsuario = filtersState.usuario.selected;
+      const fOficina = filtersState.oficina.selected;
+      const fJefeVentas = filtersState.jefeVentas.selected;
       const fLocalId = filtersState.localId.selected;
       const fCliente = filtersState.cliente.selected;
 
@@ -1297,15 +975,17 @@
       const fFin = fFinStr ? new Date(fFinStr) : null;
 
       return rawData.filter(d => {
-        const dUsuario = String(d['Usuario'] || d['usuario'] || '').trim();
+        const dOficina = String(d['Oficina'] || d['OFICINA'] || '').trim();
+        const dJefe = String(d['Jefe de Ventas'] || d['JEFE DE VENTAS'] || '').trim();
         const dLocal = String(d['Local'] || '').trim();
-        const dIdCCU = String(d['ID CCU'] || d['ID'] || d['Id CCU'] || d['ID Cliente (Escaneado)'] || d['ID Cliente (Manual)'] || '').trim();
+        const dIdCCU = String(d['ID CCU'] || d['ID'] || d['Id CCU'] || '').trim();
         const dCliente = String(getNombreCliente(d)).trim();
         
-        const rawFecha = d['Fecha/Hora Ejecución 1'] || d['Fecha Programada 2'] || d['Fecha'] || d['Fecha Realizado'] || d['Fecha/Hora'] || d['Fecha'];
+        const rawFecha = d['Fecha/Hora Ejecución 1'] || d['Fecha Programada 2'] || d['Fecha'] || d['Fecha Realizado'] || d['Fecha/Hora'];
         const dFecha = parseDate(rawFecha);
 
-        const matchUsuario = fUsuario.length === 0 || fUsuario.includes(dUsuario);
+        const matchOficina = fOficina.length === 0 || fOficina.includes(dOficina);
+        const matchJefe = fJefeVentas.length === 0 || fJefeVentas.includes(dJefe);
         const matchLocalId = fLocalId.length === 0 || fLocalId.includes(dLocal) || fLocalId.includes(dIdCCU);
         const matchCliente = fCliente.length === 0 || fCliente.includes(dCliente);
 
@@ -1315,7 +995,7 @@
           if (fFin && dFecha > fFin) matchFecha = false;
         }
 
-        return matchUsuario && matchLocalId && matchCliente && matchFecha;
+        return matchOficina && matchJefe && matchLocalId && matchCliente && matchFecha;
       });
     }
 
@@ -1375,12 +1055,13 @@
       renderTrendChart();
       renderTabla1(data);
       renderTablaMotivos(data, totalNO, grandTotal);
-      renderTabla2(data);
       renderTablaNoRealizadas(data);
       
       if (currentSheetKey === "preventiva") {
         renderTablaSiRealizadas(data);
       }
+
+      renderTablaHistorialCliente(data);
     }
 
     function renderActivosChart(schop, postMix) {
@@ -1412,22 +1093,10 @@
               textStrokeColor: '#000000',
               textStrokeWidth: 2,
               font: { weight: 'bold', size: 10 },
-              formatter: function(value, context) {
+              formatter: function(value) {
                 let total = schop + postMix;
                 if (total === 0 || value === 0) return '';
-                let pct = ((value / total) * 100).toFixed(1) + '%';
-                return pct;
-              }
-            },
-            tooltip: {
-              enabled: true,
-              callbacks: {
-                label: function(context) {
-                  let total = schop + postMix;
-                  let val = context.raw;
-                  let pct = total > 0 ? ((val / total) * 100).toFixed(1) : 0;
-                  return `${context.label}: ${val} casos (${pct}%)`;
-                }
+                return ((value / total) * 100).toFixed(1) + '%';
               }
             }
           },
@@ -1436,7 +1105,6 @@
       });
     }
 
-    /* Gráfico de Evolución Mensual IGNORA FILTRO DE MES PERO MANTIENE CLIENTE, TÉCNICO, LOCAL, DATES */
     function renderTrendChart() {
       const monthlyStats = {};
       const dataWithoutMonth = getFilteredDataWithoutMonth();
@@ -1456,144 +1124,41 @@
       });
 
       let labels = Object.keys(monthlyStats);
-
-      if (labels.length > 13) {
-        labels = labels.slice(-13);
-      }
+      if (labels.length > 13) labels = labels.slice(-13);
 
       const ctx = document.getElementById('trendChart').getContext('2d');
+      if (trendChartInstance) trendChartInstance.destroy();
 
-      if (trendChartInstance) {
-        trendChartInstance.destroy();
-      }
-
-      if (currentSheetKey === "urgencias") {
-        trendChartInstance = new Chart(ctx, {
-          type: 'bar',
-          data: {
-            labels: labels,
-            datasets: [
-              {
-                label: '% Efectividad SI',
-                data: labels.map(m => {
-                  const tot = (monthlyStats[m] ? monthlyStats[m].SI : 0) + (monthlyStats[m] ? monthlyStats[m].NO : 0);
-                  return tot > 0 ? parseFloat(((monthlyStats[m].SI / tot) * 100).toFixed(1)) : 0;
-                }),
-                backgroundColor: '#006100',
-                borderRadius: 3
-              }
-            ]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-              x: {
-                grid: { display: false },
-                ticks: { font: { size: 10, weight: 'bold' }, color: '#333333' }
-              },
-              y: { display: false, max: 110 }
-            },
-            plugins: {
-              legend: { display: false },
-              datalabels: {
-                display: true,
-                color: '#ffffff',
-                textStrokeColor: '#000000',
-                textStrokeWidth: 2,
-                font: { weight: 'bold', size: 10 },
-                formatter: function(value) {
-                  return `${value}%`;
-                },
-                align: 'center',
-                anchor: 'center'
-              },
-              tooltip: {
-                callbacks: {
-                  label: function(ctx) {
-                    const m = ctx.label;
-                    const cantSI = monthlyStats[m] ? monthlyStats[m].SI : 0;
-                    const tot = (monthlyStats[m] ? monthlyStats[m].SI : 0) + (monthlyStats[m] ? monthlyStats[m].NO : 0);
-                    return `${m}: ${cantSI}/${tot} resueltos (${ctx.raw}%)`;
-                  }
-                }
-              }
-            }
-          },
-          plugins: [ChartDataLabels, {
-            id: 'customTotalSubtext',
-            afterDraw: function(chart) {
-              const ctxChart = chart.ctx;
-              ctxChart.save();
-              ctxChart.font = 'bold 10px Roboto, sans-serif';
-              ctxChart.fillStyle = '#555555';
-              ctxChart.textAlign = 'center';
-
-              const meta = chart.getDatasetMeta(0);
-              meta.data.forEach((bar, index) => {
-                const mes = labels[index];
-                const totalM = (monthlyStats[mes] ? monthlyStats[mes].SI : 0) + (monthlyStats[mes] ? monthlyStats[mes].NO : 0);
-                if (totalM > 0) {
-                  ctxChart.fillText(`(${totalM})`, bar.x, bar.y + 14);
-                }
-              });
-              ctxChart.restore();
-            }
+      trendChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: '% Cumplimiento SI',
+            data: labels.map(m => {
+              const tot = (monthlyStats[m] ? monthlyStats[m].SI : 0) + (monthlyStats[m] ? monthlyStats[m].NO : 0);
+              return tot > 0 ? parseFloat(((monthlyStats[m].SI / tot) * 100).toFixed(1)) : 0;
+            }),
+            backgroundColor: '#006100',
+            borderRadius: 3
           }]
-        });
-      } else {
-        trendChartInstance = new Chart(ctx, {
-          type: 'bar',
-          data: {
-            labels: labels,
-            datasets: [
-              {
-                label: '% Cumplimiento SI',
-                data: labels.map(m => {
-                  const tot = (monthlyStats[m] ? monthlyStats[m].SI : 0) + (monthlyStats[m] ? monthlyStats[m].NO : 0);
-                  return tot > 0 ? parseFloat(((monthlyStats[m].SI / tot) * 100).toFixed(1)) : 0;
-                }),
-                backgroundColor: '#006100',
-                borderRadius: 3
-              }
-            ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: { grid: { display: false }, ticks: { font: { size: 11, weight: 'bold' }, color: '#333333' } },
+            y: { display: false, max: 100 }
           },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-              x: {
-                grid: { display: false },
-                ticks: { font: { size: 11, weight: 'bold' }, color: '#333333' }
-              },
-              y: { display: false, max: 100 }
-            },
-            plugins: {
-              legend: { display: false },
-              datalabels: {
-                display: true,
-                color: '#ffffff',
-                textStrokeColor: '#000000',
-                textStrokeWidth: 2,
-                font: { weight: 'bold', size: 11 },
-                formatter: (v) => v + '%',
-                align: 'center',
-                anchor: 'center'
-              },
-              tooltip: {
-                callbacks: {
-                  label: function(ctx) {
-                    const m = ctx.label;
-                    const cantSI = monthlyStats[m] ? monthlyStats[m].SI : 0;
-                    const tot = (monthlyStats[m] ? monthlyStats[m].SI : 0) + (monthlyStats[m] ? monthlyStats[m].NO : 0);
-                    return `${m}: ${cantSI}/${tot} (${ctx.raw}%)`;
-                  }
-                }
-              }
+          plugins: {
+            legend: { display: false },
+            datalabels: {
+              display: true, color: '#ffffff', textStrokeColor: '#000000', textStrokeWidth: 2,
+              font: { weight: 'bold', size: 11 }, formatter: (v) => v + '%', align: 'center', anchor: 'center'
             }
           }
-        });
-      }
+        }
+      });
     }
 
     function renderTabla1(data) {
@@ -1606,420 +1171,176 @@
 
         if(!t1Stats[tipo]) t1Stats[tipo] = { SI: 0, NO: 0 };
         if(isServicioRealizado(d)) {
-          t1Stats[tipo].SI += qty;
-          total1_SI += qty;
+          t1Stats[tipo].SI += qty; total1_SI += qty;
         } else {
-          t1Stats[tipo].NO += qty;
-          total1_NO += qty;
+          t1Stats[tipo].NO += qty; total1_NO += qty;
         }
       });
 
-      let html1 = `
-        <table>
-          <thead>
-            <tr>
-              <th class="left">Tipo de Activo</th>
-              <th>NO (Cant. / %)</th>
-              <th>SI (Cant. / %)</th>
-              <th>Total Servicios</th>
-            </tr>
-          </thead>
-          <tbody>`;
+      let html1 = `<table><thead><tr><th class="left">Tipo de Activo</th><th>NO (Cant. / %)</th><th>SI (Cant. / %)</th><th>Total Servicios</th></tr></thead><tbody>`;
 
       Object.keys(t1Stats).forEach(tipo => {
-        const si = t1Stats[tipo].SI;
-        const no = t1Stats[tipo].NO;
-        const tot = si + no;
+        const si = t1Stats[tipo].SI; const no = t1Stats[tipo].NO; const tot = si + no;
         const pctNO = tot > 0 ? ((no / tot) * 100).toFixed(1) + '%' : '0.0%';
         const pctSI = tot > 0 ? ((si / tot) * 100).toFixed(1) + '%' : '0.0%';
 
-        html1 += `
-          <tr>
-            <td class="left"><strong>${tipo}</strong></td>
-            <td>${no} <span class="qty-badge">(${pctNO})</span></td>
-            <td>${si} <span class="qty-badge">(${pctSI})</span></td>
-            <td><strong>${tot}</strong> <span class="qty-badge">(100%)</span></td>
-          </tr>`;
+        html1 += `<tr><td class="left"><strong>${tipo}</strong></td><td>${no} <span class="qty-badge">(${pctNO})</span></td><td>${si} <span class="qty-badge">(${pctSI})</span></td><td><strong>${tot}</strong> <span class="qty-badge">(100%)</span></td></tr>`;
       });
 
       const tot1_ALL = total1_SI + total1_NO;
       const pct1_NO = tot1_ALL > 0 ? ((total1_NO / tot1_ALL) * 100).toFixed(1) + '%' : '0.0%';
       const pct1_SI = tot1_ALL > 0 ? ((total1_SI / tot1_ALL) * 100).toFixed(1) + '%' : '0.0%';
 
-      html1 += `
-        <tr class="total-general">
-          <td class="left">Total General</td>
-          <td>${total1_NO} (${pct1_NO})</td>
-          <td>${total1_SI} (${pct1_SI})</td>
-          <td>${tot1_ALL} (100%)</td>
-        </tr>
-        </tbody></table>`;
+      html1 += `<tr class="total-general"><td class="left">Total General</td><td>${total1_NO} (${pct1_NO})</td><td>${total1_SI} (${pct1_SI})</td><td>${tot1_ALL} (100%)</td></tr></tbody></table>`;
 
       document.getElementById('tabla-1-container').innerHTML = html1;
     }
 
-    /* TABLA RESUMEN DE MOTIVOS CON ORDEN Y AGRUPACIÓN SOLICITADA */
     function renderTablaMotivos(data, totalNO, grandTotal) {
-      const motivosStats = {
-        'Local Cerrado': 0,
-        'Cliente no permite': 0,
-        'Desprogramar Cliente': 0,
-        'Otro': 0,
-        'Sin Información': 0
-      };
-
+      const motivosStats = { 'Local Cerrado': 0, 'Cliente no permite': 0, 'Desprogramar Cliente': 0, 'Otro': 0, 'Sin Información': 0 };
       const noRealizadasData = data.filter(d => !isServicioRealizado(d));
 
       noRealizadasData.forEach(d => {
         const qty = getServiciosQty(d);
         const motivo = getMotivoNoServicio(d);
-        if (motivosStats.hasOwnProperty(motivo)) {
-          motivosStats[motivo] += qty;
-        } else {
-          motivosStats['Sin Información'] += qty;
-        }
+        if (motivosStats.hasOwnProperty(motivo)) motivosStats[motivo] += qty;
+        else motivosStats['Sin Información'] += qty;
       });
 
-      const ordenEstricto = [
-        'Local Cerrado',
-        'Cliente no permite',
-        'Desprogramar Cliente',
-        'Otro',
-        'Sin Información'
-      ];
+      const ordenEstricto = ['Local Cerrado', 'Cliente no permite', 'Desprogramar Cliente', 'Otro', 'Sin Información'];
 
-      let html = `
-        <table>
-          <thead>
-            <tr>
-              <th class="left">Motivo No Servicio / Causa</th>
-              <th>Cantidad Servicios</th>
-              <th>% del Total NO</th>
-              <th>% del Total General</th>
-            </tr>
-          </thead>
-          <tbody>`;
+      let html = `<table><thead><tr><th class="left">Motivo No Servicio / Causa</th><th>Cantidad Servicios</th><th>% del Total NO</th><th>% del Total General</th></tr></thead><tbody>`;
 
       ordenEstricto.forEach(motivo => {
         const cant = motivosStats[motivo];
         const pctDelNO = totalNO > 0 ? ((cant / totalNO) * 100).toFixed(1) + '%' : '0.0%';
         const pctDelTotal = grandTotal > 0 ? ((cant / grandTotal) * 100).toFixed(1) + '%' : '0.0%';
 
-        html += `
-          <tr>
-            <td class="left">• <strong>${motivo}</strong></td>
-            <td><strong>${cant}</strong></td>
-            <td><span class="qty-badge" style="font-weight:bold; color:#c62828;">${pctDelNO}</span></td>
-            <td><span class="qty-badge" style="font-weight:bold; color:var(--excel-green-dark);">${pctDelTotal}</span></td>
-          </tr>`;
+        html += `<tr><td class="left">• <strong>${motivo}</strong></td><td><strong>${cant}</strong></td><td><span class="qty-badge" style="font-weight:bold; color:#c62828;">${pctDelNO}</span></td><td><span class="qty-badge" style="font-weight:bold; color:var(--excel-green-dark);">${pctDelTotal}</span></td></tr>`;
       });
 
       const totalPctNO_General = grandTotal > 0 ? ((totalNO / grandTotal) * 100).toFixed(1) + '%' : '0.0%';
-
-      html += `
-        <tr class="total-general">
-          <td class="left">Total No Atendidos / No Resueltos</td>
-          <td>${totalNO}</td>
-          <td>100%</td>
-          <td>${totalPctNO_General}</td>
-        </tr>
-        </tbody></table>`;
+      html += `<tr class="total-general"><td class="left">Total No Atendidos / No Resueltos</td><td>${totalNO}</td><td>100%</td><td>${totalPctNO_General}</td></tr></tbody></table>`;
 
       document.getElementById('tabla-motivos-container').innerHTML = html;
     }
 
-    /* REGLA DE RUTA PREVENTIVA: ORDEN POR CÓDIGO Y TRATAMIENTO DE STCYG34 EN "HÍBRIDO" */
-    function renderTabla2(data) {
-      const t2Stats = {};
-      data.forEach(d => {
-        const qty = getServiciosQty(d);
-        const cat = getCategoriaTecnico(d);
-        const usr = d['Usuario'] || 'Sin Usuario';
-        const tec = d['Técnico'] || d['Tecnico'] || d['Jefe de Ventas'] || 'Sin Técnico';
-
-        if(!t2Stats[cat]) t2Stats[cat] = {};
-        if(!t2Stats[cat][usr]) t2Stats[cat][usr] = { tecnico: tec, SI: 0, NO: 0 };
-        
-        if(isServicioRealizado(d)) {
-          t2Stats[cat][usr].SI += qty;
-        } else {
-          t2Stats[cat][usr].NO += qty;
-        }
-      });
-
-      let html2 = `
-        <table>
-          <thead>
-            <tr>
-              <th class="left">Categoría</th>
-              <th class="left">Usuario</th>
-              <th class="left">Técnico</th>
-              <th>NO (Cant. / %)</th>
-              <th>SI (Cant. / %)</th>
-              <th>Total Servicios</th>
-            </tr>
-          </thead>
-          <tbody>`;
-
-      let grandNO = 0, grandSI = 0;
-
-      let stcyg34Data = null;
-      if (currentSheetKey === "preventiva") {
-        stcyg34Data = { Schop: null, PostMix: null };
-        if (t2Stats['Schop'] && t2Stats['Schop']['STCYG34']) {
-          stcyg34Data.Schop = jQuery.extend(true, {}, t2Stats['Schop']['STCYG34']);
-          delete t2Stats['Schop']['STCYG34'];
-        }
-        if (t2Stats['Post Mix'] && t2Stats['Post Mix']['STCYG34']) {
-          stcyg34Data.PostMix = jQuery.extend(true, {}, t2Stats['Post Mix']['STCYG34']);
-          delete t2Stats['Post Mix']['STCYG34'];
-        }
-      }
-
-      let categoriasOrdenadas = Object.keys(t2Stats);
-      if (currentSheetKey === "preventiva") {
-        categoriasOrdenadas.sort((a, b) => {
-          if (a.toUpperCase().includes('POST')) return -1;
-          if (b.toUpperCase().includes('POST')) return 1;
-          return a.localeCompare(b);
-        });
-      }
-
-      categoriasOrdenadas.forEach(cat => {
-        let catSI = 0, catNO = 0;
-        
-        const usuariosOrdenados = Object.keys(t2Stats[cat]).sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
-
-        usuariosOrdenados.forEach(usr => {
-          const uData = t2Stats[cat][usr];
-          const tot = uData.SI + uData.NO;
-          catSI += uData.SI;
-          catNO += uData.NO;
-
-          const pctSI_num = tot > 0 ? (uData.SI / tot) * 100 : 0;
-          const pctNO_num = tot > 0 ? (uData.NO / tot) * 100 : 0;
-          
-          const pctNO = pctNO_num.toFixed(1) + '%';
-          const pctSI = pctSI_num.toFixed(1) + '%';
-
-          const alertClass = pctSI_num < 92 ? 'alert-red' : '';
-
-          html2 += `
-            <tr>
-              <td class="left">• ${cat}</td>
-              <td class="left">• ${usr}</td>
-              <td class="left">${uData.tecnico}</td>
-              <td class="${alertClass}">${uData.NO} <span class="qty-badge">(${pctNO})</span></td>
-              <td>${uData.SI} <span class="qty-badge">(${pctSI})</span></td>
-              <td><strong>${tot}</strong> <span class="qty-badge">(100%)</span></td>
-            </tr>`;
-        });
-
-        grandSI += catSI;
-        grandNO += catNO;
-
-        const catTot = catSI + catNO;
-        const catPctNO = catTot > 0 ? ((catNO / catTot) * 100).toFixed(1) + '%' : '0.0%';
-        const catPctSI = catTot > 0 ? ((catSI / catTot) * 100).toFixed(1) + '%' : '0.0%';
-
-        html2 += `
-          <tr class="subtotal">
-            <td colspan="3" class="left">Total ${cat}</td>
-            <td>${catNO} (${catPctNO})</td>
-            <td>${catSI} (${catPctSI})</td>
-            <td>${catTot} (100%)</td>
-          </tr>`;
-      });
-
-      if (currentSheetKey === "preventiva" && stcyg34Data && (stcyg34Data.Schop || stcyg34Data.PostMix)) {
-        let hibridoSI = 0, hibridoNO = 0;
-
-        if (stcyg34Data.Schop) {
-          const uData = stcyg34Data.Schop;
-          const tot = uData.SI + uData.NO;
-          hibridoSI += uData.SI;
-          hibridoNO += uData.NO;
-          const pctSI_num = tot > 0 ? (uData.SI / tot) * 100 : 0;
-          const pctNO_num = tot > 0 ? (uData.NO / tot) * 100 : 0;
-
-          html2 += `
-            <tr>
-              <td class="left">• Híbrido (Schop)</td>
-              <td class="left">• STCYG34</td>
-              <td class="left">${uData.tecnico}</td>
-              <td class="${pctSI_num < 92 ? 'alert-red' : ''}">${uData.NO} <span class="qty-badge">(${pctNO_num.toFixed(1)}%)</span></td>
-              <td>${uData.SI} <span class="qty-badge">(${pctSI_num.toFixed(1)}%)</span></td>
-              <td><strong>${tot}</strong> <span class="qty-badge">(100%)</span></td>
-            </tr>`;
-        }
-
-        if (stcyg34Data.PostMix) {
-          const uData = stcyg34Data.PostMix;
-          const tot = uData.SI + uData.NO;
-          hibridoSI += uData.SI;
-          hibridoNO += uData.NO;
-          const pctSI_num = tot > 0 ? (uData.SI / tot) * 100 : 0;
-          const pctNO_num = tot > 0 ? (uData.NO / tot) * 100 : 0;
-
-          html2 += `
-            <tr>
-              <td class="left">• Híbrido (Post Mix)</td>
-              <td class="left">• STCYG34</td>
-              <td class="left">${uData.tecnico}</td>
-              <td class="${pctSI_num < 92 ? 'alert-red' : ''}">${uData.NO} <span class="qty-badge">(${pctNO_num.toFixed(1)}%)</span></td>
-              <td>${uData.SI} <span class="qty-badge">(${pctSI_num.toFixed(1)}%)</span></td>
-              <td><strong>${tot}</strong> <span class="qty-badge">(100%)</span></td>
-            </tr>`;
-        }
-
-        grandSI += hibridoSI;
-        grandNO += hibridoNO;
-
-        const hibTot = hibridoSI + hibridoNO;
-        const hibPctNO = hibTot > 0 ? ((hibridoNO / hibTot) * 100).toFixed(1) + '%' : '0.0%';
-        const hibPctSI = hibTot > 0 ? ((hibridoSI / hibTot) * 100).toFixed(1) + '%' : '0.0%';
-
-        html2 += `
-          <tr class="subtotal" style="background-color: #e3f2fd; color: #0d47a1;">
-            <td colspan="3" class="left">Total Híbrido</td>
-            <td>${hibridoNO} (${hibPctNO})</td>
-            <td>${hibridoSI} (${hibPctSI})</td>
-            <td>${hibTot} (100%)</td>
-          </tr>`;
-      }
-
-      const grandALL = grandSI + grandNO;
-      const grandPctNO = grandALL > 0 ? ((grandNO / grandALL) * 100).toFixed(1) + '%' : '0.0%';
-      const grandPctSI = grandALL > 0 ? ((grandSI / grandALL) * 100).toFixed(1) + '%' : '0.0%';
-
-      html2 += `
-        <tr class="total-general">
-          <td colspan="3" class="left">Total General</td>
-          <td>${grandNO} (${grandPctNO})</td>
-          <td>${grandSI} (${grandPctSI})</td>
-          <td>${grandALL} (100%)</td>
-        </tr>
-        </tbody></table>`;
-
-      document.getElementById('tabla-2-container').innerHTML = html2;
-    }
-
     function renderTablaNoRealizadas(data) {
       const noRealizadas = data.filter(d => !isServicioRealizado(d));
-
       if (noRealizadas.length === 0) {
         document.getElementById('tabla-no-realizadas-container').innerHTML = `<div class="no-data">🎉 No hay casuística pendiente.</div>`;
         return;
       }
 
-      let html = `
-        <table>
-          <thead>
-            <tr>
-              <th class="left">Técnico</th>
-              <th class="left">Fecha</th>
-              <th class="left">Cliente</th>
-              <th class="left">Motivo / Resuelto</th>
-              <th class="left">Comentario No Resuelto</th>
-              <th style="text-align:center;">Fotos</th>
-            </tr>
-          </thead>
-          <tbody>`;
+      let html = `<table><thead><tr><th class="left">Técnico</th><th class="left">Fecha</th><th class="left">Cliente</th><th class="left">Motivo / Resuelto</th><th class="left">Comentario No Resuelto</th></tr></thead><tbody>`;
 
       noRealizadas.forEach(d => {
         const tec = d['Usuario'] || d['Técnico'] || d['Tecnico'] || '-';
-        const fecha = d['Fecha/Hora Ejecución 1'] || d['Fecha Programada 2'] || d['Fecha'] || d['Fecha Realizado'] || d['Fecha/Hora'] || '-';
+        const fecha = d['Fecha/Hora Ejecución 1'] || d['Fecha Programada 2'] || d['Fecha'] || '-';
         const cliente = getNombreCliente(d);
-        
         const motivo = getMotivoNoServicio(d);
         const comentario = d['Comentario No Resuelto'] || d['Comentario Motivo'] || d['Comentario'] || '-';
-        
-        const fotoUrl1 = d['Foto Equipo'] || d['Foto Motivo'] || d['Foto Columnas o Post Mix'] || '';
-        const fotoUrl2 = d['Foto Equipo 2'] || d['Foto Salida FNE'] || '';
 
-        let fotosHtml = '<span style="color:#bbb;">Sin fotos</span>';
-        if ((fotoUrl1 && fotoUrl1.startsWith('http')) || (fotoUrl2 && fotoUrl2.startsWith('http'))) {
-          fotosHtml = '<div class="photos-flex">';
-          if (fotoUrl1 && fotoUrl1.startsWith('http')) {
-            fotosHtml += `<div class="img-container"><img src="${fotoUrl1}" class="thumb-img" alt="Foto 1" loading="lazy" onerror="this.src='https://via.placeholder.com/50?text=Error'"></div>`;
-          }
-          if (fotoUrl2 && fotoUrl2.startsWith('http')) {
-            fotosHtml += `<div class="img-container"><img src="${fotoUrl2}" class="thumb-img" alt="Foto 2" loading="lazy" onerror="this.src='https://via.placeholder.com/50?text=Error'"></div>`;
-          }
-          fotosHtml += '</div>';
-        }
-
-        html += `
-          <tr>
-            <td class="left"><strong>${tec}</strong></td>
-            <td class="left">${fecha}</td>
-            <td class="left">${cliente}</td>
-            <td class="left" style="color: #c62828; font-weight: 500;">${motivo}</td>
-            <td class="left" style="font-size: 11px; color: #555;">${comentario}</td>
-            <td style="text-align:center;">${fotosHtml}</td>
-          </tr>`;
+        html += `<tr><td class="left"><strong>${tec}</strong></td><td class="left">${fecha}</td><td class="left">${cliente}</td><td class="left" style="color: #c62828; font-weight: 500;">${motivo}</td><td class="left" style="font-size: 11px; color: #555;">${comentario}</td></tr>`;
       });
 
       html += `</tbody></table>`;
       document.getElementById('tabla-no-realizadas-container').innerHTML = html;
     }
 
-    /* DETALLE DE SERVICIOS REALIZADOS (SI) EN RUTA PREVENTIVA */
     function renderTablaSiRealizadas(data) {
       const siRealizadas = data.filter(d => isServicioRealizado(d));
-
       if (siRealizadas.length === 0) {
         document.getElementById('tabla-si-realizadas-container').innerHTML = `<div class="no-data">Sin servicios realizados con los filtros seleccionados.</div>`;
         return;
+      }
+
+      let html = `<table><thead><tr><th class="left">Técnico</th><th class="left">Fecha</th><th class="left">ID CCU</th><th class="left">Cliente (Nombre Fantasía)</th><th class="left">Nombre Receptor</th><th class="left">Comentario Cliente</th></tr></thead><tbody>`;
+
+      siRealizadas.forEach(d => {
+        const tec = d['Usuario'] || d['Técnico'] || d['Tecnico'] || '-';
+        const fecha = d['Fecha/Hora Ejecución 1'] || d['Fecha Programada 2'] || d['Fecha'] || '-';
+        const idCCU = getIdCCU(d);
+        const cliente = getNombreCliente(d);
+        const receptor = getNombreReceptor(d);
+        const comentario = getComentarioCliente(d);
+
+        html += `<tr><td class="left"><strong>${tec}</strong></td><td class="left">${fecha}</td><td class="left">${idCCU}</td><td class="left">${cliente}</td><td class="left">${receptor}</td><td class="left" style="font-size: 11px; color: #2e7d32;">${comentario}</td></tr>`;
+      });
+
+      html += `</tbody></table>`;
+      document.getElementById('tabla-si-realizadas-container').innerHTML = html;
+    }
+
+    /* NUEVO MÓDULO: HISTORIAL DEL CLIENTE & PRÓXIMA MANTENCIÓN */
+    function renderTablaHistorialCliente(filteredData) {
+      if (filteredData.length === 0) {
+        document.getElementById('tabla-historial-container').innerHTML = `<div class="no-data">Sin registros para mostrar historial.</div>`;
+        return;
+      }
+
+      const clientesMap = {};
+
+      filteredData.forEach(d => {
+        const idCCU = getIdCCU(d);
+        const cliente = getNombreCliente(d);
+        const oficina = d['Oficina'] || d['OFICINA'] || '-';
+        const jefe = d['Jefe de Ventas'] || d['JEFE DE VENTAS'] || '-';
+        const mes = d['Mes'] || d['mes'] || 'Mes Actual';
+        const estado = isServicioRealizado(d) ? 'REALIZADO' : 'PENDIENTE';
+
+        if (!clientesMap[idCCU]) {
+          clientesMap[idCCU] = { idCCU, cliente, oficina, jefe, historial: {}, proxima: 'Sin Programación' };
+        }
+        clientesMap[idCCU].historial[mes] = estado;
+      });
+
+      // Cruzar con la base Maestro de Frecuencias
+      if (maestroFrecuencias && maestroFrecuencias.length > 0) {
+        maestroFrecuencias.forEach(m => {
+          const mCCU = m['ID CCU'] || m['ID'] || m['Id CCU'] || m['id_ccu'];
+          if (mCCU && clientesMap[mCCU]) {
+            const sem = m['Semana'] || '';
+            const freq = m['Frecuencia'] || '';
+            const proxFecha = m['Fecha Programada'] || m['Fecha Realizado'] || '';
+            clientesMap[mCCU].proxima = proxFecha ? proxFecha : (sem ? `Semana ${sem} (${freq})` : 'Programado');
+          }
+        });
       }
 
       let html = `
         <table>
           <thead>
             <tr>
-              <th class="left">Técnico</th>
-              <th class="left">Fecha</th>
               <th class="left">ID CCU</th>
-              <th class="left">Cliente (Nombre Fantasía)</th>
-              <th class="left">Nombre Receptor</th>
-              <th class="left">Comentario Cliente</th>
-              <th style="text-align:center;">Foto Columnas / Post Mix</th>
+              <th class="left">Cliente / Nombre Fantasía</th>
+              <th class="left">Oficina Comercial</th>
+              <th class="left">Jefe de Ventas</th>
+              <th style="text-align:center;">Estado Ult. Mantención</th>
+              <th style="text-align:center;">Próxima Mantención</th>
             </tr>
           </thead>
           <tbody>`;
 
-      siRealizadas.forEach(d => {
-        const tec = d['Usuario'] || d['Técnico'] || d['Tecnico'] || '-';
-        const fecha = d['Fecha/Hora Ejecución 1'] || d['Fecha Programada 2'] || d['Fecha'] || d['Fecha Realizado'] || d['Fecha/Hora'] || '-';
-        const idCCU = getIdCCU(d);
-        const cliente = getNombreCliente(d);
-        const receptor = getNombreReceptor(d);
-        const comentario = getComentarioCliente(d);
-        
-        const fotoUrl = getFotoEquipoColumna(d);
-
-        let fotoHtml = '<span style="color:#bbb;">Sin fotos</span>';
-        if (fotoUrl && fotoUrl.startsWith('http')) {
-          fotoHtml = `
-            <div class="img-container">
-              <img src="${fotoUrl}" class="thumb-img" alt="Foto Columnas o Post Mix" loading="lazy" onerror="this.src='https://via.placeholder.com/50?text=Error'">
-            </div>`;
-        }
+      Object.values(clientesMap).forEach(c => {
+        const ultEstado = Object.values(c.historial).pop() || 'SIN DATOS';
+        let pillClass = 'pill-pending';
+        if (ultEstado === 'REALIZADO') pillClass = 'pill-ok';
+        if (ultEstado === 'PENDIENTE') pillClass = 'pill-no';
 
         html += `
           <tr>
-            <td class="left"><strong>${tec}</strong></td>
-            <td class="left">${fecha}</td>
-            <td class="left" style="font-weight: 500;">${idCCU}</td>
-            <td class="left">${cliente}</td>
-            <td class="left" style="font-weight: 500;">${receptor}</td>
-            <td class="left" style="font-size: 11px; color: #2e7d32;">${comentario}</td>
-            <td style="text-align:center;">${fotoHtml}</td>
+            <td class="left"><strong>${c.idCCU}</strong></td>
+            <td class="left">${c.cliente}</td>
+            <td class="left">${c.oficina}</td>
+            <td class="left">${c.jefe}</td>
+            <td style="text-align:center;"><span class="status-pill ${pillClass}">${ultEstado}</span></td>
+            <td style="text-align:center;"><strong style="color: var(--pepsi-blue);">${c.proxima}</strong></td>
           </tr>`;
       });
 
       html += `</tbody></table>`;
-      document.getElementById('tabla-si-realizadas-container').innerHTML = html;
+      document.getElementById('tabla-historial-container').innerHTML = html;
     }
   </script>
 </body>
