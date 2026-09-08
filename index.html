@@ -272,17 +272,8 @@
     .grid-col-left { flex: 0 0 35%; min-width: 320px; }
     .grid-col-right { flex: 1; min-width: 500px; }
 
-    .side-by-side-tables {
-      display: flex;
-      gap: 16px;
-      width: 100%;
-    }
-
-    .table-half-width {
-      flex: 1;
-      min-width: 240px;
-    }
-
+    .side-by-side-tables { display: flex; gap: 16px; width: 100%; }
+    .table-half-width { flex: 1; min-width: 240px; }
     .grid-row-full { width: 100%; }
 
     .table-container { background: var(--card-bg); border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); overflow: hidden; height: 100%; }
@@ -310,6 +301,17 @@
     .pill-no { background: #ffebee; color: #c62828; }
     .pill-pending { background: #fff3e0; color: #ef6c00; }
 
+    /* Celdas Clickeables del Historial */
+    .clickable-history-cell {
+      cursor: pointer;
+      padding: 4px 6px;
+      border-radius: 6px;
+      transition: background-color 0.2s;
+    }
+    .clickable-history-cell:hover {
+      background-color: #e8f0fe;
+    }
+
     .photos-flex { display: flex; gap: 6px; justify-content: center; }
     .img-container { position: relative; display: inline-block; width: 32px; height: 32px; }
 
@@ -327,6 +329,177 @@
     .scrollable-table-equal { max-height: 260px; overflow-y: auto; position: relative; }
     .scrollable-table { max-height: 400px; overflow-y: auto; position: relative; }
     .no-data { padding: 16px; text-align: center; color: #888; font-style: italic; font-size: 12px; }
+
+    /* ESTILOS DE LA VENTANA EMERGENTE (MODAL) ESTILO PROFESIONAL */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 100000;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+    .modal-overlay.show {
+      display: flex;
+      opacity: 1;
+    }
+
+    .modal-card {
+      background: #ffffff;
+      width: 90%;
+      max-width: 580px;
+      max-height: 90vh;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      animation: modalSlideUp 0.3s ease;
+    }
+
+    @keyframes modalSlideUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .modal-header {
+      padding: 14px 20px;
+      background: var(--excel-green-header);
+      color: #ffffff;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-header h3 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .modal-close-btn {
+      background: transparent;
+      border: none;
+      color: #ffffff;
+      font-size: 18px;
+      cursor: pointer;
+      opacity: 0.8;
+      transition: opacity 0.2s;
+    }
+    .modal-close-btn:hover { opacity: 1; }
+
+    .modal-body {
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px 16px;
+      background: #f8f9fa;
+      padding: 14px;
+      border-radius: 8px;
+      border: 1px solid #e9ecef;
+    }
+
+    .detail-field label {
+      font-size: 11px;
+      color: #666;
+      font-weight: 700;
+      text-transform: uppercase;
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    .detail-field span {
+      font-size: 13px;
+      color: #222;
+      font-weight: 600;
+    }
+
+    .modal-badge-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 14px;
+      background: #10b981;
+      color: #ffffff;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .modal-badge-row.pending {
+      background: #ef4444;
+    }
+
+    .gallery-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--excel-green-dark);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .modal-gallery {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .modal-gallery-img {
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .modal-gallery-img:hover {
+      transform: scale(1.05);
+    }
+
+    .modal-footer {
+      padding: 12px 20px;
+      background: #f8f9fa;
+      border-top: 1px solid #eee;
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    /* Modal de Zoom de Imagen Fullscreen */
+    #image-zoom-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.85);
+      z-index: 200000;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      cursor: zoom-out;
+    }
+    #image-zoom-overlay img {
+      max-width: 90%;
+      max-height: 90%;
+      border-radius: 8px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    }
   </style>
 </head>
 <body>
@@ -618,6 +791,82 @@
 
   </div>
 
+  <!-- VENTANA EMERGENTE (MODAL DETALLE DE SERVICIO) -->
+  <div class="modal-overlay" id="service-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-clipboard-check"></i> Detalle del Servicio</h3>
+        <button class="modal-close-btn" id="modal-close-btn">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="modal-badge-row" id="modal-status-badge">
+          <span id="modal-status-text">REALIZADO</span>
+          <span id="modal-date-text">16/09/2026</span>
+        </div>
+
+        <div class="detail-grid">
+          <div class="detail-field">
+            <label>ID CCU</label>
+            <span id="modal-id-ccu">-</span>
+          </div>
+          <div class="detail-field">
+            <label>Código Local</label>
+            <span id="modal-cod-local">-</span>
+          </div>
+          <div class="detail-field" style="grid-column: span 2;">
+            <label>Cliente / Nombre Fantasía</label>
+            <span id="modal-cliente">-</span>
+          </div>
+          <div class="detail-field">
+            <label>Oficina Comercial</label>
+            <span id="modal-oficina">-</span>
+          </div>
+          <div class="detail-field">
+            <label>Jefe de Ventas</label>
+            <span id="modal-jefe">-</span>
+          </div>
+          <div class="detail-field">
+            <label>Técnico / Usuario</label>
+            <span id="modal-tecnico">-</span>
+          </div>
+          <div class="detail-field">
+            <label>Tipo de Activo</label>
+            <span id="modal-activo">-</span>
+          </div>
+          <div class="detail-field" style="grid-column: span 2;">
+            <label>Contacto / Receptor Local</label>
+            <span id="modal-receptor">-</span>
+          </div>
+          <div class="detail-field" style="grid-column: span 2;" id="modal-motivo-wrap">
+            <label>Motivo No Servicio / Causa</label>
+            <span id="modal-motivo" style="color:#c62828;">-</span>
+          </div>
+          <div class="detail-field" style="grid-column: span 2;">
+            <label>Comentario / Observaciones</label>
+            <span id="modal-comentario" style="font-style:italic;">-</span>
+          </div>
+        </div>
+
+        <div>
+          <div class="gallery-title"><i class="fa-solid fa-images"></i> Galería de Evidencias Fotografías</div>
+          <div class="modal-gallery" id="modal-gallery-container">
+            <span style="color:#888; font-size:12px;">Sin imágenes adjuntas en el registro.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="gs-btn gs-btn-cancel" id="modal-bottom-close">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- OVERLAY FULLSCREEN PARA ZOOM DE FOTOGRAFÍA -->
+  <div id="image-zoom-overlay">
+    <img src="" id="full-zoomed-img" alt="Zoom Foto">
+  </div>
+
   <script>
     const SHEETS_URLS = {
       preventiva: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQHJUM26MwbPurx5FdJGQc-I-vlfwyEZYbPGeYE0F5HxEWpbMyhVeJpJKK7XjCD6No8RZCfeHgWaxZZ/pub?output=csv",
@@ -631,6 +880,7 @@
     let maestroFrecuencias = [];
     let activosChartInstance = null;
     let trendChartInstance = null;
+    let globalClientesHistorialMap = {}; // Mapa para modal emergente
 
     Chart.register(ChartDataLabels);
 
@@ -726,14 +976,12 @@
       if (!dateStr) return null;
       const str = String(dateStr).trim();
 
-      // Detección de Número Serial de Excel (ej: 46272)
       if (/^\d{5}$/.test(str)) {
         const serial = parseInt(str, 10);
         const excelEpoch = new Date(1899, 11, 30);
         return new Date(excelEpoch.getTime() + serial * 86400000);
       }
 
-      // Detección de Formatos Texto Corto (ej: 8-sept, 18-ago)
       const matchTextoMes = str.match(/^(\d{1,2})[-/]([a-zA-Z]{3,4})$/i);
       if (matchTextoMes) {
         const dia = parseInt(matchTextoMes[1], 10);
@@ -754,7 +1002,6 @@
       return null;
     }
 
-    /* FORMATO DE FECHA CON DÍA DE LA SEMANA Y DÍA/MES (Ej: Mié 16/09) */
     function formatDiaMes(dateStr) {
       if (!dateStr || dateStr === '-' || dateStr.toLowerCase().includes('sin') || dateStr.toLowerCase().includes('programado')) {
         return dateStr || '-';
@@ -891,6 +1138,21 @@
 
         $group.find('.gs-dropdown').removeClass('show');
         renderDashboard();
+      });
+
+      /* EVENTOS CERRAR Y ZOOM EN VENTANA EMERGENTE (MODAL) */
+      $('#modal-close-btn, #modal-bottom-close').on('click', function() {
+        $('#service-modal').removeClass('show');
+      });
+
+      $('#service-modal').on('click', function(e) {
+        if ($(e.target).hasClass('modal-overlay')) {
+          $('#service-modal').removeClass('show');
+        }
+      });
+
+      $('#image-zoom-overlay').on('click', function() {
+        $(this).fadeOut(200);
       });
 
       loadSheetData();
@@ -1269,7 +1531,6 @@
       document.getElementById('tabla-motivos-container').innerHTML = html;
     }
 
-    /* TABLA NO REALIZADAS CON ID CCU Y CORRECCIÓN DE FECHAS SERIALES DE EXCEL */
     function renderTablaNoRealizadas(data) {
       const noRealizadas = data.filter(d => !isServicioRealizado(d));
       if (noRealizadas.length === 0) {
@@ -1326,7 +1587,6 @@
       document.getElementById('tabla-no-realizadas-container').innerHTML = html;
     }
 
-    /* TABLA SI REALIZADAS CON FECHAS FORMATO LIMPIO Y DÍA DE LA SEMANA */
     function renderTablaSiRealizadas(data) {
       const siRealizadas = data.filter(d => isServicioRealizado(d));
       if (siRealizadas.length === 0) {
@@ -1378,7 +1638,7 @@
       document.getElementById('tabla-si-realizadas-container').innerHTML = html;
     }
 
-    /* HISTORIAL COMPLETO MEJORADO CON VINCULACIÓN POR LOCAL Y FECHAS DE PRÓXIMA MANTENCIÓN */
+    /* HISTORIAL COMPLETO CON CELDAS CLICKEABLES PARA MODAL EMERGENTE */
     function renderTablaHistorialCliente() {
       const fOficina = filtersState.oficina.selected;
       const fJefeVentas = filtersState.jefeVentas.selected;
@@ -1405,7 +1665,7 @@
         return;
       }
 
-      const clientesMap = {};
+      globalClientesHistorialMap = {};
 
       baseHistorial.forEach(d => {
         const idCCU = getIdCCU(d);
@@ -1419,8 +1679,8 @@
         const realizado = isServicioRealizado(d);
         const motivo = realizado ? '' : getMotivoNoServicio(d);
 
-        if (!clientesMap[idCCU]) {
-          clientesMap[idCCU] = {
+        if (!globalClientesHistorialMap[idCCU]) {
+          globalClientesHistorialMap[idCCU] = {
             idCCU,
             codLocal,
             cliente,
@@ -1432,23 +1692,23 @@
         }
 
         if (rawFecha) {
-          clientesMap[idCCU].mantenciones.push({
+          globalClientesHistorialMap[idCCU].mantenciones.push({
             rawFecha,
             parsedDate,
             realizado,
-            motivo
+            motivo,
+            rawObject: d // Guarda todo el objeto para el modal emergente
           });
         }
       });
 
-      // Cruzar con la base Maestro buscando 우선 por LOCAL, luego por ID
+      // Cruzar con la base Maestro
       if (maestroFrecuencias && maestroFrecuencias.length > 0) {
         maestroFrecuencias.forEach(m => {
           const mLocal = String(m['Local'] || m['local'] || '').trim();
           const mCCU = String(m['ID CCU'] || m['ID'] || m['Id CCU'] || m['id_ccu'] || '').trim();
 
-          // Buscar coincidencia en la estructura de clientes cargados
-          Object.values(clientesMap).forEach(c => {
+          Object.values(globalClientesHistorialMap).forEach(c => {
             const matchByLocal = mLocal && c.codLocal && mLocal.toUpperCase() === c.codLocal.toUpperCase();
             const matchByID = mCCU && c.idCCU && mCCU.endsWith(c.idCCU);
 
@@ -1484,7 +1744,7 @@
           </thead>
           <tbody>`;
 
-      Object.values(clientesMap).forEach(c => {
+      Object.values(globalClientesHistorialMap).forEach(c => {
         c.mantenciones.sort((a, b) => {
           if (!a.parsedDate) return -1;
           if (!b.parsedDate) return 1;
@@ -1492,17 +1752,24 @@
         });
 
         const totalRegistros = c.mantenciones.length;
-        const ult = totalRegistros > 0 ? c.mantenciones[totalRegistros - 1] : null;
-        const penult = totalRegistros > 1 ? c.mantenciones[totalRegistros - 2] : null;
+        const ultIndex = totalRegistros - 1;
+        const penultIndex = totalRegistros - 2;
+
+        const ult = totalRegistros > 0 ? c.mantenciones[ultIndex] : null;
+        const penult = totalRegistros > 1 ? c.mantenciones[penultIndex] : null;
 
         let penultHtml = '<span style="color:#bbb;">-</span>';
         if (penult) {
           const fStr = formatDiaMes(penult.rawFecha);
           if (penult.realizado) {
-            penultHtml = `<div><strong>${fStr}</strong> <span class="status-pill pill-ok">REALIZADO</span></div>`;
+            penultHtml = `<div class="clickable-history-cell" onclick="openServiceModal('${c.idCCU}', ${penultIndex})">
+                            <strong>${fStr}</strong> <span class="status-pill pill-ok">REALIZADO</span>
+                          </div>`;
           } else {
-            penultHtml = `<div><strong>${fStr}</strong> <span class="status-pill pill-no">PENDIENTE</span></div>
-                          <div style="font-size:10px; color:#c62828; margin-top:2px;">${penult.motivo}</div>`;
+            penultHtml = `<div class="clickable-history-cell" onclick="openServiceModal('${c.idCCU}', ${penultIndex})">
+                            <strong>${fStr}</strong> <span class="status-pill pill-no">PENDIENTE</span>
+                            <div style="font-size:10px; color:#c62828; margin-top:2px;">${penult.motivo}</div>
+                          </div>`;
           }
         }
 
@@ -1510,10 +1777,14 @@
         if (ult) {
           const fStr = formatDiaMes(ult.rawFecha);
           if (ult.realizado) {
-            ultHtml = `<div><strong>${fStr}</strong> <span class="status-pill pill-ok">REALIZADO</span></div>`;
+            ultHtml = `<div class="clickable-history-cell" onclick="openServiceModal('${c.idCCU}', ${ultIndex})">
+                          <strong>${fStr}</strong> <span class="status-pill pill-ok">REALIZADO</span>
+                        </div>`;
           } else {
-            ultHtml = `<div><strong>${fStr}</strong> <span class="status-pill pill-no">PENDIENTE</span></div>
-                       <div style="font-size:10px; color:#c62828; margin-top:2px;">${ult.motivo}</div>`;
+            ultHtml = `<div class="clickable-history-cell" onclick="openServiceModal('${c.idCCU}', ${ultIndex})">
+                          <strong>${fStr}</strong> <span class="status-pill pill-no">PENDIENTE</span>
+                          <div style="font-size:10px; color:#c62828; margin-top:2px;">${ult.motivo}</div>
+                        </div>`;
           }
         }
 
@@ -1534,6 +1805,76 @@
 
       html += `</tbody></table>`;
       document.getElementById('tabla-historial-container').innerHTML = html;
+    }
+
+    /* FUNCIÓN ABRIR MODAL EMERGENTE DE DETALLE */
+    function openServiceModal(idCCU, mantencionIndex) {
+      const clienteData = globalClientesHistorialMap[idCCU];
+      if (!clienteData || !clienteData.mantenciones[mantencionIndex]) return;
+
+      const item = clienteData.mantenciones[mantencionIndex];
+      const d = item.rawObject;
+
+      const esRealizado = item.realizado;
+      const $badge = $('#modal-status-badge');
+      
+      if (esRealizado) {
+        $badge.removeClass('pending');
+        $('#modal-status-text').text('SERVICIOS REALIZADOS (GANADA / REALIZADA)');
+      } else {
+        $badge.addClass('pending');
+        $('#modal-status-text').text('VISITA NO REALIZADA / PENDIENTE');
+      }
+
+      $('#modal-date-text').text(formatDiaMes(item.rawFecha));
+      $('#modal-id-ccu').text(clienteData.idCCU);
+      $('#modal-cod-local').text(clienteData.codLocal);
+      $('#modal-cliente').text(clienteData.cliente);
+      $('#modal-oficina').text(clienteData.oficina);
+      $('#modal-jefe').text(clienteData.jefe);
+      
+      $('#modal-tecnico').text(d['Usuario'] || d['Técnico'] || d['Tecnico'] || '-');
+      $('#modal-activo').text(getTipoActivo(d));
+      $('#modal-receptor').text(getNombreReceptor(d));
+
+      if (!esRealizado) {
+        $('#modal-motivo-wrap').show();
+        $('#modal-motivo').text(getMotivoNoServicio(d));
+      } else {
+        $('#modal-motivo-wrap').hide();
+      }
+
+      const comentario = getComentarioCliente(d) || d['Comentario No Resuelto'] || '-';
+      $('#modal-comentario').text(comentario);
+
+      // Carga de Fotos a la Galería
+      const foto1 = d['Foto Columnas o Post Mix'] || d['Foto Equipo'] || d['Foto Motivo'] || '';
+      const foto2 = d['Foto Equipo 2'] || d['Foto Salida FNE'] || '';
+
+      const $gallery = $('#modal-gallery-container');
+      $gallery.empty();
+
+      let countFotos = 0;
+      if (foto1 && foto1.startsWith('http')) {
+        countFotos++;
+        $gallery.append(`<img src="${foto1}" class="modal-gallery-img" onclick="zoomImage('${foto1}')" alt="Evidencia 1">`);
+      }
+      if (foto2 && foto2.startsWith('http')) {
+        countFotos++;
+        $gallery.append(`<img src="${foto2}" class="modal-gallery-img" onclick="zoomImage('${foto2}')" alt="Evidencia 2">`);
+      }
+
+      if (countFotos === 0) {
+        $gallery.html('<span style="color:#888; font-size:12px;">Sin fotografías registradas para este servicio.</span>');
+      }
+
+      $('#service-modal').addClass('show');
+    }
+
+    /* ZOOM COMPLETO A FOTO AL DAR CLIC EN MODAL */
+    function zoomImage(url) {
+      $('#full-zoomed-img').attr('src', url);
+      $('#image-zoom-overlay').fadeIn(200).css('display', 'flex');
     }
   </script>
 </body>
