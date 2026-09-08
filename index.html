@@ -271,18 +271,25 @@
     .grid-col-half { flex: 1; min-width: 380px; }
     .grid-row-full { width: 100%; }
 
-    .table-container { background: var(--card-bg); border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); overflow: hidden; }
-    .table-header { padding: 14px 18px; background: #f8f9fa; border-bottom: 1px solid #e9ecef; font-weight: 700; color: var(--excel-green-dark); display: flex; justify-content: space-between; align-items: center; }
+    /* Contenedor vertical apilado para la derecha */
+    .stacked-tables-container {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
 
-    table { border-collapse: collapse; width: 100%; font-size: 13px; }
-    th, td { padding: 8px 12px; text-align: right; border-bottom: 1px solid #eef0f2; vertical-align: middle; }
+    .table-container { background: var(--card-bg); border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); overflow: hidden; }
+    .table-header { padding: 10px 16px; background: #f8f9fa; border-bottom: 1px solid #e9ecef; font-weight: 700; color: var(--excel-green-dark); display: flex; justify-content: space-between; align-items: center; }
+
+    table { border-collapse: collapse; width: 100%; font-size: 12px; }
+    th, td { padding: 6px 10px; text-align: right; border-bottom: 1px solid #eef0f2; vertical-align: middle; }
     th.left, td.left { text-align: left; }
 
     thead tr th {
       background-color: var(--excel-green-header);
       color: #ffffff;
       font-weight: 600;
-      font-size: 12px;
+      font-size: 11px;
       position: sticky; top: 0; z-index: 10;
       box-shadow: 0 1px 2px rgba(0,0,0,0.1);
     }
@@ -291,27 +298,29 @@
     tr.total-general { background-color: var(--excel-total-black); color: #ffffff; font-weight: bold; }
 
     .qty-badge { font-size: 11px; color: #666; display: block; }
-    .status-pill { padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; display: inline-block; text-align: center; }
+    .status-pill { padding: 3px 6px; border-radius: 10px; font-size: 10px; font-weight: bold; display: inline-block; text-align: center; }
     .pill-ok { background: #e8f5e9; color: #2e7d32; }
     .pill-no { background: #ffebee; color: #c62828; }
     .pill-pending { background: #fff3e0; color: #ef6c00; }
 
     .photos-flex { display: flex; gap: 6px; justify-content: center; }
-    .img-container { position: relative; display: inline-block; width: 45px; height: 45px; }
+    .img-container { position: relative; display: inline-block; width: 35px; height: 35px; }
 
     .thumb-img {
-      width: 45px; height: 45px; object-fit: cover; border-radius: 6px; border: 1px solid #ccc;
+      width: 35px; height: 35px; object-fit: cover; border-radius: 4px; border: 1px solid #ccc;
       box-shadow: 0 1px 3px rgba(0,0,0,0.2); transition: all 0.25s ease-in-out; cursor: zoom-in;
     }
 
     .img-container:hover .thumb-img {
-      position: absolute; right: 0; top: -60px; width: 220px; height: 220px; z-index: 999;
+      position: absolute; right: 0; top: -60px; width: 200px; height: 220px; z-index: 999;
       border-radius: 10px; border: 3px solid var(--excel-green-header); box-shadow: 0 8px 20px rgba(0,0,0,0.35);
       object-fit: contain; background: #ffffff;
     }
 
+    /* Limitación a ~3 líneas por tabla pequeña */
+    .scrollable-table-compact { max-height: 180px; overflow-y: auto; position: relative; }
     .scrollable-table { max-height: 400px; overflow-y: auto; position: relative; }
-    .no-data { padding: 20px; text-align: center; color: #888; font-style: italic; }
+    .no-data { padding: 16px; text-align: center; color: #888; font-style: italic; font-size: 12px; }
   </style>
 </head>
 <body>
@@ -557,17 +566,9 @@
   <!-- Grid Principal -->
   <div class="dashboard-grid">
     
-    <!-- FILA 1 -->
+    <!-- FILA 1: Resumen de Motivos (Izquierda) + Tablas Apiladas (Derecha) -->
     <div class="grid-row-two-col">
-      <div class="grid-col-half">
-        <div class="table-container">
-          <div class="table-header">
-            <span id="tabla-1-title">Resumen por Tipo de Activo</span>
-          </div>
-          <div id="tabla-1-container"></div>
-        </div>
-      </div>
-
+      <!-- IZQUIERDA: Resumen de Motivos No Realizados -->
       <div class="grid-col-half">
         <div class="table-container">
           <div class="table-header" style="background-color: #fff8e1; color: #b78103;">
@@ -576,30 +577,28 @@
           <div id="tabla-motivos-container"></div>
         </div>
       </div>
-    </div>
 
-    <!-- FILA 2 -->
-    <div class="grid-row-two-col">
-      <div class="grid-col-half" id="container-si-realizadas">
-        <div class="table-container">
+      <!-- DERECHA: Detalle Servicios Realizados (Arriba) + Justificación Visita No Realizada (Abajo) -->
+      <div class="grid-col-half stacked-tables-container">
+        <!-- Detalle Servicios Realizados -->
+        <div class="table-container" id="container-si-realizadas">
           <div class="table-header" style="background-color: #e8f5e9; color: var(--excel-green-dark);">
             <span id="tabla-si-title"><i class="fa-solid fa-circle-check"></i> Detalle de Servicios Realizados (SI)</span>
           </div>
-          <div class="scrollable-table" id="tabla-si-realizadas-container"></div>
+          <div class="scrollable-table-compact" id="tabla-si-realizadas-container"></div>
         </div>
-      </div>
 
-      <div class="grid-col-half">
+        <!-- Justificación Visita No Realizada -->
         <div class="table-container">
           <div class="table-header" style="background-color: #fff3f3; color: #c62828;">
             <span id="tabla-no-title"><i class="fa-solid fa-triangle-exclamation"></i> Justificación Visita No Realizada</span>
           </div>
-          <div class="scrollable-table" id="tabla-no-realizadas-container"></div>
+          <div class="scrollable-table-compact" id="tabla-no-realizadas-container"></div>
         </div>
       </div>
     </div>
 
-    <!-- FILA 3: HISTORIAL DEL CLIENTE & PRÓXIMA MANTENCIÓN -->
+    <!-- FILA 2: HISTORIAL DEL CLIENTE & PRÓXIMA MANTENCIÓN -->
     <div class="grid-row-full">
       <div class="table-container">
         <div class="table-header" style="background-color: #0d47a1; color: #ffffff;">
@@ -698,10 +697,6 @@
       return d['Nombre Receptor'] || d['Nombre Receptor Local'] || d['Receptor'] || '-';
     }
 
-    function getComentarioCliente(d) {
-      return d['Comentario'] || d['Comentario Motivo'] || d['Comentario Producto dete'] || d['Observaciones'] || '-';
-    }
-
     function getMotivoNoServicio(d) {
       const raw = (d['Motivo No Servicio'] || d['motivo_no_servicio'] || d['Resuelto'] || d['Motivo'] || '').trim();
       const strUpper = raw.toUpperCase();
@@ -761,7 +756,6 @@
           $('#kpi-label-1').text('Total Urgencias');
           $('#kpi-label-2').text('Resolutividad Global');
           $('#kpi-label-3').text('Casos No Resueltos');
-          $('#tabla-1-title').text('Resumen por Tipo de Activo');
           $('#tabla-motivos-title').html('<i class="fa-solid fa-list-check"></i> Resumen de Motivos No Resueltos');
           $('#trend-card-title').html('<i class="fa-solid fa-chart-column"></i> Evolución Mensual (% Resueltas)');
           $('#tabla-no-title').html('<i class="fa-solid fa-triangle-exclamation"></i> Detalle de Urgencias No Resueltas');
@@ -771,7 +765,6 @@
           $('#kpi-label-1').text('Total Servicios');
           $('#kpi-label-2').text('Cumplimiento Global');
           $('#kpi-label-3').text('Visitas No Realizadas');
-          $('#tabla-1-title').text('Resumen por Tipo de Activo');
           $('#tabla-motivos-title').html('<i class="fa-solid fa-list-check"></i> Resumen de Motivos No Realizados');
           $('#trend-card-title').html('<i class="fa-solid fa-chart-column"></i> Evolución Mensual (% SI)');
           $('#tabla-no-title').html('<i class="fa-solid fa-triangle-exclamation"></i> Justificación Visita No Realizada');
@@ -1117,7 +1110,6 @@
 
       renderActivosChart(countSchop, countPostMix);
       renderTrendChart();
-      renderTabla1(data);
       renderTablaMotivos(data, totalNO, grandTotal);
       renderTablaNoRealizadas(data);
       
@@ -1225,41 +1217,6 @@
       });
     }
 
-    function renderTabla1(data) {
-      const t1Stats = {};
-      let total1_SI = 0, total1_NO = 0;
-
-      data.forEach(d => {
-        const qty = getServiciosQty(d);
-        const tipo = getTipoActivo(d);
-
-        if(!t1Stats[tipo]) t1Stats[tipo] = { SI: 0, NO: 0 };
-        if(isServicioRealizado(d)) {
-          t1Stats[tipo].SI += qty; total1_SI += qty;
-        } else {
-          t1Stats[tipo].NO += qty; total1_NO += qty;
-        }
-      });
-
-      let html1 = `<table><thead><tr><th class="left">Tipo de Activo</th><th>NO (Cant. / %)</th><th>SI (Cant. / %)</th><th>Total Servicios</th></tr></thead><tbody>`;
-
-      Object.keys(t1Stats).forEach(tipo => {
-        const si = t1Stats[tipo].SI; const no = t1Stats[tipo].NO; const tot = si + no;
-        const pctNO = tot > 0 ? ((no / tot) * 100).toFixed(1) + '%' : '0.0%';
-        const pctSI = tot > 0 ? ((si / tot) * 100).toFixed(1) + '%' : '0.0%';
-
-        html1 += `<tr><td class="left"><strong>${tipo}</strong></td><td>${no} <span class="qty-badge">(${pctNO})</span></td><td>${si} <span class="qty-badge">(${pctSI})</span></td><td><strong>${tot}</strong> <span class="qty-badge">(100%)</span></td></tr>`;
-      });
-
-      const tot1_ALL = total1_SI + total1_NO;
-      const pct1_NO = tot1_ALL > 0 ? ((total1_NO / tot1_ALL) * 100).toFixed(1) + '%' : '0.0%';
-      const pct1_SI = tot1_ALL > 0 ? ((total1_SI / tot1_ALL) * 100).toFixed(1) + '%' : '0.0%';
-
-      html1 += `<tr class="total-general"><td class="left">Total General</td><td>${total1_NO} (${pct1_NO})</td><td>${total1_SI} (${pct1_SI})</td><td>${tot1_ALL} (100%)</td></tr></tbody></table>`;
-
-      document.getElementById('tabla-1-container').innerHTML = html1;
-    }
-
     function renderTablaMotivos(data, totalNO, grandTotal) {
       const motivosStats = { 'Local Cerrado': 0, 'Cliente no permite': 0, 'Desprogramar Cliente': 0, 'Otro': 0, 'Sin Información': 0 };
       const noRealizadasData = data.filter(d => !isServicioRealizado(d));
@@ -1289,6 +1246,7 @@
       document.getElementById('tabla-motivos-container').innerHTML = html;
     }
 
+    /* RENDER TABLA NO REALIZADAS SIN COLUMNA TÉCNICO NI COMENTARIO (APROX 3 FILAS) */
     function renderTablaNoRealizadas(data) {
       const noRealizadas = data.filter(d => !isServicioRealizado(d));
       if (noRealizadas.length === 0) {
@@ -1300,22 +1258,18 @@
         <table>
           <thead>
             <tr>
-              <th class="left">Técnico</th>
               <th class="left">Fecha</th>
               <th class="left">Cliente</th>
               <th class="left">Motivo / Resuelto</th>
-              <th class="left">Comentario No Resuelto</th>
               <th style="text-align:center;">Fotos</th>
             </tr>
           </thead>
           <tbody>`;
 
       noRealizadas.forEach(d => {
-        const tec = d['Usuario'] || d['Técnico'] || d['Tecnico'] || '-';
         const fecha = d['Fecha/Hora Ejecución 1'] || d['Fecha Programada 2'] || d['Fecha'] || d['Fecha Realizado'] || d['Fecha/Hora'] || '-';
         const cliente = getNombreCliente(d);
         const motivo = getMotivoNoServicio(d);
-        const comentario = d['Comentario No Resuelto'] || d['Comentario Motivo'] || d['Comentario'] || '-';
 
         const fotoUrl1 = d['Foto Equipo'] || d['Foto Motivo'] || d['Foto Columnas o Post Mix'] || '';
         const fotoUrl2 = d['Foto Equipo 2'] || d['Foto Salida FNE'] || '';
@@ -1334,11 +1288,9 @@
 
         html += `
           <tr>
-            <td class="left"><strong>${tec}</strong></td>
             <td class="left">${fecha}</td>
             <td class="left">${cliente}</td>
             <td class="left" style="color: #c62828; font-weight: 500;">${motivo}</td>
-            <td class="left" style="font-size: 11px; color: #555;">${comentario}</td>
             <td style="text-align:center;">${fotosHtml}</td>
           </tr>`;
       });
@@ -1347,6 +1299,7 @@
       document.getElementById('tabla-no-realizadas-container').innerHTML = html;
     }
 
+    /* RENDER TABLA SI REALIZADAS SIN COLUMNA TÉCNICO NI COMENTARIO (APROX 3 FILAS) */
     function renderTablaSiRealizadas(data) {
       const siRealizadas = data.filter(d => isServicioRealizado(d));
       if (siRealizadas.length === 0) {
@@ -1358,24 +1311,20 @@
         <table>
           <thead>
             <tr>
-              <th class="left">Técnico</th>
               <th class="left">Fecha</th>
               <th class="left">ID CCU</th>
               <th class="left">Cliente (Nombre Fantasía)</th>
               <th class="left">Nombre Receptor</th>
-              <th class="left">Comentario Cliente</th>
               <th style="text-align:center;">Foto Columnas / Post Mix</th>
             </tr>
           </thead>
           <tbody>`;
 
       siRealizadas.forEach(d => {
-        const tec = d['Usuario'] || d['Técnico'] || d['Tecnico'] || '-';
         const fecha = d['Fecha/Hora Ejecución 1'] || d['Fecha Programada 2'] || d['Fecha'] || d['Fecha Realizado'] || d['Fecha/Hora'] || '-';
         const idCCU = getIdCCU(d);
         const cliente = getNombreCliente(d);
         const receptor = getNombreReceptor(d);
-        const comentario = getComentarioCliente(d);
 
         const fotoUrl = d['Foto Columnas o Post Mix'] || d['Foto Equipo'] || d['Foto Motivo'] || d['Foto Salida FNE'] || '';
 
@@ -1389,12 +1338,10 @@
 
         html += `
           <tr>
-            <td class="left"><strong>${tec}</strong></td>
             <td class="left">${fecha}</td>
             <td class="left">${idCCU}</td>
             <td class="left">${cliente}</td>
             <td class="left">${receptor}</td>
-            <td class="left" style="font-size: 11px; color: #2e7d32;">${comentario}</td>
             <td style="text-align:center;">${fotoHtml}</td>
           </tr>`;
       });
