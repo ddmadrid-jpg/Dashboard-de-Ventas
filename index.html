@@ -698,8 +698,9 @@
       </div>
     </div>
 
+    <!-- Filtro Dinámico (Local/ID CCU en Preventiva ó N° Llamado en Urgencias) -->
     <div class="filter-group" data-filter="localId">
-      <label><i class="fa-solid fa-hashtag"></i> Local / ID CCU</label>
+      <label id="label-filter-localId"><i class="fa-solid fa-hashtag"></i> Local / ID CCU</label>
       <div class="gs-filter-box">
         <span class="gs-filter-text">Todos (filtrar...)</span>
         <i class="fa-solid fa-caret-down gs-filter-icon"></i>
@@ -810,7 +811,7 @@
 
         <div class="detail-grid">
           <div class="detail-field">
-            <label>ID CCU</label>
+            <label id="modal-label-id">ID CCU / N° Llamado</label>
             <span id="modal-id-ccu">-</span>
           </div>
           <div class="detail-field">
@@ -954,6 +955,11 @@
       return d['ID CCU'] || d['ID'] || d['Id CCU'] || d['ID Cliente (Manual)'] || d['ID Cliente (Escaneado)'] || d['id_ccu'] || '-';
     }
 
+    /* OBTENER NÚMERO DE LLAMADO (EXCLUSIVO PARA URGENCIAS) */
+    function getNumeroLlamado(d) {
+      return d['N° Llamado'] || d['N° LLAMADO'] || d['Llamado'] || d['N° Ticket'] || d['Ticket'] || d['Solicitud'] || d['ID CCU'] || d['ID'] || '-';
+    }
+
     function getNombreReceptor(d) {
       return d['Nombre Receptor'] || d['Nombre Receptor Local'] || d['Receptor'] || '-';
     }
@@ -1044,6 +1050,11 @@
           $('#trend-card-title').html('<i class="fa-solid fa-chart-column"></i> Evolución Mensual (% Resueltas)');
           $('#tabla-no-title').html('<i class="fa-solid fa-triangle-exclamation"></i> Detalle de Urgencias No Resueltas');
           $('#historial-tabla-titulo').html('<i class="fa-solid fa-clock-rotate-left"></i> Historial de Urgencias del Cliente (Últimas 2 Urgencias Atendidas)');
+          
+          // Cambiar nombre e icono del filtro
+          $('#label-filter-localId').html('<i class="fa-solid fa-phone-volume"></i> N° Llamado');
+          $('#modal-label-id').text('N° Llamado');
+
           $('#container-si-realizadas').hide();
         } else {
           $('#main-title').html('<i class="fa-solid fa-chart-line" style="font-size: 20px; color: var(--primary-green);"></i> Dashboard Ejecutivo - Ventas');
@@ -1054,6 +1065,11 @@
           $('#trend-card-title').html('<i class="fa-solid fa-chart-column"></i> Evolución Mensual (% SI)');
           $('#tabla-no-title').html('<i class="fa-solid fa-triangle-exclamation"></i> Justificación Visita No Realizada');
           $('#historial-tabla-titulo').html('<i class="fa-solid fa-clock-rotate-left"></i> Historial de Mantención del Cliente (-2 Meses y Próxima Mantención)');
+          
+          // Restaurar nombre e icono del filtro
+          $('#label-filter-localId').html('<i class="fa-solid fa-hashtag"></i> Local / ID CCU');
+          $('#modal-label-id').text('ID CCU');
+
           $('#container-si-realizadas').show();
           $('#tabla-si-title').html('<i class="fa-solid fa-circle-check"></i> Detalle de Servicios Realizados (SI)');
         }
@@ -1288,11 +1304,12 @@
 
       const getUniqueLocalAndCCU = () => {
         let values = [];
+        const isUrg = currentSheetKey === "urgencias";
         rawData.forEach(d => {
           const loc = d['Local'] || d['local'];
-          const ccu = d['ID CCU'] || d['ID'] || d['Id CCU'] || d['id_ccu'] || d['ID Cliente (Escaneado)'] || d['ID Cliente (Manual)'];
+          const ccu = isUrg ? getNumeroLlamado(d) : getIdCCU(d);
           if (loc) values.push(String(loc).trim());
-          if (ccu) values.push(String(ccu).trim());
+          if (ccu && ccu !== '-') values.push(String(ccu).trim());
         });
         return [...new Set(values.filter(Boolean))].sort();
       };
@@ -1329,11 +1346,13 @@
       const fInicio = fInicioStr ? new Date(fInicioStr) : null;
       const fFin = fFinStr ? new Date(fFinStr) : null;
 
+      const isUrg = currentSheetKey === "urgencias";
+
       return rawData.filter(d => {
         const dOficina = String(d['Oficina'] || d['OFICINA'] || '').trim();
         const dJefe = String(d['Jefe de Ventas'] || d['JEFE DE VENTAS'] || '').trim();
         const dLocal = String(d['Local'] || '').trim();
-        const dIdCCU = String(d['ID CCU'] || d['ID'] || d['Id CCU'] || '').trim();
+        const dIdCCU = String(isUrg ? getNumeroLlamado(d) : getIdCCU(d)).trim();
         const dCliente = String(getNombreCliente(d)).trim();
         
         const rawFecha = d['Fecha/Hora Ejecución 1'] || d['Fecha Programada 2'] || d['Fecha'] || d['Fecha Realizado'] || d['Fecha/Hora'];
@@ -1544,6 +1563,7 @@
       document.getElementById('tabla-motivos-container').innerHTML = html;
     }
 
+    /* TABLA NO REALIZADAS (ID CCU / N° LLAMADO SEGÚN PESTAÑA) */
     function renderTablaNoRealizadas(data) {
       const noRealizadas = data.filter(d => !isServicioRealizado(d));
       if (noRealizadas.length === 0) {
@@ -1551,12 +1571,15 @@
         return;
       }
 
+      const isUrg = currentSheetKey === "urgencias";
+      const thColId = isUrg ? "N° Llamado" : "ID CCU";
+
       let html = `
         <table>
           <thead>
             <tr>
               <th class="left">Fecha</th>
-              <th class="left">ID CCU</th>
+              <th class="left">${thColId}</th>
               <th class="left">Cliente</th>
               <th class="left">Motivo</th>
               <th style="text-align:center;">Fotos</th>
@@ -1567,7 +1590,7 @@
       noRealizadas.forEach(d => {
         const rawFecha = d['Fecha/Hora Ejecución 1'] || d['Fecha Programada 2'] || d['Fecha'] || d['Fecha Realizado'] || d['Fecha/Hora'] || '-';
         const fechaFormateada = formatDiaMes(rawFecha);
-        const idCCU = getIdCCU(d);
+        const colIdVal = isUrg ? getNumeroLlamado(d) : getIdCCU(d);
         const cliente = getNombreCliente(d);
         const motivo = getMotivoNoServicio(d);
 
@@ -1589,7 +1612,7 @@
         html += `
           <tr>
             <td class="left">${fechaFormateada}</td>
-            <td class="left" style="font-weight: 500;">${idCCU}</td>
+            <td class="left" style="font-weight: 500;">${colIdVal}</td>
             <td class="left">${cliente}</td>
             <td class="left" style="color: #c62828; font-weight: 500;">${motivo}</td>
             <td style="text-align:center;">${fotosHtml}</td>
@@ -1600,6 +1623,7 @@
       document.getElementById('tabla-no-realizadas-container').innerHTML = html;
     }
 
+    /* TABLA SI REALIZADAS */
     function renderTablaSiRealizadas(data) {
       const siRealizadas = data.filter(d => isServicioRealizado(d));
       if (siRealizadas.length === 0) {
@@ -1651,7 +1675,7 @@
       document.getElementById('tabla-si-realizadas-container').innerHTML = html;
     }
 
-    /* HISTORIAL ADAPTATIVO (PREVENTIVA vs URGENCIAS) */
+    /* HISTORIAL ADAPTATIVO (ID CCU EN PREVENTIVA / N° LLAMADO EN URGENCIAS) */
     function renderTablaHistorialCliente() {
       const fOficina = filtersState.oficina.selected;
       const fJefeVentas = filtersState.jefeVentas.selected;
@@ -1664,7 +1688,7 @@
         const dOficina = String(d['Oficina'] || d['OFICINA'] || '').trim();
         const dJefe = String(d['Jefe de Ventas'] || d['JEFE DE VENTAS'] || '').trim();
         const dLocal = String(d['Local'] || '').trim();
-        const dIdCCU = String(d['ID CCU'] || d['ID'] || d['Id CCU'] || '').trim();
+        const dIdCCU = String(esUrgencias ? getNumeroLlamado(d) : getIdCCU(d)).trim();
         const dCliente = String(getNombreCliente(d)).trim();
 
         const matchOficina = fOficina.length === 0 || fOficina.includes(dOficina);
@@ -1685,9 +1709,9 @@
       baseHistorial.forEach(d => {
         const codLocal = String(d['Local'] || d['local'] || '').trim();
         const idCCU = getIdCCU(d);
+        const numLlamado = getNumeroLlamado(d);
         
-        // Asignar una clave de mapa unificada
-        const keyLocal = codLocal || idCCU;
+        const keyLocal = codLocal || idCCU || numLlamado;
         if (!keyLocal || keyLocal === '-') return;
 
         const cliente = getNombreCliente(d);
@@ -1703,6 +1727,7 @@
           globalClientesHistorialMap[keyLocal] = {
             keyLocal: keyLocal,
             idCCU,
+            numLlamado,
             codLocal,
             cliente,
             oficina,
@@ -1732,7 +1757,7 @@
         }
       });
 
-      // Si estamos en Ruta Preventiva, cruzar con la base Maestro de Frecuencias
+      // Si estamos en Ruta Preventiva, cruzar con la base Maestro
       if (!esUrgencias && maestroFrecuencias && maestroFrecuencias.length > 0) {
         maestroFrecuencias.forEach(m => {
           const mLocal = String(m['Local'] || m['local'] || '').trim();
@@ -1764,7 +1789,8 @@
         });
       }
 
-      // Definición de Columnas de Encabezado
+      // Definición de Encabezados Adaptativos
+      const thColId = esUrgencias ? "N° Llamado" : "ID CCU";
       const colPenultima = esUrgencias ? "Penúltima Urgencia" : "Penúltima Mantención";
       const colUltima = esUrgencias ? "Última Urgencia" : "Última Mantención";
       const thProxima = esUrgencias ? "" : `<th style="text-align:center;">Próxima Mantención</th>`;
@@ -1773,7 +1799,7 @@
         <table>
           <thead>
             <tr>
-              <th class="left">ID CCU</th>
+              <th class="left">${thColId}</th>
               <th class="left">Cod. Local</th>
               <th class="left">Nombre Fantasía</th>
               <th class="left">Oficina Comercial</th>
@@ -1824,10 +1850,11 @@
         }
 
         const tdProxima = esUrgencias ? "" : `<td style="text-align:center;"><strong style="color: var(--pepsi-blue);">${formatDiaMes(c.proxima)}</strong></td>`;
+        const valColId = esUrgencias ? (c.numLlamado || c.idCCU) : c.idCCU;
 
         html += `
           <tr>
-            <td class="left"><strong>${c.idCCU}</strong></td>
+            <td class="left"><strong>${valColId}</strong></td>
             <td class="left" style="font-weight: 500;">${c.codLocal}</td>
             <td class="left">${c.cliente}</td>
             <td class="left">${c.oficina}</td>
@@ -1862,8 +1889,10 @@
         $('#modal-status-text').text(esUrgencias ? 'URGENCIA NO RESUELTA' : 'VISITA NO REALIZADA / PENDIENTE');
       }
 
+      const valIdShow = esUrgencias ? (getNumeroLlamado(d) || clienteData.idCCU) : clienteData.idCCU;
+
       $('#modal-date-text').text(formatDiaMes(item.rawFecha));
-      $('#modal-id-ccu').text(clienteData.idCCU || '-');
+      $('#modal-id-ccu').text(valIdShow || '-');
       $('#modal-cod-local').text(clienteData.codLocal || '-');
       $('#modal-cliente').text(clienteData.cliente || '-');
       $('#modal-oficina').text(clienteData.oficina || '-');
