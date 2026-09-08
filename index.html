@@ -716,6 +716,7 @@
       }
     }
 
+    /* REGLA SOLICITADA: LCSCH ES SCHOP / LCPM ES POST MIX */
     function getTipoActivo(d) {
       const codLocal = String(d['ID X LOCAL X TIPO MAQUINA'] || d['Local'] || d['local'] || d['Tipo de Activo'] || '').toUpperCase().trim();
       if (codLocal.startsWith('LCSCH') || codLocal.includes('SCHOP')) return 'Schop';
@@ -757,6 +758,7 @@
       return d['Nombre Receptor'] || d['Nombre Receptor Local'] || d['Receptor'] || '-';
     }
 
+    /* OBTENER CAUSA DE NO VIGENCIA DESDE COLUMNA AC ("Motivo No Vigente") */
     function getMotivoNoServicio(d) {
       if (currentSheetKey === "cobertura") {
         const rawAC = (d['Motivo No Vigente'] || d['Motivo No Servicio'] || d['Motivo'] || '').trim();
@@ -1540,7 +1542,7 @@
       document.getElementById('tabla-si-realizadas-container').innerHTML = html;
     }
 
-    /* HISTORIAL O COBERTURA POR LAS 7 OFICINAS COMERCIALES (Pestaña Cobertura) */
+    /* HISTORIAL O COBERTURA POR OFICINAS COMERCIALES (DINÁMICO CON FILTRADO EN CASCADA) */
     function renderTablaHistorialCliente() {
       const fOficina = filtersState.oficina.selected;
       const fJefeVentas = filtersState.jefeVentas.selected;
@@ -1570,11 +1572,17 @@
         return;
       }
 
-      /* RENDERIZADO EXCLUSIVO PARA COBERTURA DE MANTENCIÓN: SOLO LAS 7 OFICINAS SOLICITADAS */
+      /* RENDERIZADO PARA COBERTURA DE MANTENCIÓN: DINÁMICO SEGÚN OFICINAS FILTRADAS */
       if (esCobertura) {
         const oficinasMap = {};
-        
-        OFICINAS_PERMITIDAS.forEach(of => {
+
+        // Determinar qué oficinas de la lista permitida deben mostrarse
+        let oficinasAMostrar = OFICINAS_PERMITIDAS;
+        if (fOficina.length > 0) {
+          oficinasAMostrar = OFICINAS_PERMITIDAS.filter(of => fOficina.some(fOf => of.includes(fOf.toUpperCase())));
+        }
+
+        oficinasAMostrar.forEach(of => {
           oficinasMap[of] = { vigentes: 0, noVigentes: 0 };
         });
 
@@ -1584,7 +1592,7 @@
         baseData.forEach(d => {
           let oficinaRaw = String(d['Oficina Comercial'] || d['Oficina'] || d['OFICINA'] || '').toUpperCase().trim();
           
-          const oficinaEncontrada = OFICINAS_PERMITIDAS.find(of => oficinaRaw.includes(of));
+          const oficinaEncontrada = oficinasAMostrar.find(of => oficinaRaw.includes(of));
 
           if (oficinaEncontrada) {
             const vigente = isServicioRealizado(d);
@@ -1614,7 +1622,7 @@
             </thead>
             <tbody>`;
 
-        OFICINAS_PERMITIDAS.forEach(oficina => {
+        oficinasAMostrar.forEach(oficina => {
           const v = oficinasMap[oficina].vigentes;
           const nv = oficinasMap[oficina].noVigentes;
           const totOficina = v + nv;
