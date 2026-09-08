@@ -716,7 +716,6 @@
       }
     }
 
-    /* REGLA SOLICITADA: LCSCH ES SCHOP / LCPM ES POST MIX */
     function getTipoActivo(d) {
       const codLocal = String(d['ID X LOCAL X TIPO MAQUINA'] || d['Local'] || d['local'] || d['Tipo de Activo'] || '').toUpperCase().trim();
       if (codLocal.startsWith('LCSCH') || codLocal.includes('SCHOP')) return 'Schop';
@@ -758,7 +757,6 @@
       return d['Nombre Receptor'] || d['Nombre Receptor Local'] || d['Receptor'] || '-';
     }
 
-    /* OBTENER CAUSA DE NO VIGENCIA DESDE COLUMNA AC ("Motivo No Vigente") */
     function getMotivoNoServicio(d) {
       if (currentSheetKey === "cobertura") {
         const rawAC = (d['Motivo No Vigente'] || d['Motivo No Servicio'] || d['Motivo'] || '').trim();
@@ -856,7 +854,6 @@
           
           $('#label-filter-localId').html('<i class="fa-solid fa-phone-volume"></i> N° Llamado');
           
-          // Layout
           $('.filter-date-group').show();
           $('#filter-group-estado').hide();
           $('#trend-kpi-card').show();
@@ -877,7 +874,6 @@
           
           $('#label-filter-localId').html('<i class="fa-solid fa-hashtag"></i> Local / ID CCU');
           
-          // Layout Cobertura
           $('.filter-date-group').hide();
           $('#filter-group-estado').show();
           $('#trend-kpi-card').hide();
@@ -898,7 +894,6 @@
           
           $('#label-filter-localId').html('<i class="fa-solid fa-hashtag"></i> Local / ID CCU');
           
-          // Layout
           $('.filter-date-group').show();
           $('#filter-group-estado').hide();
           $('#trend-kpi-card').show();
@@ -1024,14 +1019,15 @@
       }
     }
 
+    /* FILTRO CASCADA JEFE DE VENTAS ADAPTADO A TODAS LAS BASE (INCLUYENDO COBERTURA) */
     function updateJefeVentasCascadaOptions() {
       const fOficina = filtersState.oficina.selected;
       
       let datasetFiltrado = rawData;
       if (fOficina.length > 0) {
         datasetFiltrado = rawData.filter(d => {
-          const dOficina = String(d['Oficina'] || d['OFICINA'] || '').trim();
-          return fOficina.includes(dOficina);
+          const dOficina = String(d['Oficina Comercial'] || d['Oficina'] || d['OFICINA'] || '').trim().toUpperCase();
+          return fOficina.some(fOf => dOficina.includes(fOf.toUpperCase()));
         });
       }
 
@@ -1149,7 +1145,7 @@
       };
 
       fillFilterUI('mes', getUnique(['Mes', 'mes']));
-      fillFilterUI('oficina', getUnique(['Oficina', 'OFICINA', 'Oficina Comercial']));
+      fillFilterUI('oficina', getUnique(['Oficina Comercial', 'Oficina', 'OFICINA']));
       fillFilterUI('jefeVentas', getUnique(['Jefe de Ventas', 'JEFE DE VENTAS', 'Jefe Ventas']));
       fillFilterUI('localId', getUniqueLocalAndCCU());
       fillFilterUI('cliente', getUnique(['Nombre Fantasía', 'Nombre Fantasía ', 'Nombre de Fantasia', 'Nombre Fantasia', 'Nombre Receptor', 'Cliente', 'cliente']));
@@ -1170,6 +1166,7 @@
       });
     }
 
+    /* FILTRADO MULTI-COLUMNA ROBUSTO (INCLUYENDO SOPORTE DE OFICINA COMERCIAL Y ESTADO EN COBERTURA) */
     function getFilteredDataWithoutMonth() {
       const fOficina = filtersState.oficina.selected;
       const fJefeVentas = filtersState.jefeVentas.selected;
@@ -1185,7 +1182,7 @@
       const isUrg = currentSheetKey === "urgencias";
 
       return rawData.filter(d => {
-        const dOficina = String(d['Oficina'] || d['OFICINA'] || '').trim();
+        const dOficina = String(d['Oficina Comercial'] || d['Oficina'] || d['OFICINA'] || '').trim();
         const dJefe = String(d['Jefe de Ventas'] || d['JEFE DE VENTAS'] || '').trim();
         const dLocal = String(d['Local'] || d['ID X LOCAL X TIPO MAQUINA'] || '').trim();
         const dIdCCU = String(isUrg ? getNumeroLlamado(d) : getIdCCU(d)).trim();
@@ -1195,7 +1192,7 @@
         const rawFecha = d['Fecha/Hora Ejecución 1'] || d['Fecha Programada 2'] || d['Fecha'] || d['Fecha Realizado'] || d['Fecha/Hora'];
         const dFecha = parseDate(rawFecha);
 
-        const matchOficina = fOficina.length === 0 || fOficina.includes(dOficina);
+        const matchOficina = fOficina.length === 0 || fOficina.some(fOf => dOficina.toUpperCase().includes(fOf.toUpperCase()));
         const matchJefe = fJefeVentas.length === 0 || fJefeVentas.includes(dJefe);
         const matchLocalId = fLocalId.length === 0 || fLocalId.includes(dLocal) || fLocalId.includes(dIdCCU);
         const matchCliente = fCliente.length === 0 || fCliente.includes(dCliente);
@@ -1252,11 +1249,10 @@
 
       let grandTotal = totalSI + totalNO;
 
-      // Sincronización del total si estamos en la pestaña Cobertura
       if (currentSheetKey === "cobertura") {
         let cobCountFilter = 0;
         data.forEach(d => {
-          let ofic = String(d['Oficina'] || d['OFICINA'] || d['Oficina Comercial'] || '').toUpperCase().trim();
+          let ofic = String(d['Oficina Comercial'] || d['Oficina'] || d['OFICINA'] || '').toUpperCase().trim();
           if (OFICINAS_PERMITIDAS.some(of => ofic.includes(of))) {
             cobCountFilter++;
           }
@@ -1555,13 +1551,13 @@
       const esCobertura = currentSheetKey === "cobertura";
 
       const baseData = rawData.filter(d => {
-        const dOficina = String(d['Oficina'] || d['OFICINA'] || '').trim();
+        const dOficina = String(d['Oficina Comercial'] || d['Oficina'] || d['OFICINA'] || '').trim();
         const dJefe = String(d['Jefe de Ventas'] || d['JEFE DE VENTAS'] || '').trim();
         const dLocal = String(d['Local'] || d['ID X LOCAL X TIPO MAQUINA'] || '').trim();
         const dIdCCU = String(esUrgencias ? getNumeroLlamado(d) : getIdCCU(d)).trim();
         const dCliente = String(getNombreCliente(d)).trim();
 
-        const matchOficina = fOficina.length === 0 || fOficina.includes(dOficina);
+        const matchOficina = fOficina.length === 0 || fOficina.some(fOf => dOficina.toUpperCase().includes(fOf.toUpperCase()));
         const matchJefe = fJefeVentas.length === 0 || fJefeVentas.includes(dJefe);
         const matchLocalId = fLocalId.length === 0 || fLocalId.includes(dLocal) || fLocalId.includes(dIdCCU);
         const matchCliente = fCliente.length === 0 || fCliente.includes(dCliente);
@@ -1586,7 +1582,7 @@
         let grandNoVigentes = 0;
 
         baseData.forEach(d => {
-          let oficinaRaw = String(d['Oficina'] || d['OFICINA'] || d['Oficina Comercial'] || '').toUpperCase().trim();
+          let oficinaRaw = String(d['Oficina Comercial'] || d['Oficina'] || d['OFICINA'] || '').toUpperCase().trim();
           
           const oficinaEncontrada = OFICINAS_PERMITIDAS.find(of => oficinaRaw.includes(of));
 
@@ -1668,7 +1664,7 @@
         if (!keyLocal || keyLocal === '-') return;
 
         const cliente = getNombreCliente(d);
-        const oficina = d['Oficina'] || d['OFICINA'] || '-';
+        const oficina = d['Oficina Comercial'] || d['Oficina'] || d['OFICINA'] || '-';
         const jefe = d['Jefe de Ventas'] || d['JEFE DE VENTAS'] || '-';
         
         const rawFecha = d['Fecha Realizado'] || d['Fecha/Hora Ejecución 1'] || d['Fecha Programada 2'] || d['Fecha'] || d['Fecha/Hora'] || '';
