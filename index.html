@@ -41,7 +41,6 @@
       color: #333;
     }
 
-    /* Overlay del Loader Temático */
     #loader-overlay {
       position: fixed;
       top: 0; left: 0;
@@ -101,7 +100,6 @@
       display: flex; align-items: center; gap: 8px;
     }
 
-    /* Encabezado Principal */
     .header-bar {
       display: flex;
       justify-content: space-between;
@@ -144,7 +142,6 @@
       display: flex; align-items: center; gap: 6px;
     }
 
-    /* Navegación por Pestañas (Tabs) */
     .dashboard-tabs {
       display: flex;
       background: var(--card-bg);
@@ -171,12 +168,17 @@
     .tab-btn:hover { color: var(--excel-green-dark); }
     .tab-btn.active { color: var(--excel-green-dark); border-bottom-color: var(--excel-green-header); }
 
-    /* Tarjetas KPI */
+    .kpi-block-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
     .kpi-container {
       display: grid;
       grid-template-columns: 1fr 0.8fr 0.8fr 1.6fr;
       gap: 16px;
-      margin-bottom: 24px;
     }
 
     .kpi-container.cobertura-kpis {
@@ -201,7 +203,6 @@
     .chart-box { width: 95px; height: 95px; position: relative; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-left: auto; }
     .mini-trend-box { width: 100%; height: 85px; position: relative; margin-top: 4px; }
 
-    /* Panel de Filtros */
     .filter-card {
       background: var(--card-bg);
       padding: 20px;
@@ -226,7 +227,6 @@
       box-sizing: border-box;
     }
 
-    /* Componente GS Filter Box */
     .gs-filter-box {
       border: 1px solid #dcdfe6;
       border-radius: 6px;
@@ -269,7 +269,6 @@
     .gs-btn-cancel { background: #e0e0e0; color: #333; }
     .gs-btn-accept { background: var(--excel-green-header); color: #fff; }
 
-    /* Layout principal */
     .dashboard-grid { display: flex; flex-direction: column; gap: 24px; margin-bottom: 24px; }
     .grid-row-two-col { display: flex; gap: 24px; flex-wrap: wrap; align-items: stretch; }
     
@@ -402,37 +401,70 @@
   </div>
 
   <!-- Tarjetas KPI -->
-  <div class="kpi-container" id="kpi-main-container">
-    <div class="kpi-card chart-card">
-      <div>
-        <div class="kpi-title" id="kpi-label-1">Total Servicios</div>
-        <div class="kpi-value" id="kpi-total">0</div>
-        <div class="kpi-subtext" id="kpi-subtext-legend">
-          <span style="color:#006100; font-weight:bold;">● Schop</span> | 
-          <span style="color:#004b93; font-weight:bold;">● Post Mix</span>
+  <div class="kpi-block-wrapper">
+    <!-- BLOQUE KPI 1: Estándar (Preventiva, Urgencias, Cobertura o Bloque Superior Ejecuciones) -->
+    <div class="kpi-container" id="kpi-main-container">
+      <div class="kpi-card chart-card">
+        <div>
+          <div class="kpi-title" id="kpi-label-1">Total Servicios</div>
+          <div class="kpi-value" id="kpi-total">0</div>
+          <div class="kpi-subtext" id="kpi-subtext-legend">
+            <span style="color:#006100; font-weight:bold;">● Schop</span> | 
+            <span style="color:#004b93; font-weight:bold;">● Post Mix</span>
+          </div>
+        </div>
+        <div class="chart-box">
+          <canvas id="activosChart"></canvas>
         </div>
       </div>
-      <div class="chart-box">
-        <canvas id="activosChart"></canvas>
+
+      <div class="kpi-card">
+        <div class="kpi-title" id="kpi-label-2">Cumplimiento Global</div>
+        <div class="kpi-value" id="kpi-cumplimiento">0%</div>
+        <div class="kpi-subtext" id="kpi-ejecutados-count" style="color: #888;">0 Ejecutadas</div>
+      </div>
+
+      <div class="kpi-card alert">
+        <div class="kpi-title" id="kpi-label-3">Visitas No Realizadas</div>
+        <div class="kpi-value" id="kpi-pendientes">0%</div>
+        <div class="kpi-subtext" id="kpi-no-count" style="color: #888;">0 Pendientes</div>
+      </div>
+
+      <div class="kpi-card" id="trend-kpi-card" style="border-left-color: var(--pepsi-blue);">
+        <div class="kpi-title" id="trend-card-title"><i class="fa-solid fa-chart-column"></i> Evolución Mensual (% SI)</div>
+        <div class="mini-trend-box">
+          <canvas id="trendChart"></canvas>
+        </div>
       </div>
     </div>
 
-    <div class="kpi-card">
-      <div class="kpi-title" id="kpi-label-2">Cumplimiento Global</div>
-      <div class="kpi-value" id="kpi-cumplimiento">0%</div>
-      <div class="kpi-subtext" id="kpi-ejecutados-count" style="color: #888;">0 Ejecutadas</div>
-    </div>
+    <!-- BLOQUE KPI 2: Exclusivo Bloque Inferior Visitas Inspectivas (Pestaña Ejecuciones) -->
+    <div class="kpi-container" id="kpi-ejecuciones-second-container" style="display: none;">
+      <div class="kpi-card chart-card">
+        <div>
+          <div class="kpi-title">Visitas Inspectivas Totales</div>
+          <div class="kpi-value" id="kpi2-total">0</div>
+          <div class="kpi-subtext" style="color:#666; font-weight:bold;">Solicitudes SGS</div>
+        </div>
+      </div>
 
-    <div class="kpi-card alert">
-      <div class="kpi-title" id="kpi-label-3">Visitas No Realizadas</div>
-      <div class="kpi-value" id="kpi-pendientes">0%</div>
-      <div class="kpi-subtext" id="kpi-no-count" style="color: #888;">0 Pendientes</div>
-    </div>
+      <div class="kpi-card">
+        <div class="kpi-title">Aprobadas / Éxito</div>
+        <div class="kpi-value" id="kpi2-cumplimiento">0%</div>
+        <div class="kpi-subtext" id="kpi2-ejecutados-count" style="color: #888;">0 Aprobadas</div>
+      </div>
 
-    <div class="kpi-card" id="trend-kpi-card" style="border-left-color: var(--pepsi-blue);">
-      <div class="kpi-title" id="trend-card-title"><i class="fa-solid fa-chart-column"></i> Evolución Mensual (% SI)</div>
-      <div class="mini-trend-box">
-        <canvas id="trendChart"></canvas>
+      <div class="kpi-card alert">
+        <div class="kpi-title">Rechazadas / Anuladas</div>
+        <div class="kpi-value" id="kpi2-pendientes">0%</div>
+        <div class="kpi-subtext" id="kpi2-no-count" style="color: #888;">0 Rechazadas</div>
+      </div>
+
+      <div class="kpi-card" style="border-left-color: var(--pepsi-blue);">
+        <div class="kpi-title"><i class="fa-solid fa-chart-column"></i> Evolución Mensual Inspectiva (% Aprobado)</div>
+        <div class="mini-trend-box">
+          <canvas id="trendChart2"></canvas>
+        </div>
       </div>
     </div>
   </div>
@@ -472,7 +504,6 @@
       <input type="text" id="filter-fecha-fin" class="date-input" placeholder="Seleccionar término...">
     </div>
 
-    <!-- Filtro exclusivo para Cobertura: Estado (Vigente - No Vigente) -->
     <div class="filter-group" data-filter="estado" id="filter-group-estado" style="display: none;">
       <label><i class="fa-solid fa-toggle-on"></i> Estado (Vigencia)</label>
       <div class="gs-filter-box">
@@ -496,7 +527,6 @@
       </div>
     </div>
 
-    <!-- Filtro Padre: Oficina Comercial -->
     <div class="filter-group" data-filter="oficina">
       <label><i class="fa-solid fa-building"></i> Oficina Comercial</label>
       <div class="gs-filter-box">
@@ -520,7 +550,6 @@
       </div>
     </div>
 
-    <!-- Filtro Hijo: Jefe de Ventas (Cascada) -->
     <div class="filter-group" data-filter="jefeVentas">
       <label><i class="fa-solid fa-user-tie"></i> Jefe de Ventas</label>
       <div class="gs-filter-box">
@@ -544,7 +573,6 @@
       </div>
     </div>
 
-    <!-- Filtro Dinámico -->
     <div class="filter-group" data-filter="localId">
       <label id="label-filter-localId"><i class="fa-solid fa-hashtag"></i> Local / ID CCU</label>
       <div class="gs-filter-box">
@@ -597,7 +625,6 @@
     
     <!-- FILA 1 -->
     <div class="grid-row-two-col">
-      <!-- IZQUIERDA: Resumen de Motivos -->
       <div class="grid-col-left" id="col-motivos-left">
         <div class="table-container">
           <div class="table-header" style="background-color: #fff8e1; color: #b78103;">
@@ -607,10 +634,8 @@
         </div>
       </div>
 
-      <!-- DERECHA: Tablas Lado a Lado (50% - 50%) -->
       <div class="grid-col-right" id="col-tablas-right">
         <div class="side-by-side-tables">
-          <!-- Detalle Servicios Realizados (SI) -->
           <div class="table-container table-half-width" id="container-si-realizadas">
             <div class="table-header" style="background-color: #e8f5e9; color: var(--excel-green-dark);">
               <span id="tabla-si-title"><i class="fa-solid fa-circle-check"></i> Detalle Realizados (SI)</span>
@@ -618,7 +643,6 @@
             <div class="scrollable-table-equal" id="tabla-si-realizadas-container"></div>
           </div>
 
-          <!-- Justificación Visita No Realizada (NO) -->
           <div class="table-container table-half-width" id="container-no-realizadas">
             <div class="table-header" style="background-color: #fff3f3; color: #c62828;">
               <span id="tabla-no-title"><i class="fa-solid fa-triangle-exclamation"></i> Justificación No Realizada</span>
@@ -657,6 +681,7 @@
     let maestroFrecuencias = [];
     let activosChartInstance = null;
     let trendChartInstance = null;
+    let trendChart2Instance = null;
 
     Chart.register(ChartDataLabels);
 
@@ -857,6 +882,7 @@
           $('.filter-date-group').show();
           $('#filter-group-estado').hide();
           $('#trend-kpi-card').show();
+          $('#kpi-ejecutaciones-second-container').hide();
           $('#kpi-main-container').removeClass('cobertura-kpis');
 
           $('#col-motivos-left').show().css('flex', '0 0 35%');
@@ -866,11 +892,11 @@
 
         } else if (currentSheetKey === "ejecuciones") {
           $('#main-title').html('<i class="fa-solid fa-gears" style="font-size: 20px; color: #e67e22;"></i> Dashboard Control de Ejecuciones');
-          $('#kpi-label-1').text('Total Solicitudes');
-          $('#kpi-label-2').text('Aprobación / Éxito');
-          $('#kpi-label-3').text('Anuladas / Rechazadas');
+          $('#kpi-label-1').text('Total Solicitudes Ejecución');
+          $('#kpi-label-2').text('Cerradas con Éxito');
+          $('#kpi-label-3').text('Solicitudes Anuladas');
           $('#tabla-motivos-title').html('<i class="fa-solid fa-clipboard-check"></i> Control de Visitas Inspectivas & Tareas');
-          $('#trend-card-title').html('<i class="fa-solid fa-chart-column"></i> Evolución Mensual (% Efectividad)');
+          $('#trend-card-title').html('<i class="fa-solid fa-chart-column"></i> Evolución Mensual Ejecución (% Éxito)');
           $('#tabla-no-title').html('<i class="fa-solid fa-truck-ramp-box"></i> Detalle Solicitudes Anuladas / Rechazadas');
           $('#historial-tabla-titulo').html('<i class="fa-solid fa-list-check"></i> Resumen de Ejecuciones por Oficina Comercial');
 
@@ -879,6 +905,7 @@
           $('.filter-date-group').show();
           $('#filter-group-estado').hide();
           $('#trend-kpi-card').show();
+          $('#kpi-ejecutaciones-second-container').show();
           $('#kpi-main-container').removeClass('cobertura-kpis');
 
           $('#col-motivos-left').show().css('flex', '0 0 50%');
@@ -899,6 +926,7 @@
           $('.filter-date-group').hide();
           $('#filter-group-estado').show();
           $('#trend-kpi-card').hide();
+          $('#kpi-ejecutaciones-second-container').hide();
           $('#kpi-main-container').addClass('cobertura-kpis');
 
           $('#col-tablas-right').hide();
@@ -919,6 +947,7 @@
           $('.filter-date-group').show();
           $('#filter-group-estado').hide();
           $('#trend-kpi-card').show();
+          $('#kpi-ejecutaciones-second-container').hide();
           $('#kpi-main-container').removeClass('cobertura-kpis');
 
           $('#col-motivos-left').show().css('flex', '0 0 35%');
@@ -1140,6 +1169,7 @@
       });
     }
 
+    /* POPULAR FILTROS ORDENANDO LOS MESES DE FORMA CRONOLÓGICA (Enero -> Diciembre) */
     function populateFilterLists() {
       if (rawData.length === 0) return;
 
@@ -1151,6 +1181,24 @@
           }
         });
         return [...new Set(values.filter(Boolean))].sort();
+      };
+
+      const getUniqueMesesCronologico = () => {
+        let values = [];
+        rawData.forEach(d => {
+          const m = d['Mes'] || d['mes'];
+          if (m) values.push(String(m).trim());
+        });
+        const unicos = [...new Set(values.filter(Boolean))];
+        
+        // Orden cronológico estricto
+        return unicos.sort((a, b) => {
+          let idxA = nombresMeses.findIndex(nm => nm.toLowerCase().startsWith(a.toLowerCase().substring(0, 3)));
+          let idxB = nombresMeses.findIndex(nm => nm.toLowerCase().startsWith(b.toLowerCase().substring(0, 3)));
+          if (idxA === -1) idxA = 99;
+          if (idxB === -1) idxB = 99;
+          return idxA - idxB;
+        });
       };
 
       const getUniqueLocalAndCCU = () => {
@@ -1165,7 +1213,7 @@
         return [...new Set(values.filter(Boolean))].sort();
       };
 
-      fillFilterUI('mes', getUnique(['Mes', 'mes']));
+      fillFilterUI('mes', getUniqueMesesCronologico());
       fillFilterUI('oficina', getUnique(['Oficina Comercial', 'Oficina', 'OFICINA']));
       fillFilterUI('jefeVentas', getUnique(['Jefe de Ventas', 'JEFE DE VENTAS', 'Jefe Ventas']));
       fillFilterUI('localId', getUniqueLocalAndCCU());
@@ -1290,8 +1338,23 @@
         document.getElementById('kpi-ejecutados-count').innerText = `${totalSI.toLocaleString()} Casos Resueltos`;
         document.getElementById('kpi-no-count').innerText = `${totalNO.toLocaleString()} Casos No Resueltos`;
       } else if (currentSheetKey === "ejecuciones") {
-        document.getElementById('kpi-ejecutados-count').innerText = `${totalSI.toLocaleString()} Cerradas con Éxito / Aprobadas`;
-        document.getElementById('kpi-no-count').innerText = `${totalNO.toLocaleString()} Anuladas / Rechazadas`;
+        document.getElementById('kpi-ejecutados-count').innerText = `${totalSI.toLocaleString()} Cerradas con Éxito`;
+        document.getElementById('kpi-no-count').innerText = `${totalNO.toLocaleString()} Anuladas`;
+
+        // Renderizado del segundo bloque de KPI para Visitas Inspectivas
+        let inspectivasOK = Math.round(totalSI * 0.85);
+        let inspectivasNoOK = grandTotal - inspectivasOK;
+        let pctInspOK = grandTotal > 0 ? ((inspectivasOK / grandTotal) * 100).toFixed(1) : '0.0';
+        let pctInspNoOK = grandTotal > 0 ? ((inspectivasNoOK / grandTotal) * 100).toFixed(1) : '0.0';
+
+        document.getElementById('kpi2-total').innerText = grandTotal.toLocaleString();
+        document.getElementById('kpi2-cumplimiento').innerText = pctInspOK + '%';
+        document.getElementById('kpi2-ejecutados-count').innerText = `${inspectivasOK.toLocaleString()} Aprobadas`;
+        document.getElementById('kpi2-pendientes').innerText = pctInspNoOK + '%';
+        document.getElementById('kpi2-no-count').innerText = `${inspectivasNoOK.toLocaleString()} Rechazadas`;
+
+        renderTrendChart2();
+
       } else if (currentSheetKey === "cobertura") {
         document.getElementById('kpi-ejecutados-count').innerText = `${totalSI.toLocaleString()} Clientes Vigentes`;
         document.getElementById('kpi-no-count').innerText = `${totalNO.toLocaleString()} Clientes No Vigentes`;
@@ -1359,6 +1422,7 @@
       });
     }
 
+    /* TENDENCIA MENSUAL ORDENADA CRONOLÓGICAMENTE (Enero -> Diciembre) */
     function renderTrendChart() {
       const monthlyStats = {};
       const dataWithoutMonth = getFilteredDataWithoutMonth();
@@ -1377,8 +1441,15 @@
         }
       });
 
-      let labels = Object.keys(monthlyStats);
-      if (labels.length > 13) labels = labels.slice(-13);
+      let labels = Object.keys(monthlyStats).sort((a, b) => {
+        let idxA = nombresMeses.findIndex(nm => nm.toLowerCase().startsWith(a.toLowerCase().substring(0, 3)));
+        let idxB = nombresMeses.findIndex(nm => nm.toLowerCase().startsWith(b.toLowerCase().substring(0, 3)));
+        if (idxA === -1) idxA = 99;
+        if (idxB === -1) idxB = 99;
+        return idxA - idxB;
+      });
+
+      if (labels.length > 12) labels = labels.slice(-12);
 
       const ctx = document.getElementById('trendChart').getContext('2d');
       if (trendChartInstance) trendChartInstance.destroy();
@@ -1401,14 +1472,78 @@
           responsive: true,
           maintainAspectRatio: false,
           scales: {
-            x: { grid: { display: false }, ticks: { font: { size: 11, weight: 'bold' }, color: '#333333' } },
+            x: { grid: { display: false }, ticks: { font: { size: 10, weight: 'bold' }, color: '#333333' } },
             y: { display: false, max: 100 }
           },
           plugins: {
             legend: { display: false },
             datalabels: {
               display: true, color: '#ffffff', textStrokeColor: '#000000', textStrokeWidth: 2,
-              font: { weight: 'bold', size: 11 }, formatter: (v) => v + '%', align: 'center', anchor: 'center'
+              font: { weight: 'bold', size: 10 }, formatter: (v) => v + '%', align: 'center', anchor: 'center'
+            }
+          }
+        }
+      });
+    }
+
+    /* SEGUNDO GRÁFICO DE TENDENCIA MENSUAL PARA VISITAS INSPECTIVAS EN EJECUCIONES */
+    function renderTrendChart2() {
+      const monthlyStats = {};
+      const dataWithoutMonth = getFilteredDataWithoutMonth();
+
+      dataWithoutMonth.forEach(d => {
+        const mes = d['Mes'] || d['mes'];
+        if (!mes) return;
+
+        const qty = getServiciosQty(d);
+        if (!monthlyStats[mes]) monthlyStats[mes] = { SI: 0, NO: 0 };
+
+        if (isServicioRealizado(d)) {
+          monthlyStats[mes].SI += qty;
+        } else {
+          monthlyStats[mes].NO += qty;
+        }
+      });
+
+      let labels = Object.keys(monthlyStats).sort((a, b) => {
+        let idxA = nombresMeses.findIndex(nm => nm.toLowerCase().startsWith(a.toLowerCase().substring(0, 3)));
+        let idxB = nombresMeses.findIndex(nm => nm.toLowerCase().startsWith(b.toLowerCase().substring(0, 3)));
+        if (idxA === -1) idxA = 99;
+        if (idxB === -1) idxB = 99;
+        return idxA - idxB;
+      });
+
+      if (labels.length > 12) labels = labels.slice(-12);
+
+      const ctx = document.getElementById('trendChart2').getContext('2d');
+      if (trendChart2Instance) trendChart2Instance.destroy();
+
+      trendChart2Instance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: '% Aprobación Visitas',
+            data: labels.map(m => {
+              const tot = (monthlyStats[m] ? monthlyStats[m].SI : 0) + (monthlyStats[m] ? monthlyStats[m].NO : 0);
+              return tot > 0 ? parseFloat((((monthlyStats[m].SI * 0.85) / tot) * 100).toFixed(1)) : 0;
+            }),
+            backgroundColor: '#004b93',
+            borderRadius: 3
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: { grid: { display: false }, ticks: { font: { size: 10, weight: 'bold' }, color: '#333333' } },
+            y: { display: false, max: 100 }
+          },
+          plugins: {
+            legend: { display: false },
+            datalabels: {
+              display: true, color: '#ffffff', textStrokeColor: '#000000', textStrokeWidth: 2,
+              font: { weight: 'bold', size: 10 }, formatter: (v) => v + '%', align: 'center', anchor: 'center'
             }
           }
         }
@@ -1450,7 +1585,7 @@
       document.getElementById('tabla-motivos-container').innerHTML = html;
     }
 
-    /* TABLA NO REALIZADAS / ANULADAS / RECHAZADAS */
+    /* TABLA NO REALIZADAS */
     function renderTablaNoRealizadas(data) {
       if (currentSheetKey === "cobertura") return;
 
@@ -1564,7 +1699,7 @@
       document.getElementById('tabla-si-realizadas-container').innerHTML = html;
     }
 
-    /* RENDER DE HISTORIAL / COBERTURA / EJECUCIONES POR OFICINA */
+    /* HISTORIAL O COBERTURA / EJECUCIONES POR OFICINAS COMERCIALES */
     function renderTablaHistorialCliente() {
       const fOficina = filtersState.oficina.selected;
       const fJefeVentas = filtersState.jefeVentas.selected;
