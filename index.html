@@ -645,7 +645,7 @@
     const SHEETS_URLS = {
       preventiva: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQHJUM26MwbPurx5FdJGQc-I-vlfwyEZYbPGeYE0F5HxEWpbMyhVeJpJKK7XjCD6No8RZCfeHgWaxZZ/pub?output=csv",
       urgencias: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTTNzXfjkM4mtZrHyPjzSVqjYOTG0tVFReUG3FPpR-nkyCud1hoR8rRPpqPToiz82Vmp0A5ubJqz3zx/pub?output=csv",
-      ejecuciones: "",
+      ejecuciones: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQX1dUNGJcCrXEaZU5O-7NgAlGE506fg1arGc60-qd1TTPK3W_aM5NnK_drTT1in_HyH7-FbeLI-adg/pub?output=csv",
       cobertura: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTF-Kk3diC7SHMgZKKJVytUQ96yjgAaDD_zWXxvM9jk7eTzfwutocJiB3Lx7ARxzp2EYlVlSTdZXM5J/pub?output=csv",
       frecuenciasMaestro: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQpO3A3QI0Na_JPUWPuLNalUZeVirnbhnvss-4j4_suvnD2OcKhbXeO7jJ7SKtbS8KWeTWp-GECe9i2/pub?output=csv"
     };
@@ -716,7 +716,6 @@
       }
     }
 
-    /* REGLA SOLICITADA: LCSCH ES SCHOP / LCPM ES POST MIX */
     function getTipoActivo(d) {
       const codLocal = String(d['ID X LOCAL X TIPO MAQUINA'] || d['Local'] || d['local'] || d['Tipo de Activo'] || '').toUpperCase().trim();
       if (codLocal.startsWith('LCSCH') || codLocal.includes('SCHOP')) return 'Schop';
@@ -758,7 +757,6 @@
       return d['Nombre Receptor'] || d['Nombre Receptor Local'] || d['Receptor'] || '-';
     }
 
-    /* OBTENER CAUSA DE NO VIGENCIA DESDE COLUMNA AC ("Motivo No Vigente") */
     function getMotivoNoServicio(d) {
       if (currentSheetKey === "cobertura") {
         const rawAC = (d['Motivo No Vigente'] || d['Motivo No Servicio'] || d['Motivo'] || '').trim();
@@ -835,11 +833,6 @@
       $('.tab-btn').on('click', function() {
         const targetSheet = $(this).data('sheet');
 
-        if (targetSheet === "ejecuciones" && !SHEETS_URLS.ejecuciones) {
-          alert("La hoja de Ejecuciones estará disponible próximamente.");
-          return;
-        }
-
         $('.tab-btn').removeClass('active');
         $(this).addClass('active');
         currentSheetKey = targetSheet;
@@ -862,6 +855,28 @@
           $('#kpi-main-container').removeClass('cobertura-kpis');
 
           $('#col-motivos-left').show().css('flex', '0 0 35%');
+          $('#col-tablas-right').show();
+          $('#container-si-realizadas').hide();
+          $('#container-no-realizadas').show().css('width', '100%');
+
+        } else if (currentSheetKey === "ejecuciones") {
+          $('#main-title').html('<i class="fa-solid fa-gears" style="font-size: 20px; color: #e67e22;"></i> Dashboard Control de Ejecuciones');
+          $('#kpi-label-1').text('Total Operaciones');
+          $('#kpi-label-2').text('Aprobación Global');
+          $('#kpi-label-3').text('Operaciones Rechazadas');
+          $('#tabla-motivos-title').html('<i class="fa-solid fa-list-check"></i> Visitas Inspectivas & Tareas');
+          $('#trend-card-title').html('<i class="fa-solid fa-chart-column"></i> Evolución Mensual (% Aprobado)');
+          $('#tabla-no-title').html('<i class="fa-solid fa-truck-ramp-box"></i> Control Instalaciones & Retiros');
+          $('#historial-tabla-titulo').html('<i class="fa-solid fa-list-check"></i> Detalle Operativo de Ejecuciones');
+
+          $('#label-filter-localId').html('<i class="fa-solid fa-hashtag"></i> Local / ID CCU');
+
+          $('.filter-date-group').show();
+          $('#filter-group-estado').hide();
+          $('#trend-kpi-card').show();
+          $('#kpi-main-container').removeClass('cobertura-kpis');
+
+          $('#col-motivos-left').show().css('flex', '0 0 50%');
           $('#col-tablas-right').show();
           $('#container-si-realizadas').hide();
           $('#container-no-realizadas').show().css('width', '100%');
@@ -1021,7 +1036,6 @@
       }
     }
 
-    /* FILTRO CASCADA JEFE DE VENTAS ADAPTADO A TODAS LAS BASE (INCLUYENDO COBERTURA) */
     function updateJefeVentasCascadaOptions() {
       const fOficina = filtersState.oficina.selected;
       
@@ -1168,7 +1182,6 @@
       });
     }
 
-    /* FILTRADO MULTI-COLUMNA ROBUSTO (INCLUYENDO SOPORTE DE OFICINA COMERCIAL Y ESTADO EN COBERTURA) */
     function getFilteredDataWithoutMonth() {
       const fOficina = filtersState.oficina.selected;
       const fJefeVentas = filtersState.jefeVentas.selected;
@@ -1394,7 +1407,6 @@
       });
     }
 
-    /* RESUMEN DE CAUSAS DE NO VIGENCIA (COLUMNA AC) */
     function renderTablaMotivos(data, totalNO, grandTotal) {
       const motivosStats = {};
       const noRealizadasData = data.filter(d => !isServicioRealizado(d));
@@ -1428,7 +1440,6 @@
       document.getElementById('tabla-motivos-container').innerHTML = html;
     }
 
-    /* TABLA NO REALIZADAS */
     function renderTablaNoRealizadas(data) {
       if (currentSheetKey === "cobertura") return;
 
@@ -1490,7 +1501,6 @@
       document.getElementById('tabla-no-realizadas-container').innerHTML = html;
     }
 
-    /* TABLA SI REALIZADAS */
     function renderTablaSiRealizadas(data) {
       const siRealizadas = data.filter(d => isServicioRealizado(d));
       if (siRealizadas.length === 0) {
@@ -1542,7 +1552,6 @@
       document.getElementById('tabla-si-realizadas-container').innerHTML = html;
     }
 
-    /* HISTORIAL O COBERTURA POR OFICINAS COMERCIALES (DINÁMICO CON FILTRADO EN CASCADA) */
     function renderTablaHistorialCliente() {
       const fOficina = filtersState.oficina.selected;
       const fJefeVentas = filtersState.jefeVentas.selected;
@@ -1576,7 +1585,6 @@
       if (esCobertura) {
         const oficinasMap = {};
 
-        // Determinar qué oficinas de la lista permitida deben mostrarse
         let oficinasAMostrar = OFICINAS_PERMITIDAS;
         if (fOficina.length > 0) {
           oficinasAMostrar = OFICINAS_PERMITIDAS.filter(of => fOficina.some(fOf => of.includes(fOf.toUpperCase())));
