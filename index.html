@@ -378,19 +378,13 @@
     </div>
   </div>
 
-  <!-- Navegación por Pestañas -->
+  <!-- Navegación por Pestañas Estables -->
   <div class="dashboard-tabs">
     <button class="tab-btn active" data-sheet="preventiva">
       <i class="fa-solid fa-calendar-check"></i> Ruta Preventiva
     </button>
     <button class="tab-btn" data-sheet="urgencias">
       <i class="fa-solid fa-truck-medical"></i> Urgencias
-    </button>
-    <button class="tab-btn" data-sheet="ejecuciones">
-      <i class="fa-solid fa-gears"></i> Ejecuciones
-    </button>
-    <button class="tab-btn" data-sheet="visitas">
-      <i class="fa-solid fa-clipboard-check"></i> Visitas Inspectivas
     </button>
     <button class="tab-btn" data-sheet="cobertura">
       <i class="fa-solid fa-shield-halved"></i> Cobertura de Mantención
@@ -586,6 +580,7 @@
 
   <!-- Grid Principal -->
   <div class="dashboard-grid">
+    <!-- FILA 1 -->
     <div class="grid-row-two-col">
       <div class="grid-col-left" id="col-motivos-left">
         <div class="table-container">
@@ -597,7 +592,7 @@
       </div>
 
       <div class="grid-col-right" id="col-tablas-right">
-        <div class="side-by-side-tables" id="wrap-si-no-tables">
+        <div class="side-by-side-tables">
           <div class="table-container table-half-width" id="container-si-realizadas">
             <div class="table-header" style="background-color: #e8f5e9; color: var(--excel-green-dark);">
               <span id="tabla-si-title"><i class="fa-solid fa-circle-check"></i> Detalle Realizados (SI)</span>
@@ -612,16 +607,10 @@
             <div class="scrollable-table-equal" id="tabla-no-realizadas-container"></div>
           </div>
         </div>
-
-        <div class="table-container" id="container-tiempos-ejecuciones" style="display: none;">
-          <div class="table-header" style="background-color: #e8f5e9; color: var(--excel-green-dark);">
-            <span><i class="fa-solid fa-clock"></i> Tiempos Promedio de Gestión por Oficina</span>
-          </div>
-          <div class="scrollable-table-equal" id="tabla-tiempos-container"></div>
-        </div>
       </div>
     </div>
 
+    <!-- FILA 2: HISTORIAL DEL CLIENTE O CONTROL DE COBERTURA -->
     <div class="grid-row-full" id="row-historial-bottom">
       <div class="table-container">
         <div class="table-header" style="background-color: #0d47a1; color: #ffffff;">
@@ -636,8 +625,6 @@
     const SHEETS_URLS = {
       preventiva: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQHJUM26MwbPurx5FdJGQc-I-vlfwyEZYbPGeYE0F5HxEWpbMyhVeJpJKK7XjCD6No8RZCfeHgWaxZZ/pub?output=csv",
       urgencias: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTTNzXfjkM4mtZrHyPjzSVqjYOTG0tVFReUG3FPpR-nkyCud1hoR8rRPpqPToiz82Vmp0A5ubJqz3zx/pub?output=csv",
-      ejecuciones: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQX1dUNGJcCrXEaZU5O-7NgAlGE506fg1arGc60-qd1TTPK3W_aM5NnK_drTT1in_HyH7-FbeLI-adg/pub?output=csv",
-      visitas: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQX1dUNGJcCrXEaZU5O-7NgAlGE506fg1arGc60-qd1TTPK3W_aM5NnK_drTT1in_HyH7-FbeLI-adg/pub?output=csv",
       cobertura: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTF-Kk3diC7SHMgZKKJVytUQ96yjgAaDD_zWXxvM9jk7eTzfwutocJiB3Lx7ARxzp2EYlVlSTdZXM5J/pub?output=csv",
       frecuenciasMaestro: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQpO3A3QI0Na_JPUWPuLNalUZeVirnbhnvss-4j4_suvnD2OcKhbXeO7jJ7SKtbS8KWeTWp-GECe9i2/pub?output=csv"
     };
@@ -689,78 +676,77 @@
       });
     }
 
-    /* BUSCADOR DE VALOR POR CLAVE FLEXIBLE (Ignora mayúsculas y espacios invisibles) */
-    function getPropValue(d, keywords) {
-      if (!d) return '';
-      const keys = Object.keys(d);
-      for (let kw of keywords) {
-        const foundKey = keys.find(k => k.toLowerCase().replace(/\s+/g, '').includes(kw.toLowerCase().replace(/\s+/g, '')));
-        if (foundKey && d[foundKey] !== undefined && d[foundKey] !== null && String(d[foundKey]).trim() !== '') {
-          return String(d[foundKey]).trim();
-        }
-      }
-      return '';
-    }
-
     function getServiciosQty(d) {
-      if (currentSheetKey === "urgencias" || currentSheetKey === "cobertura" || currentSheetKey === "ejecuciones" || currentSheetKey === "visitas") return 1;
-      const val = getPropValue(d, ['Servicios', 'servicios', 'Cant', 'Cantidad']);
+      if (currentSheetKey === "urgencias" || currentSheetKey === "cobertura") return 1;
+      const val = d['Servicios'] || d['servicios'] || d['SERVICIOS'] || d['Cant'] || d['Cantidad'];
       const num = parseInt(val, 10);
       return isNaN(num) ? 1 : num;
     }
 
     function isServicioRealizado(d) {
       if (currentSheetKey === "urgencias") {
-        const res = getPropValue(d, ['Pudo Resolver Problema', 'Resuelto']).toUpperCase();
+        const res = String(d['Pudo Resolver Problema'] || d['Pudo resolver problema'] || d['Resuelto'] || '').toUpperCase().trim();
         return res === "SI" || res === "1" || res === "RESUELTO";
       } else if (currentSheetKey === "cobertura") {
-        const res = getPropValue(d, ['ESTADO (VIGENTE - NO VIGENTE)', 'ESTADO', 'Vigencia', 'Vigente']).toUpperCase();
+        const res = String(d['ESTADO (VIGENTE - NO VIGENTE)'] || d['ESTADO'] || d['Vigencia'] || d['Vigente'] || '').toUpperCase().trim();
         return res === "VIGENTE" || res === "SI" || res === "1";
-      } else if (currentSheetKey === "ejecuciones") {
-        const res = getPropValue(d, ['Estado Solicitud', 'EstadoSolicitud', 'Estado']).toUpperCase();
-        return res.includes("CERRADA") || res.includes("EXITO") || res === "SI" || res === "1";
-      } else if (currentSheetKey === "visitas") {
-        const res = getPropValue(d, ['Estado', 'Resultado', 'Dictamen', 'Resultado Inspeccion']).toUpperCase();
-        return res.includes("APROBADA") || res.includes("EXITO") || res === "SI" || res === "1";
       } else {
-        const realizada = getPropValue(d, ['Realizada', 'Realizada 2', 'Cumplimiento']).toUpperCase();
+        const realizada = String(d['Realizada'] || d['Realizada 2'] || d['Cumplimiento'] || '').toUpperCase().trim();
         return realizada === "SI" || realizada === "1" || realizada === "EJECUTADA" || realizada === "REALIZADA";
       }
     }
 
     function getTipoActivo(d) {
-      const codLocal = getPropValue(d, ['ID X LOCAL X TIPO MAQUINA', 'Tipo de Maquina', 'Local', 'Tipo de Activo']).toUpperCase();
+      const codLocal = String(d['ID X LOCAL X TIPO MAQUINA'] || d['Local'] || d['local'] || d['Tipo de Activo'] || '').toUpperCase().trim();
       if (codLocal.startsWith('LCSCH') || codLocal.includes('SCHOP')) return 'Schop';
       if (codLocal.startsWith('LCPM') || codLocal.includes('POST')) return 'Post Mix';
       return 'Post Mix';
     }
 
     function getNombreCliente(d) {
-      return getPropValue(d, ['Nombre Fantasía', 'Nombre Fantasia', 'Cliente', 'Nombre Receptor', 'Oficina']) || '-';
+      return d['Nombre Fantasía'] || d['Nombre Fantasía '] || d['Nombre de Fantasia'] || d['Nombre Fantasia'] || d['Cliente'] || d['Nombre Receptor'] || d['Oficina'] || '-';
     }
 
     function getIdCCU(d) {
-      return getPropValue(d, ['ID CCU', 'ID', 'Id CCU', 'id_ccu']) || '-';
+      return d['ID CCU'] || d['ID'] || d['Id CCU'] || d['ID Cliente (Manual)'] || d['ID Cliente (Escaneado)'] || d['id_ccu'] || '-';
     }
 
     function getNumeroLlamado(d) {
-      return getPropValue(d, ['Numero', 'Número', 'N° SGS/ N° CALL', 'Numero Solicitud', 'N° sgs / Call', 'N° Llamado', 'Llamado', 'ID CCU', 'ID']) || '-';
+      if (!d) return '-';
+      const possibleKeys = [
+        'Numero Llamado de la Urgencia',
+        'Número Llamado de la Urgencia',
+        'N° Llamado',
+        'N° LLAMADO',
+        'Llamado',
+        'N° Ticket',
+        'Ticket',
+        'Solicitud',
+        'ID CCU',
+        'ID'
+      ];
+      for (let k of possibleKeys) {
+        if (d[k] && String(d[k]).trim() !== '' && String(d[k]).trim() !== '-') {
+          return String(d[k]).trim();
+        }
+      }
+      return '-';
     }
 
     function getNombreReceptor(d) {
-      return getPropValue(d, ['Nombre Receptor', 'Nombre Receptor Local', 'Receptor']) || '-';
+      return d['Nombre Receptor'] || d['Nombre Receptor Local'] || d['Receptor'] || '-';
     }
 
     function getMotivoNoServicio(d) {
       if (currentSheetKey === "cobertura") {
-        const rawAC = getPropValue(d, ['Motivo No Vigente', 'Motivo No Servicio', 'Motivo']);
+        const rawAC = (d['Motivo No Vigente'] || d['Motivo No Servicio'] || d['Motivo'] || '').trim();
         if (!rawAC || rawAC.toUpperCase() === 'VIGENTE' || rawAC.toUpperCase() === '-' || rawAC.toUpperCase() === 'SIN INFORMACIÓN') {
           return 'Sin Información';
         }
         return rawAC;
       }
 
-      const raw = getPropValue(d, ['Motivo No Servicio', 'motivo_no_servicio', 'Resuelto', 'Motivo', 'Por falta de repuesto', 'Causa Anulacion', 'Acción', 'Accion']);
+      const raw = (d['Motivo No Servicio'] || d['motivo_no_servicio'] || d['Resuelto'] || d['Motivo'] || d['Por falta de repuesto'] || '').trim();
       const strUpper = raw.toUpperCase();
 
       if (!raw || strUpper === 'SIN ESPECIFICAR' || strUpper === 'SIN INFORMACIÓN' || strUpper === 'SIN INFORMACION' || strUpper === '-') {
@@ -850,57 +836,8 @@
 
           $('#col-motivos-left').show().css('flex', '0 0 35%');
           $('#col-tablas-right').show();
-          $('#wrap-si-no-tables').show();
           $('#container-si-realizadas').hide();
           $('#container-no-realizadas').show().css('width', '100%');
-          $('#container-tiempos-ejecuciones').hide();
-          $('#row-historial-bottom').show();
-
-        } else if (currentSheetKey === "ejecuciones") {
-          $('#main-title').html('<i class="fa-solid fa-gears" style="font-size: 20px; color: #e67e22;"></i> Dashboard Control de Ejecuciones (Instalaciones y Retiros)');
-          $('#kpi-label-1').text('Total Solicitudes Unicas');
-          $('#kpi-label-2').text('Cerradas con Éxito');
-          $('#kpi-label-3').text('Solicitudes Anuladas');
-          $('#tabla-motivos-title').html('<i class="fa-solid fa-truck-ramp-box"></i> Resumen Tipo Proceso (Instalación vs Retiro)');
-          $('#trend-card-title').html('<i class="fa-solid fa-chart-column"></i> Evolución Mensual Ejecución (% Éxito)');
-
-          $('#label-filter-localId').html('<i class="fa-solid fa-hashtag"></i> N° Solicitud');
-
-          $('.filter-date-group').show();
-          $('#filter-group-estado').hide();
-          $('#trend-kpi-card').show();
-          $('#kpi-main-container').removeClass('cobertura-kpis');
-
-          $('#col-motivos-left').show().css('flex', '0 0 50%');
-          $('#col-tablas-right').show();
-          $('#wrap-si-no-tables').hide();
-          $('#container-tiempos-ejecuciones').show();
-          $('#row-historial-bottom').hide();
-
-        } else if (currentSheetKey === "visitas") {
-          $('#main-title').html('<i class="fa-solid fa-clipboard-check" style="font-size: 20px; color: #004b93;"></i> Dashboard Visitas Inspectivas & Tareas');
-          $('#kpi-label-1').text('Total Visitas SGS / Call');
-          $('#kpi-label-2').text('Porcentaje Aprobadas');
-          $('#kpi-label-3').text('Visitas Rechazadas');
-          $('#tabla-motivos-title').html('<i class="fa-solid fa-list-check"></i> Resumen por Acción Realizada');
-          $('#trend-card-title').html('<i class="fa-solid fa-chart-column"></i> Evolución Mensual Inspectiva (% Aprobación)');
-          $('#tabla-no-title').html('<i class="fa-solid fa-triangle-exclamation"></i> Detalle de Visitas Rechazadas');
-          $('#historial-tabla-titulo').html('<i class="fa-solid fa-building"></i> Control de Visitas Inspectivas por Oficina Comercial');
-
-          $('#label-filter-localId').html('<i class="fa-solid fa-phone-volume"></i> N° SGS / Call');
-
-          $('.filter-date-group').show();
-          $('#filter-group-estado').hide();
-          $('#trend-kpi-card').show();
-          $('#kpi-main-container').removeClass('cobertura-kpis');
-
-          $('#col-motivos-left').show().css('flex', '0 0 50%');
-          $('#col-tablas-right').show();
-          $('#wrap-si-no-tables').show();
-          $('#container-si-realizadas').hide();
-          $('#container-no-realizadas').show().css('width', '100%');
-          $('#container-tiempos-ejecuciones').hide();
-          $('#row-historial-bottom').show();
 
         } else if (currentSheetKey === "cobertura") {
           $('#main-title').html('<i class="fa-solid fa-shield-halved" style="font-size: 20px; color: var(--pepsi-blue);"></i> Dashboard Cobertura de Mantención');
@@ -919,8 +856,6 @@
 
           $('#col-tablas-right').hide();
           $('#col-motivos-left').show().css('flex', '1 1 100%');
-          $('#container-tiempos-ejecuciones').hide();
-          $('#row-historial-bottom').show();
 
         } else {
           $('#main-title').html('<i class="fa-solid fa-chart-line" style="font-size: 20px; color: var(--primary-green);"></i> Dashboard Ejecutivo - Ventas');
@@ -941,12 +876,9 @@
 
           $('#col-motivos-left').show().css('flex', '0 0 35%');
           $('#col-tablas-right').show();
-          $('#wrap-si-no-tables').show();
           $('#container-si-realizadas').show();
           $('#container-no-realizadas').show();
           $('#tabla-si-title').html('<i class="fa-solid fa-circle-check"></i> Detalle de Servicios Realizados (SI)');
-          $('#container-tiempos-ejecuciones').hide();
-          $('#row-historial-bottom').show();
         }
 
         resetFiltersState();
@@ -1068,14 +1000,14 @@
       let datasetFiltrado = rawData;
       if (fOficina.length > 0) {
         datasetFiltrado = rawData.filter(d => {
-          const dOficina = getPropValue(d, ['Oficina Comercial', 'Oficina', 'OFICINA']).toUpperCase();
+          const dOficina = String(d['Oficina Comercial'] || d['Oficina'] || d['OFICINA'] || '').trim().toUpperCase();
           return fOficina.some(fOf => dOficina.includes(fOf.toUpperCase()));
         });
       }
 
       let jefesValidos = [];
       datasetFiltrado.forEach(d => {
-        const jefe = getPropValue(d, ['Jefe de Ventas', 'JEFE DE VENTAS', 'Jefe Ventas']);
+        const jefe = d['Jefe de Ventas'] || d['JEFE DE VENTAS'] || d['Jefe Ventas'];
         if (jefe) jefesValidos.push(String(jefe).trim());
       });
       jefesValidos = [...new Set(jefesValidos.filter(Boolean))].sort();
@@ -1167,8 +1099,9 @@
       const getUnique = (keyNames) => {
         let values = [];
         rawData.forEach(d => {
-          const val = getPropValue(d, keyNames);
-          if (val) values.push(val);
+          for (let k of keyNames) {
+            if (d[k]) { values.push(String(d[k]).trim()); break; }
+          }
         });
         return [...new Set(values.filter(Boolean))].sort();
       };
@@ -1176,7 +1109,7 @@
       const getUniqueMesesCronologico = () => {
         let values = [];
         rawData.forEach(d => {
-          const m = getPropValue(d, ['Mes', 'mes']);
+          const m = d['Mes'] || d['mes'];
           if (m) values.push(String(m).trim());
         });
         const unicos = [...new Set(values.filter(Boolean))];
@@ -1192,12 +1125,12 @@
 
       const getUniqueLocalAndCCU = () => {
         let values = [];
-        const isUrg = currentSheetKey === "urgencias" || currentSheetKey === "ejecuciones" || currentSheetKey === "visitas";
+        const isUrg = currentSheetKey === "urgencias";
         rawData.forEach(d => {
-          const loc = getPropValue(d, ['Local', 'local', 'ID X LOCAL X TIPO MAQUINA']);
+          const loc = d['Local'] || d['local'] || d['ID X LOCAL X TIPO MAQUINA'];
           const ccu = isUrg ? getNumeroLlamado(d) : getIdCCU(d);
-          if (loc) values.push(loc);
-          if (ccu && ccu !== '-') values.push(ccu);
+          if (loc) values.push(String(loc).trim());
+          if (ccu && ccu !== '-') values.push(String(ccu).trim());
         });
         return [...new Set(values.filter(Boolean))].sort();
       };
@@ -1236,17 +1169,17 @@
       const fInicio = fInicioStr ? new Date(fInicioStr) : null;
       const fFin = fFinStr ? new Date(fFinStr) : null;
 
-      const isUrg = currentSheetKey === "urgencias" || currentSheetKey === "ejecuciones" || currentSheetKey === "visitas";
+      const isUrg = currentSheetKey === "urgencias";
 
       return rawData.filter(d => {
-        const dOficina = getPropValue(d, ['Oficina Comercial', 'Oficina', 'OFICINA']);
-        const dJefe = getPropValue(d, ['Jefe de Ventas', 'JEFE DE VENTAS', 'Jefe Ventas']);
-        const dLocal = getPropValue(d, ['Local', 'ID X LOCAL X TIPO MAQUINA']);
+        const dOficina = String(d['Oficina Comercial'] || d['Oficina'] || d['OFICINA'] || '').trim();
+        const dJefe = String(d['Jefe de Ventas'] || d['JEFE DE VENTAS'] || '').trim();
+        const dLocal = String(d['Local'] || d['ID X LOCAL X TIPO MAQUINA'] || '').trim();
         const dIdCCU = String(isUrg ? getNumeroLlamado(d) : getIdCCU(d)).trim();
         const dCliente = String(getNombreCliente(d)).trim();
-        const dEstado = getPropValue(d, ['ESTADO (VIGENTE - NO VIGENTE)', 'ESTADO', 'Vigencia']);
+        const dEstado = String(d['ESTADO (VIGENTE - NO VIGENTE)'] || d['ESTADO'] || d['Vigencia'] || '').trim();
         
-        const rawFecha = getPropValue(d, ['Fecha/Hora Ejecución 1', 'Fecha Programada 2', 'Fecha', 'Fecha Realizado', 'Fecha/Hora']);
+        const rawFecha = d['Fecha/Hora Ejecución 1'] || d['Fecha Programada 2'] || d['Fecha'] || d['Fecha Realizado'] || d['Fecha/Hora'];
         const dFecha = parseDate(rawFecha);
 
         const matchOficina = fOficina.length === 0 || fOficina.some(fOf => dOficina.toUpperCase().includes(fOf.toUpperCase()));
@@ -1274,7 +1207,7 @@
       }
 
       return dataWithoutMonth.filter(d => {
-        const dMes = getPropValue(d, ['Mes', 'mes']);
+        const dMes = String(d['Mes'] || d['mes'] || '').trim();
         return fMes.length === 0 || fMes.includes(dMes);
       });
     }
@@ -1288,30 +1221,13 @@
         let countSchop = 0;
         let countPostMix = 0;
 
-        let solicitudesUnicas = new Set();
-        let solicitudesExitosas = new Set();
-        let solicitudesAnuladas = new Set();
-
         data.forEach(d => {
           const qty = getServiciosQty(d);
-          const numSol = getNumeroLlamado(d);
 
-          if (currentSheetKey === "ejecuciones") {
-            if (numSol && numSol !== '-') {
-              solicitudesUnicas.add(numSol);
-              const estado = getPropValue(d, ['Estado Solicitud', 'EstadoSolicitud', 'Estado']).toUpperCase();
-              if (estado.includes('CERRADA') || estado.includes('EXITO')) {
-                solicitudesExitosas.add(numSol);
-              } else if (estado.includes('ANULADA')) {
-                solicitudesAnuladas.add(numSol);
-              }
-            }
+          if (isServicioRealizado(d)) {
+            totalSI += qty;
           } else {
-            if (isServicioRealizado(d)) {
-              totalSI += qty;
-            } else {
-              totalNO += qty;
-            }
+            totalNO += qty;
           }
 
           const tipo = getTipoActivo(d).toUpperCase();
@@ -1324,14 +1240,10 @@
 
         let grandTotal = totalSI + totalNO;
 
-        if (currentSheetKey === "ejecuciones") {
-          totalSI = solicitudesExitosas.size;
-          totalNO = solicitudesAnuladas.size;
-          grandTotal = solicitudesUnicas.size;
-        } else if (currentSheetKey === "cobertura") {
+        if (currentSheetKey === "cobertura") {
           let cobCountFilter = 0;
           data.forEach(d => {
-            let ofic = getPropValue(d, ['Oficina Comercial', 'Oficina', 'OFICINA']).toUpperCase();
+            let ofic = String(d['Oficina Comercial'] || d['Oficina'] || d['OFICINA'] || '').toUpperCase().trim();
             if (OFICINAS_PERMITIDAS.some(of => ofic.includes(of))) {
               cobCountFilter++;
             }
@@ -1348,12 +1260,6 @@
         if (currentSheetKey === "urgencias") {
           document.getElementById('kpi-ejecutados-count').innerText = `${totalSI.toLocaleString()} Casos Resueltos`;
           document.getElementById('kpi-no-count').innerText = `${totalNO.toLocaleString()} Casos No Resueltos`;
-        } else if (currentSheetKey === "ejecuciones") {
-          document.getElementById('kpi-ejecutados-count').innerText = `${totalSI.toLocaleString()} Cerradas con Éxito`;
-          document.getElementById('kpi-no-count').innerText = `${totalNO.toLocaleString()} Anuladas`;
-        } else if (currentSheetKey === "visitas") {
-          document.getElementById('kpi-ejecutados-count').innerText = `${totalSI.toLocaleString()} Visitas Aprobadas`;
-          document.getElementById('kpi-no-count').innerText = `${totalNO.toLocaleString()} Visitas Rechazadas`;
         } else if (currentSheetKey === "cobertura") {
           document.getElementById('kpi-ejecutados-count').innerText = `${totalSI.toLocaleString()} Clientes Vigentes`;
           document.getElementById('kpi-no-count').innerText = `${totalNO.toLocaleString()} Clientes No Vigentes`;
@@ -1371,16 +1277,9 @@
         }
 
         renderTablaMotivos(data, totalNO, grandTotal);
-
-        if (currentSheetKey === "ejecuciones") {
-          renderTablaTiemposEjecuciones(data);
-        } else {
-          renderTablaSiNoDerecha(data);
-        }
-
-        if (currentSheetKey !== "ejecuciones") {
-          renderTablaHistorialCliente();
-        }
+        renderTablaNoRealizadas(data);
+        renderTablaSiRealizadas(data);
+        renderTablaHistorialCliente();
 
       } catch (err) {
         console.error("Error en renderDashboard:", err);
@@ -1435,7 +1334,7 @@
       const dataWithoutMonth = getFilteredDataWithoutMonth();
 
       dataWithoutMonth.forEach(d => {
-        const mes = getPropValue(d, ['Mes', 'mes']);
+        const mes = d['Mes'] || d['mes'];
         if (!mes) return;
 
         const qty = getServiciosQty(d);
@@ -1494,35 +1393,6 @@
     }
 
     function renderTablaMotivos(data, totalNO, grandTotal) {
-      if (currentSheetKey === "ejecuciones") {
-        let sumInstalaciones = 0;
-        let sumRetiros = 0;
-        
-        data.forEach(d => {
-          const tipoProc = getPropValue(d, ['Tipo Proceso', 'TipoProceso', 'Proceso']).toUpperCase();
-          const valSalidasStr = getPropValue(d, ['Salidas', 'Salida']);
-          const salidasQty = parseFloat(valSalidasStr || 0);
-          const valSalidas = isNaN(salidasQty) ? 0 : salidasQty;
-
-          if (tipoProc.includes('INSTALACI')) {
-            sumInstalaciones += valSalidas;
-          } else if (tipoProc.includes('RETIRO')) {
-            sumRetiros += valSalidas;
-          }
-        });
-
-        const totSalidas = sumInstalaciones + sumRetiros;
-
-        let html = `<table><thead><tr><th class="left">Tipo Proceso (Columna K)</th><th>Cantidad Salidas (Columna H)</th><th>% del Total</th></tr></thead><tbody>`;
-
-        html += `<tr><td class="left">• <strong>Instalación</strong></td><td><strong>${sumInstalaciones}</strong></td><td><span class="qty-badge" style="font-weight:bold; color:var(--excel-green-dark);">${totSalidas > 0 ? ((sumInstalaciones/totSalidas)*100).toFixed(1)+'%' : '0.0%'}</span></td></tr>`;
-        html += `<tr><td class="left">• <strong>Retiro</strong></td><td><strong>${sumRetiros}</strong></td><td><span class="qty-badge" style="font-weight:bold; color:var(--excel-green-dark);">${totSalidas > 0 ? ((sumRetiros/totSalidas)*100).toFixed(1)+'%' : '0.0%'}</span></td></tr>`;
-
-        html += `<tr class="total-general"><td class="left">Total Movimientos Salidas</td><td>${totSalidas}</td><td>100%</td></tr></tbody></table>`;
-        document.getElementById('tabla-motivos-container').innerHTML = html;
-        return;
-      }
-
       const motivosStats = {};
       const noRealizadasData = data.filter(d => !isServicioRealizado(d));
 
@@ -1533,10 +1403,7 @@
         motivosStats[motivo] += qty;
       });
 
-      let thTitulo = "Motivo / Causa";
-      if (currentSheetKey === "cobertura") thTitulo = "Causa / Motivo No Vigente";
-      if (currentSheetKey === "visitas") thTitulo = "Acción Realizada (Visita)";
-
+      let thTitulo = currentSheetKey === "cobertura" ? "Causa / Motivo No Vigente" : "Motivo / Causa";
       let html = `<table><thead><tr><th class="left">${thTitulo}</th><th>Cantidad</th><th>% del Total NO</th><th>% del Total General</th></tr></thead><tbody>`;
 
       const motivosKeys = Object.keys(motivosStats).sort((a, b) => motivosStats[b] - motivosStats[a]);
@@ -1559,75 +1426,19 @@
       document.getElementById('tabla-motivos-container').innerHTML = html;
     }
 
-    /* TIEMPOS PROMEDIO EN EJECUCIONES CON BUSQUEDA FLEXIBLE DE NOMBRES */
-    function renderTablaTiemposEjecuciones(data) {
-      const oficinasStats = {};
-
-      OFICINAS_PERMITIDAS.forEach(of => {
-        oficinasStats[of] = { sumComodato: 0, countComodato: 0, sumST: 0, countST: 0 };
-      });
-
-      data.forEach(d => {
-        let oficRaw = getPropValue(d, ['Oficina Comercial', 'Oficina', 'OFICINA']).toUpperCase();
-        const ofEncontrada = OFICINAS_PERMITIDAS.find(of => oficRaw.includes(of));
-
-        if (ofEncontrada) {
-          const strComodato = getPropValue(d, ['Ingreso/Comodato', 'Ingreso / Comodato', 'Comodato']);
-          const strST = getPropValue(d, ['Comodato/ Ejecución', 'Comodato / Ejecucion', 'Ejecución']);
-
-          const diasComodato = parseFloat(strComodato || 0);
-          const diasST = parseFloat(strST || 0);
-
-          if (!isNaN(diasComodato) && diasComodato >= 0) {
-            oficinasStats[ofEncontrada].sumComodato += diasComodato;
-            oficinasStats[ofEncontrada].countComodato++;
-          }
-
-          if (!isNaN(diasST) && diasST >= 0) {
-            oficinasStats[ofEncontrada].sumST += diasST;
-            oficinasStats[ofEncontrada].countST++;
-          }
-        }
-      });
-
-      let htmlTiempos = `
-        <table>
-          <thead>
-            <tr>
-              <th class="left">Oficina Comercial</th>
-              <th>Promedio Días Carga Comodato (Ventas)</th>
-              <th>Promedio Días Ejecución (ST)</th>
-            </tr>
-          </thead>
-          <tbody>`;
-
-      OFICINAS_PERMITIDAS.forEach(oficina => {
-        const st = oficinasStats[oficina];
-        const avgComodato = st.countComodato > 0 ? (st.sumComodato / st.countComodato).toFixed(1) : '0.0';
-        const avgST = st.countST > 0 ? (st.sumST / st.countST).toFixed(1) : '0.0';
-
-        const ofNombrePretty = oficina.charAt(0) + oficina.slice(1).toLowerCase();
-
-        htmlTiempos += `
-          <tr>
-            <td class="left"><strong>${ofNombrePretty}</strong></td>
-            <td><strong style="color:var(--pepsi-blue);">${avgComodato} días</strong></td>
-            <td><strong style="color:var(--excel-green-dark);">${avgST} días</strong></td>
-          </tr>`;
-      });
-
-      htmlTiempos += `</tbody></table>`;
-      document.getElementById('tabla-tiempos-container').innerHTML = htmlTiempos;
-    }
-
-    function renderTablaSiNoDerecha(data) {
+    function renderTablaNoRealizadas(data) {
       if (currentSheetKey === "cobertura") return;
 
       const noRealizadas = data.filter(d => !isServicioRealizado(d));
-      const isUrg = currentSheetKey === "urgencias" || currentSheetKey === "visitas";
-      const thColId = isUrg ? "N° Solicitud / SGS" : "ID CCU";
+      if (noRealizadas.length === 0) {
+        document.getElementById('tabla-no-realizadas-container').innerHTML = `<div class="no-data">🎉 No hay casuística pendiente.</div>`;
+        return;
+      }
 
-      let htmlNo = `
+      const isUrg = currentSheetKey === "urgencias";
+      const thColId = isUrg ? "N° Llamado" : "ID CCU";
+
+      let html = `
         <table>
           <thead>
             <tr>
@@ -1640,100 +1451,97 @@
           </thead>
           <tbody>`;
 
-      if (noRealizadas.length === 0) {
-        htmlNo += `<tr><td colspan="5" class="no-data">🎉 No hay casuística pendiente.</td></tr>`;
-      } else {
-        noRealizadas.forEach(d => {
-          const rawFecha = getPropValue(d, ['Fecha/Hora Ejecución 1', 'Fecha Programada 2', 'Fecha', 'Fecha Realizado', 'Fecha/Hora']) || '-';
-          const fechaFormateada = formatDiaMes(rawFecha);
-          const colIdVal = isUrg ? getNumeroLlamado(d) : getIdCCU(d);
-          const cliente = getNombreCliente(d);
-          const motivo = getMotivoNoServicio(d);
+      noRealizadas.forEach(d => {
+        const rawFecha = d['Fecha/Hora Ejecución 1'] || d['Fecha Programada 2'] || d['Fecha'] || d['Fecha Realizado'] || d['Fecha/Hora'] || '-';
+        const fechaFormateada = formatDiaMes(rawFecha);
+        const colIdVal = isUrg ? getNumeroLlamado(d) : getIdCCU(d);
+        const cliente = getNombreCliente(d);
+        const motivo = getMotivoNoServicio(d);
 
-          const fotoUrl1 = getPropValue(d, ['Foto Equipo', 'Foto Motivo', 'Foto Columnas o Post Mix']);
-          const fotoUrl2 = getPropValue(d, ['Foto Equipo 2', 'Foto Salida FNE']);
+        const fotoUrl1 = d['Foto Equipo'] || d['Foto Motivo'] || d['Foto Columnas o Post Mix'] || '';
+        const fotoUrl2 = d['Foto Equipo 2'] || d['Foto Salida FNE'] || '';
 
-          let fotosHtml = '<span style="color:#bbb;">Sin fotos</span>';
-          if ((fotoUrl1 && fotoUrl1.startsWith('http')) || (fotoUrl2 && fotoUrl2.startsWith('http'))) {
-            fotosHtml = '<div class="photos-flex">';
-            if (fotoUrl1 && fotoUrl1.startsWith('http')) {
-              fotosHtml += `<div class="img-container"><img src="${fotoUrl1}" class="thumb-img" alt="Foto 1" loading="lazy" onerror="this.src='https://via.placeholder.com/50?text=Error'"></div>`;
-            }
-            if (fotoUrl2 && fotoUrl2.startsWith('http')) {
-              fotosHtml += `<div class="img-container"><img src="${fotoUrl2}" class="thumb-img" alt="Foto 2" loading="lazy" onerror="this.src='https://via.placeholder.com/50?text=Error'"></div>`;
-            }
-            fotosHtml += '</div>';
+        let fotosHtml = '<span style="color:#bbb;">Sin fotos</span>';
+        if ((fotoUrl1 && fotoUrl1.startsWith('http')) || (fotoUrl2 && fotoUrl2.startsWith('http'))) {
+          fotosHtml = '<div class="photos-flex">';
+          if (fotoUrl1 && fotoUrl1.startsWith('http')) {
+            fotosHtml += `<div class="img-container"><img src="${fotoUrl1}" class="thumb-img" alt="Foto 1" loading="lazy" onerror="this.src='https://via.placeholder.com/50?text=Error'"></div>`;
           }
-
-          htmlNo += `
-            <tr>
-              <td class="left">${fechaFormateada}</td>
-              <td class="left" style="font-weight: 500;">${colIdVal}</td>
-              <td class="left">${cliente}</td>
-              <td class="left" style="color: #c62828; font-weight: 500;">${motivo}</td>
-              <td style="text-align:center;">${fotosHtml}</td>
-            </tr>`;
-        });
-      }
-
-      htmlNo += `</tbody></table>`;
-      document.getElementById('tabla-no-realizadas-container').innerHTML = htmlNo;
-
-      /* DETALLE REALIZADOS (SI) EN RUTA PREVENTIVA FIX */
-      if (currentSheetKey === "preventiva") {
-        const siRealizadas = data.filter(d => isServicioRealizado(d));
-        let htmlSi = `
-          <table>
-            <thead>
-              <tr>
-                <th class="left">Fecha</th>
-                <th class="left">ID CCU</th>
-                <th class="left">Cliente (Nombre Fantasía)</th>
-                <th class="left">Receptor</th>
-                <th style="text-align:center;">Foto</th>
-              </tr>
-            </thead>
-            <tbody>`;
-
-        if (siRealizadas.length === 0) {
-          htmlSi += `<tr><td colspan="5" class="no-data">Sin servicios realizados.</td></tr>`;
-        } else {
-          siRealizadas.forEach(d => {
-            const rawFecha = getPropValue(d, ['Fecha/Hora Ejecución 1', 'Fecha Programada 2', 'Fecha', 'Fecha Realizado', 'Fecha/Hora']) || '-';
-            const fechaFormateada = formatDiaMes(rawFecha);
-            const idCCU = getIdCCU(d);
-            const cliente = getNombreCliente(d);
-            const receptor = getNombreReceptor(d);
-
-            const fotoUrl = getPropValue(d, ['Foto Columnas o Post Mix', 'Foto Equipo', 'Foto Motivo', 'Foto Salida FNE']);
-
-            let fotoHtml = '<span style="color:#bbb;">Sin fotos</span>';
-            if (fotoUrl && fotoUrl.startsWith('http')) {
-              fotoHtml = `
-                <div class="img-container">
-                  <img src="${fotoUrl}" class="thumb-img" alt="Foto Columnas o Post Mix" loading="lazy" onerror="this.src='https://via.placeholder.com/50?text=Error'">
-                </div>`;
-            }
-
-            htmlSi += `
-              <tr>
-                <td class="left">${fechaFormateada}</td>
-                <td class="left" style="font-weight: 500;">${idCCU}</td>
-                <td class="left">${cliente}</td>
-                <td class="left">${receptor}</td>
-                <td style="text-align:center;">${fotoHtml}</td>
-              </tr>`;
-          });
+          if (fotoUrl2 && fotoUrl2.startsWith('http')) {
+            fotosHtml += `<div class="img-container"><img src="${fotoUrl2}" class="thumb-img" alt="Foto 2" loading="lazy" onerror="this.src='https://via.placeholder.com/50?text=Error'"></div>`;
+          }
+          fotosHtml += '</div>';
         }
 
-        htmlSi += `</tbody></table>`;
-        document.getElementById('tabla-si-realizadas-container').innerHTML = htmlSi;
-      }
+        html += `
+          <tr>
+            <td class="left">${fechaFormateada}</td>
+            <td class="left" style="font-weight: 500;">${colIdVal}</td>
+            <td class="left">${cliente}</td>
+            <td class="left" style="color: #c62828; font-weight: 500;">${motivo}</td>
+            <td style="text-align:center;">${fotosHtml}</td>
+          </tr>`;
+      });
+
+      html += `</tbody></table>`;
+      document.getElementById('tabla-no-realizadas-container').innerHTML = html;
     }
 
-    function renderTablaHistorialCliente() {
-      if (currentSheetKey === "ejecuciones") return;
+    function renderTablaSiRealizadas(data) {
+      if (currentSheetKey !== "preventiva") return;
 
+      const siRealizadas = data.filter(d => isServicioRealizado(d));
+      if (siRealizadas.length === 0) {
+        document.getElementById('tabla-si-realizadas-container').innerHTML = `<div class="no-data">Sin servicios realizados con los filtros seleccionados.</div>`;
+        return;
+      }
+
+      let htmlSi = `
+        <table>
+          <thead>
+            <tr>
+              <th class="left">Fecha</th>
+              <th class="left">ID CCU</th>
+              <th class="left">Cliente (Nombre Fantasía)</th>
+              <th class="left">Receptor</th>
+              <th style="text-align:center;">Foto</th>
+            </tr>
+          </thead>
+          <tbody>`;
+
+      siRealizadas.forEach(d => {
+        const rawFecha = d['Fecha/Hora Ejecución 1'] || d['Fecha Programada 2'] || d['Fecha'] || d['Fecha Realizado'] || d['Fecha/Hora'] || '-';
+        const fechaFormateada = formatDiaMes(rawFecha);
+        const idCCU = getIdCCU(d);
+        const cliente = getNombreCliente(d);
+        const receptor = getNombreReceptor(d);
+
+        const fotoUrl = d['Foto Columnas o Post Mix'] || d['Foto Equipo'] || d['Foto Motivo'] || d['Foto Salida FNE'] || '';
+
+        let fotoHtml = '<span style="color:#bbb;">Sin fotos</span>';
+        if (fotoUrl && fotoUrl.startsWith('http')) {
+          fotoHtml = `
+            <div class="img-container">
+              <img src="${fotoUrl}" class="thumb-img" alt="Foto Columnas o Post Mix" loading="lazy" onerror="this.src='https://via.placeholder.com/50?text=Error'">
+            </div>`;
+        }
+
+        htmlSi += `
+          <tr>
+            <td class="left">${fechaFormateada}</td>
+            <td class="left" style="font-weight: 500;">${idCCU}</td>
+            <td class="left">${cliente}</td>
+            <td class="left">${receptor}</td>
+            <td style="text-align:center;">${fotoHtml}</td>
+          </tr>`;
+      });
+
+      htmlSi += `</tbody></table>`;
+      document.getElementById('tabla-si-realizadas-container').innerHTML = htmlSi;
+    }
+
+    /* HISTORIAL DEL CLIENTE (PREVENTIVA Y URGENCIAS) / CONTROL DE COBERTURA */
+    function renderTablaHistorialCliente() {
       const fOficina = filtersState.oficina.selected;
       const fJefeVentas = filtersState.jefeVentas.selected;
       const fLocalId = filtersState.localId.selected;
@@ -1741,13 +1549,12 @@
 
       const esUrgencias = currentSheetKey === "urgencias";
       const esCobertura = currentSheetKey === "cobertura";
-      const esVisitas = currentSheetKey === "visitas";
 
       const baseData = rawData.filter(d => {
-        const dOficina = getPropValue(d, ['Oficina Comercial', 'Oficina', 'OFICINA']);
-        const dJefe = getPropValue(d, ['Jefe de Ventas', 'JEFE DE VENTAS', 'Jefe Ventas']);
-        const dLocal = getPropValue(d, ['Local', 'ID X LOCAL X TIPO MAQUINA']);
-        const dIdCCU = String(esUrgencias || esVisitas ? getNumeroLlamado(d) : getIdCCU(d)).trim();
+        const dOficina = String(d['Oficina Comercial'] || d['Oficina'] || d['OFICINA'] || '').trim();
+        const dJefe = String(d['Jefe de Ventas'] || d['JEFE DE VENTAS'] || '').trim();
+        const dLocal = String(d['Local'] || d['ID X LOCAL X TIPO MAQUINA'] || '').trim();
+        const dIdCCU = String(esUrgencias ? getNumeroLlamado(d) : getIdCCU(d)).trim();
         const dCliente = String(getNombreCliente(d)).trim();
 
         const matchOficina = fOficina.length === 0 || fOficina.some(fOf => dOficina.toUpperCase().includes(fOf.toUpperCase()));
@@ -1763,7 +1570,8 @@
         return;
       }
 
-      if (esCobertura || esVisitas) {
+      /* RENDER EXCLUSIVO PARA COBERTURA DE MANTENCIÓN */
+      if (esCobertura) {
         const oficinasMap = {};
 
         let oficinasAMostrar = OFICINAS_PERMITIDAS;
@@ -1779,7 +1587,8 @@
         let grandNoOK = 0;
 
         baseData.forEach(d => {
-          let oficinaRaw = getPropValue(d, ['Oficina Comercial', 'Oficina', 'OFICINA']).toUpperCase();
+          let oficinaRaw = String(d['Oficina Comercial'] || d['Oficina'] || d['OFICINA'] || '').toUpperCase().trim();
+          
           const oficinaEncontrada = oficinasAMostrar.find(of => oficinaRaw.includes(of));
 
           if (oficinaEncontrada) {
@@ -1796,19 +1605,15 @@
 
         const totalGeneral = grandOK + grandNoOK;
 
-        let txtHeaderOK = esCobertura ? "Clientes Vigentes" : "Visitas Aprobadas";
-        let txtHeaderNoOK = esCobertura ? "Clientes No Vigentes" : "Visitas Rechazadas";
-        let txtHeaderPct = esCobertura ? "% Vigencia sobre Oficina" : "% Cumplimiento sobre Oficina";
-
         let htmlCob = `
           <table>
             <thead>
               <tr>
                 <th class="left">Oficina Comercial</th>
-                <th>${txtHeaderOK}</th>
-                <th>${txtHeaderNoOK}</th>
-                <th>Total Registros</th>
-                <th>${txtHeaderPct}</th>
+                <th>Clientes Vigentes</th>
+                <th>Clientes No Vigentes</th>
+                <th>Total Clientes</th>
+                <th>% Vigencia sobre Oficina</th>
                 <th>% sobre el Total General</th>
               </tr>
             </thead>
@@ -1852,10 +1657,11 @@
         return;
       }
 
+      /* RENDER PARA PREVENTIVA Y URGENCIAS: HISTORIAL DE MANTENCIÓN */
       globalClientesHistorialMap = {};
 
       baseData.forEach(d => {
-        const codLocal = getPropValue(d, ['Local', 'local']);
+        const codLocal = String(d['Local'] || d['local'] || '').trim();
         const idCCU = getIdCCU(d);
         const numLlamado = getNumeroLlamado(d);
         
@@ -1863,10 +1669,10 @@
         if (!keyLocal || keyLocal === '-') return;
 
         const cliente = getNombreCliente(d);
-        const oficina = getPropValue(d, ['Oficina Comercial', 'Oficina', 'OFICINA']) || '-';
-        const jefe = getPropValue(d, ['Jefe de Ventas', 'JEFE DE VENTAS']) || '-';
+        const oficina = d['Oficina Comercial'] || d['Oficina'] || d['OFICINA'] || '-';
+        const jefe = d['Jefe de Ventas'] || d['JEFE DE VENTAS'] || '-';
         
-        const rawFecha = getPropValue(d, ['Fecha Realizado', 'Fecha/Hora Ejecución 1', 'Fecha Programada 2', 'Fecha', 'Fecha/Hora']);
+        const rawFecha = d['Fecha Realizado'] || d['Fecha/Hora Ejecución 1'] || d['Fecha Programada 2'] || d['Fecha'] || d['Fecha/Hora'] || '';
         const parsedDate = parseDate(rawFecha);
         const realizado = isServicioRealizado(d);
         const motivo = realizado ? '' : getMotivoNoServicio(d);
@@ -1907,8 +1713,8 @@
 
       if (!esUrgencias && maestroFrecuencias && maestroFrecuencias.length > 0) {
         maestroFrecuencias.forEach(m => {
-          const mLocal = getPropValue(m, ['Local', 'local']);
-          const mCCU = getPropValue(m, ['ID CCU', 'ID', 'Id CCU', 'id_ccu']);
+          const mLocal = String(m['Local'] || m['local'] || '').trim();
+          const mCCU = String(m['ID CCU'] || m['ID'] || m['Id CCU'] || m['id_ccu'] || '').trim();
 
           Object.values(globalClientesHistorialMap).forEach(c => {
             const matchByLocal = mLocal && c.codLocal && mLocal.toUpperCase() === c.codLocal.toUpperCase();
@@ -1916,12 +1722,12 @@
 
             if (matchByLocal || matchByID) {
               const jefeActual = c.jefe.toLowerCase();
-              const mJefe = getPropValue(m, ['Jefe de Ventas', 'JEFE DE VENTAS', 'Jefe Ventas']);
+              const mJefe = m['Jefe de Ventas'] || m['JEFE DE VENTAS'] || m['Jefe Ventas'];
               if ((jefeActual.includes('revisar') || jefeActual.includes('sin') || jefeActual === '-') && mJefe && !mJefe.toLowerCase().includes('revisar')) {
                 c.jefe = mJefe;
               }
 
-              const proxFecha = getPropValue(m, ['starts_at_date', 'Dia', 'Fecha Realizado', 'Fecha Programada', 'Fecha']);
+              const proxFecha = m['starts_at_date'] || m['Dia'] || m['Fecha Realizado'] || m['Fecha Programada'] || m['Fecha'] || '';
               const sem = m['Semana'] ? `Semana ${m['Semana']}` : '';
 
               if (proxFecha) {
