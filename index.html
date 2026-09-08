@@ -601,7 +601,7 @@
       </div>
     </div>
 
-    <!-- FILA 2: HISTORIAL DEL CLIENTE & PRÓXIMA MANTENCIÓN / URGENCIAS / COBERTURA -->
+    <!-- FILA 2: HISTORIAL DEL CLIENTE / CONTROL DE COBERTURA -->
     <div class="grid-row-full">
       <div class="table-container">
         <div class="table-header" style="background-color: #0d47a1; color: #ffffff;">
@@ -677,7 +677,7 @@
         const res = String(d['Pudo Resolver Problema'] || d['Pudo resolver problema'] || d['Resuelto'] || '').toUpperCase().trim();
         return res === "SI" || res === "1" || res === "RESUELTO";
       } else if (currentSheetKey === "cobertura") {
-        const res = String(d['Vigencia'] || d['Estado'] || d['Vigente'] || '').toUpperCase().trim();
+        const res = String(d['ESTADO (VIGENTE - NO VIGENTE)'] || d['ESTADO'] || d['Vigencia'] || d['Vigente'] || '').toUpperCase().trim();
         return res === "VIGENTE" || res === "SI" || res === "1";
       } else {
         const realizada = String(d['Realizada'] || d['Realizada 2'] || d['Cumplimiento'] || '').toUpperCase().trim();
@@ -685,12 +685,12 @@
       }
     }
 
+    /* REGLA SOLICITADA: LCSCH ES SCHOP / LCPM ES POST MIX */
     function getTipoActivo(d) {
-      const val = d['Tipo de Activo'] || d['Tipo de Activo '] || d['Activos'] || d['Categoria'] || d['Categoría'] || d['Tipo Urgencia'] || '';
-      const str = String(val).toUpperCase();
-      if (str.includes('SCHOP')) return 'Schop';
-      if (str.includes('POST')) return 'Post Mix';
-      return val || 'Post Mix';
+      const codLocal = String(d['ID X LOCAL X TIPO MAQUINA'] || d['Local'] || d['local'] || d['Tipo de Activo'] || '').toUpperCase().trim();
+      if (codLocal.startsWith('LCSCH') || codLocal.includes('SCHOP')) return 'Schop';
+      if (codLocal.startsWith('LCPM') || codLocal.includes('POST')) return 'Post Mix';
+      return 'Post Mix';
     }
 
     function getNombreCliente(d) {
@@ -727,7 +727,16 @@
       return d['Nombre Receptor'] || d['Nombre Receptor Local'] || d['Receptor'] || '-';
     }
 
+    /* OBTENER CAUSA DE NO VIGENCIA DESDE COLUMNA AC ("Motivo No Vigente") */
     function getMotivoNoServicio(d) {
+      if (currentSheetKey === "cobertura") {
+        const rawAC = (d['Motivo No Vigente'] || d['Motivo No Servicio'] || d['Motivo'] || '').trim();
+        if (!rawAC || rawAC.toUpperCase() === 'VIGENTE' || rawAC.toUpperCase() === '-' || rawAC.toUpperCase() === 'SIN INFORMACIÓN') {
+          return 'Sin Información';
+        }
+        return rawAC;
+      }
+
       const raw = (d['Motivo No Servicio'] || d['motivo_no_servicio'] || d['Resuelto'] || d['Motivo'] || d['Por falta de repuesto'] || '').trim();
       const strUpper = raw.toUpperCase();
 
@@ -814,13 +823,13 @@
 
         } else if (currentSheetKey === "cobertura") {
           $('#main-title').html('<i class="fa-solid fa-shield-halved" style="font-size: 20px; color: var(--pepsi-blue);"></i> Dashboard Cobertura de Mantención');
-          $('#kpi-label-1').text('Total Clientes');
+          $('#kpi-label-1').text('Total Clientes / Equipos');
           $('#kpi-label-2').text('Porcentaje Vigentes');
           $('#kpi-label-3').text('Clientes No Vigentes');
-          $('#tabla-motivos-title').html('<i class="fa-solid fa-list-check"></i> Resumen por Causa de No Vigencia');
+          $('#tabla-motivos-title').html('<i class="fa-solid fa-list-check"></i> Resumen de Causa de No Vigencia (Columna AC)');
           $('#trend-card-title').html('<i class="fa-solid fa-chart-column"></i> Evolución Mensual (% Vigencia)');
           $('#tabla-no-title').html('<i class="fa-solid fa-triangle-exclamation"></i> Detalle Clientes No Vigentes');
-          $('#historial-tabla-titulo').html('<i class="fa-solid fa-clock-rotate-left"></i> Control de Cobertura y Vigencia de Clientes');
+          $('#historial-tabla-titulo').html('<i class="fa-solid fa-building"></i> Cobertura y Vigencia por Oficina Comercial');
           
           $('#label-filter-localId').html('<i class="fa-solid fa-hashtag"></i> Local / ID CCU');
           $('#container-si-realizadas').hide();
@@ -1049,7 +1058,7 @@
         let values = [];
         const isUrg = currentSheetKey === "urgencias";
         rawData.forEach(d => {
-          const loc = d['Local'] || d['local'];
+          const loc = d['Local'] || d['local'] || d['ID X LOCAL X TIPO MAQUINA'];
           const ccu = isUrg ? getNumeroLlamado(d) : getIdCCU(d);
           if (loc) values.push(String(loc).trim());
           if (ccu && ccu !== '-') values.push(String(ccu).trim());
@@ -1094,7 +1103,7 @@
       return rawData.filter(d => {
         const dOficina = String(d['Oficina'] || d['OFICINA'] || '').trim();
         const dJefe = String(d['Jefe de Ventas'] || d['JEFE DE VENTAS'] || '').trim();
-        const dLocal = String(d['Local'] || '').trim();
+        const dLocal = String(d['Local'] || d['ID X LOCAL X TIPO MAQUINA'] || '').trim();
         const dIdCCU = String(isUrg ? getNumeroLlamado(d) : getIdCCU(d)).trim();
         const dCliente = String(getNombreCliente(d)).trim();
         
@@ -1280,36 +1289,41 @@
       });
     }
 
+    /* RESUMEN DE CAUSAS DE NO VIGENCIA (COLUMNA AC: Motivo No Vigente) */
     function renderTablaMotivos(data, totalNO, grandTotal) {
-      const motivosStats = { 'Local Cerrado': 0, 'Cliente no permite': 0, 'Desprogramar Cliente': 0, 'Otro': 0, 'Sin Información': 0 };
+      const motivosStats = {};
       const noRealizadasData = data.filter(d => !isServicioRealizado(d));
 
       noRealizadasData.forEach(d => {
         const qty = getServiciosQty(d);
         const motivo = getMotivoNoServicio(d);
-        if (motivosStats.hasOwnProperty(motivo)) motivosStats[motivo] += qty;
-        else motivosStats['Sin Información'] += qty;
+        if (!motivosStats[motivo]) motivosStats[motivo] = 0;
+        motivosStats[motivo] += qty;
       });
 
-      const ordenEstricto = ['Local Cerrado', 'Cliente no permite', 'Desprogramar Cliente', 'Otro', 'Sin Información'];
+      let html = `<table><thead><tr><th class="left">Causa / Motivo No Vigente</th><th>Cantidad Clientes</th><th>% del Total NO</th><th>% del Total General</th></tr></thead><tbody>`;
 
-      let html = `<table><thead><tr><th class="left">Motivo No Servicio / Causa</th><th>Cantidad Servicios</th><th>% del Total NO</th><th>% del Total General</th></tr></thead><tbody>`;
+      const motivosKeys = Object.keys(motivosStats).sort((a, b) => motivosStats[b] - motivosStats[a]);
 
-      ordenEstricto.forEach(motivo => {
-        const cant = motivosStats[motivo];
-        const pctDelNO = totalNO > 0 ? ((cant / totalNO) * 100).toFixed(1) + '%' : '0.0%';
-        const pctDelTotal = grandTotal > 0 ? ((cant / grandTotal) * 100).toFixed(1) + '%' : '0.0%';
+      if (motivosKeys.length === 0) {
+        html += `<tr><td colspan="4" class="no-data">No se registraron causas de no vigencia.</td></tr>`;
+      } else {
+        motivosKeys.forEach(motivo => {
+          const cant = motivosStats[motivo];
+          const pctDelNO = totalNO > 0 ? ((cant / totalNO) * 100).toFixed(1) + '%' : '0.0%';
+          const pctDelTotal = grandTotal > 0 ? ((cant / grandTotal) * 100).toFixed(1) + '%' : '0.0%';
 
-        html += `<tr><td class="left">• <strong>${motivo}</strong></td><td><strong>${cant}</strong></td><td><span class="qty-badge" style="font-weight:bold; color:#c62828;">${pctDelNO}</span></td><td><span class="qty-badge" style="font-weight:bold; color:var(--excel-green-dark);">${pctDelTotal}</span></td></tr>`;
-      });
+          html += `<tr><td class="left">• <strong>${motivo}</strong></td><td><strong>${cant}</strong></td><td><span class="qty-badge" style="font-weight:bold; color:#c62828;">${pctDelNO}</span></td><td><span class="qty-badge" style="font-weight:bold; color:var(--excel-green-dark);">${pctDelTotal}</span></td></tr>`;
+        });
+      }
 
       const totalPctNO_General = grandTotal > 0 ? ((totalNO / grandTotal) * 100).toFixed(1) + '%' : '0.0%';
-      html += `<tr class="total-general"><td class="left">Total No Atendidos / No Resueltos</td><td>${totalNO}</td><td>100%</td><td>${totalPctNO_General}</td></tr></tbody></table>`;
+      html += `<tr class="total-general"><td class="left">Total No Vigentes</td><td>${totalNO}</td><td>100%</td><td>${totalPctNO_General}</td></tr></tbody></table>`;
 
       document.getElementById('tabla-motivos-container').innerHTML = html;
     }
 
-    /* TABLA NO REALIZADAS (ID CCU / N° LLAMADO SEGÚN PESTAÑA) */
+    /* TABLA NO REALIZADAS */
     function renderTablaNoRealizadas(data) {
       const noRealizadas = data.filter(d => !isServicioRealizado(d));
       if (noRealizadas.length === 0) {
@@ -1318,6 +1332,7 @@
       }
 
       const isUrg = currentSheetKey === "urgencias";
+      const isCob = currentSheetKey === "cobertura";
       const thColId = isUrg ? "N° Llamado" : "ID CCU";
 
       let html = `
@@ -1421,7 +1436,7 @@
       document.getElementById('tabla-si-realizadas-container').innerHTML = html;
     }
 
-    /* HISTORIAL ADAPTATIVO (ID CCU EN PREVENTIVA / N° LLAMADO EN URGENCIAS) */
+    /* HISTORIAL O COBERTURA POR OFICINA COMERCIAL (Pestaña Cobertura) */
     function renderTablaHistorialCliente() {
       const fOficina = filtersState.oficina.selected;
       const fJefeVentas = filtersState.jefeVentas.selected;
@@ -1429,11 +1444,12 @@
       const fCliente = filtersState.cliente.selected;
 
       const esUrgencias = currentSheetKey === "urgencias";
+      const esCobertura = currentSheetKey === "cobertura";
 
-      const baseHistorial = rawData.filter(d => {
+      const baseData = rawData.filter(d => {
         const dOficina = String(d['Oficina'] || d['OFICINA'] || '').trim();
         const dJefe = String(d['Jefe de Ventas'] || d['JEFE DE VENTAS'] || '').trim();
-        const dLocal = String(d['Local'] || '').trim();
+        const dLocal = String(d['Local'] || d['ID X LOCAL X TIPO MAQUINA'] || '').trim();
         const dIdCCU = String(esUrgencias ? getNumeroLlamado(d) : getIdCCU(d)).trim();
         const dCliente = String(getNombreCliente(d)).trim();
 
@@ -1445,14 +1461,90 @@
         return matchOficina && matchJefe && matchLocalId && matchCliente;
       });
 
-      if (baseHistorial.length === 0) {
-        document.getElementById('tabla-historial-container').innerHTML = `<div class="no-data">Sin registros para mostrar historial.</div>`;
+      if (baseData.length === 0) {
+        document.getElementById('tabla-historial-container').innerHTML = `<div class="no-data">Sin registros para mostrar.</div>`;
         return;
       }
 
+      /* RENDERIZADO EXCLUSIVO PARA COBERTURA DE MANTENCIÓN: CUADRO POR OFICINA COMERCIAL */
+      if (esCobertura) {
+        const oficinasMap = {};
+        let grandVigentes = 0;
+        let grandNoVigentes = 0;
+
+        baseData.forEach(d => {
+          const oficina = d['Oficina'] || d['OFICINA'] || d['Oficina Comercial'] || 'Sin Oficina';
+          const vigente = isServicioRealizado(d);
+
+          if (!oficinasMap[oficina]) {
+            oficinasMap[oficina] = { vigentes: 0, noVigentes: 0 };
+          }
+
+          if (vigente) {
+            oficinasMap[oficina].vigentes++;
+            grandVigentes++;
+          } else {
+            oficinasMap[oficina].noVigentes++;
+            grandNoVigentes++;
+          }
+        });
+
+        const totalGeneral = grandVigentes + grandNoVigentes;
+
+        let htmlCob = `
+          <table>
+            <thead>
+              <tr>
+                <th class="left">Oficina Comercial</th>
+                <th>Clientes Vigentes</th>
+                <th>Clientes No Vigentes</th>
+                <th>Total Clientes</th>
+                <th>% Vigencia sobre Oficina</th>
+                <th>% sobre el Total General</th>
+              </tr>
+            </thead>
+            <tbody>`;
+
+        Object.keys(oficinasMap).sort().forEach(oficina => {
+          const v = oficinasMap[oficina].vigentes;
+          const nv = oficinasMap[oficina].noVigentes;
+          const totOficina = v + nv;
+
+          const pctSobreOficina = totOficina > 0 ? ((v / totOficina) * 100).toFixed(1) + '%' : '0.0%';
+          const pctSobreTotal = totalGeneral > 0 ? ((totOficina / totalGeneral) * 100).toFixed(1) + '%' : '0.0%';
+
+          htmlCob += `
+            <tr>
+              <td class="left"><strong>${oficina}</strong></td>
+              <td><span class="status-pill pill-ok">${v}</span></td>
+              <td><span class="status-pill pill-no">${nv}</span></td>
+              <td><strong>${totOficina}</strong></td>
+              <td><strong style="color:var(--excel-green-dark);">${pctSobreOficina}</strong></td>
+              <td><span class="qty-badge" style="font-weight:bold;">${pctSobreTotal}</span></td>
+            </tr>`;
+        });
+
+        const grandPctVigencia = totalGeneral > 0 ? ((grandVigentes / totalGeneral) * 100).toFixed(1) + '%' : '0.0%';
+
+        htmlCob += `
+          <tr class="total-general">
+            <td class="left">Total General</td>
+            <td>${grandVigentes}</td>
+            <td>${grandNoVigentes}</td>
+            <td>${totalGeneral}</td>
+            <td>${grandPctVigencia}</td>
+            <td>100%</td>
+          </tr>
+          </tbody></table>`;
+
+        document.getElementById('tabla-historial-container').innerHTML = htmlCob;
+        return;
+      }
+
+      /* RENDERIZADO PARA PREVENTIVA Y URGENCIAS */
       globalClientesHistorialMap = {};
 
-      baseHistorial.forEach(d => {
+      baseData.forEach(d => {
         const codLocal = String(d['Local'] || d['local'] || '').trim();
         const idCCU = getIdCCU(d);
         const numLlamado = getNumeroLlamado(d);
@@ -1503,8 +1595,7 @@
         }
       });
 
-      // Si estamos en Ruta Preventiva, cruzar con la base Maestro
-      if (!esUrgencias && currentSheetKey !== "cobertura" && maestroFrecuencias && maestroFrecuencias.length > 0) {
+      if (!esUrgencias && maestroFrecuencias && maestroFrecuencias.length > 0) {
         maestroFrecuencias.forEach(m => {
           const mLocal = String(m['Local'] || m['local'] || '').trim();
           const mCCU = String(m['ID CCU'] || m['ID'] || m['Id CCU'] || m['id_ccu'] || '').trim();
@@ -1535,7 +1626,6 @@
         });
       }
 
-      // Definición de Encabezados Adaptativos
       const thColId = esUrgencias ? "N° Llamado" : "ID CCU";
       const colPenultima = esUrgencias ? "Penúltima Urgencia" : "Penúltima Mantención";
       const colUltima = esUrgencias ? "Última Urgencia" : "Última Mantención";
