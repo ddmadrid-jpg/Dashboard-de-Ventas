@@ -1531,6 +1531,7 @@
       document.getElementById('tabla-motivos-container').innerHTML = html;
     }
 
+    /* TABLA NO REALIZADAS CON ID CCU Y CORRECCIÓN DE FECHAS SERIALES DE EXCEL */
     function renderTablaNoRealizadas(data) {
       const noRealizadas = data.filter(d => !isServicioRealizado(d));
       if (noRealizadas.length === 0) {
@@ -1587,6 +1588,7 @@
       document.getElementById('tabla-no-realizadas-container').innerHTML = html;
     }
 
+    /* TABLA SI REALIZADAS CON FECHAS FORMATO LIMPIO Y DÍA DE LA SEMANA */
     function renderTablaSiRealizadas(data) {
       const siRealizadas = data.filter(d => isServicioRealizado(d));
       if (siRealizadas.length === 0) {
@@ -1638,7 +1640,7 @@
       document.getElementById('tabla-si-realizadas-container').innerHTML = html;
     }
 
-    /* HISTORIAL COMPLETO CON CELDAS CLICKEABLES PARA MODAL EMERGENTE */
+    /* HISTORIAL COMPLETO CON AGRUPACIÓN POR CÓDIGO DE LOCAL Y AUTOCORRECCIÓN DE JEFE DE VENTAS */
     function renderTablaHistorialCliente() {
       const fOficina = filtersState.oficina.selected;
       const fJefeVentas = filtersState.jefeVentas.selected;
@@ -1665,11 +1667,14 @@
         return;
       }
 
+      // Mapa indexado por Código de Local (evita errores por tipex de ID CCU)
       globalClientesHistorialMap = {};
 
       baseHistorial.forEach(d => {
+        const codLocal = String(d['Local'] || d['local'] || '').trim();
+        if (!codLocal) return;
+
         const idCCU = getIdCCU(d);
-        const codLocal = d['Local'] || d['local'] || '-';
         const cliente = getNombreCliente(d);
         const oficina = d['Oficina'] || d['OFICINA'] || '-';
         const jefe = d['Jefe de Ventas'] || d['JEFE DE VENTAS'] || '-';
@@ -1679,8 +1684,9 @@
         const realizado = isServicioRealizado(d);
         const motivo = realizado ? '' : getMotivoNoServicio(d);
 
-        if (!globalClientesHistorialMap[idCCU]) {
-          globalClientesHistorialMap[idCCU] = {
+        if (!globalClientesHistorialMap[codLocal]) {
+          globalClientesHistorialMap[codLocal] = {
+            keyLocal: codLocal,
             idCCU,
             codLocal,
             cliente,
@@ -1691,40 +1697,54 @@
           };
         }
 
+        // Si antes decía 'Revisar' o no tenía jefe, pero en este registro sí hay uno válido, actualizarlo
+        const jefeActual = globalClientesHistorialMap[codLocal].jefe.toLowerCase();
+        if ((jefeActual.includes('revisar') || jefeActual.includes('sin') || jefeActual === '-') && jefe && !jefe.toLowerCase().includes('revisar')) {
+          globalClientesHistorialMap[codLocal].jefe = jefe;
+        }
+
+        // Mantener actualizado un ID CCU más limpio si el anterior era corrupto
+        if (idCCU && idCCU !== '-' && idCCU.length <= 6) {
+          globalClientesHistorialMap[codLocal].idCCU = idCCU;
+        }
+
         if (rawFecha) {
-          globalClientesHistorialMap[idCCU].mantenciones.push({
+          globalClientesHistorialMap[codLocal].mantenciones.push({
             rawFecha,
             parsedDate,
             realizado,
             motivo,
-            rawObject: d // Guarda todo el objeto para el modal emergente
+            rawObject: d
           });
         }
       });
 
-      // Cruzar con la base Maestro
+      // Cruzar con la base Maestro buscando por Código de Local
       if (maestroFrecuencias && maestroFrecuencias.length > 0) {
         maestroFrecuencias.forEach(m => {
           const mLocal = String(m['Local'] || m['local'] || '').trim();
-          const mCCU = String(m['ID CCU'] || m['ID'] || m['Id CCU'] || m['id_ccu'] || '').trim();
+          const mJefe = m['Jefe de Ventas'] || m['JEFE DE VENTAS'] || m['Jefe Ventas'];
 
-          Object.values(globalClientesHistorialMap).forEach(c => {
-            const matchByLocal = mLocal && c.codLocal && mLocal.toUpperCase() === c.codLocal.toUpperCase();
-            const matchByID = mCCU && c.idCCU && mCCU.endsWith(c.idCCU);
+          if (mLocal && globalClientesHistorialMap[mLocal]) {
+            const clienteObj = globalClientesHistorialMap[mLocal];
 
-            if (matchByLocal || matchByID) {
-              const proxFecha = m['starts_at_date'] || m['Dia'] || m['Fecha Realizado'] || m['Fecha Programada'] || m['Fecha'] || '';
-              const sem = m['Semana'] ? `Semana ${m['Semana']}` : '';
-
-              if (proxFecha) {
-                c.proxima = proxFecha;
-              } else if (sem) {
-                c.proxima = sem;
-              } else {
-                c.proxima = 'Programado';
-              }
+            // Reemplazar "Revisar" si en la base maestra existe el nombre real del Jefe de Ventas
+            const jefeActual = clienteObj.jefe.toLowerCase();
+            if ((jefeActual.includes('revisar') || jefeActual.includes('sin') || jefeActual === '-') && mJefe && !mJefe.toLowerCase().includes('revisar')) {
+              clienteObj.jefe = mJefe;
             }
-          });
+
+            const proxFecha = m['starts_at_date'] || m['Dia'] || m['Fecha Realizado'] || m['Fecha Programada'] || m['Fecha'] || '';
+            const sem = m['Semana'] ? `Semana ${m['Semana']}` : '';
+
+            if (proxFecha) {
+              clienteObj.proxima = proxFecha;
+            } else if (sem) {
+              clienteObj.proxima = sem;
+            } else {
+              clienteObj.proxima = 'Programado';
+            }
+          }
         });
       }
 
@@ -1762,11 +1782,11 @@
         if (penult) {
           const fStr = formatDiaMes(penult.rawFecha);
           if (penult.realizado) {
-            penultHtml = `<div class="clickable-history-cell" onclick="openServiceModal('${c.idCCU}', ${penultIndex})">
+            penultHtml = `<div class="clickable-history-cell" onclick="openServiceModal('${c.keyLocal}', ${penultIndex})">
                             <strong>${fStr}</strong> <span class="status-pill pill-ok">REALIZADO</span>
                           </div>`;
           } else {
-            penultHtml = `<div class="clickable-history-cell" onclick="openServiceModal('${c.idCCU}', ${penultIndex})">
+            penultHtml = `<div class="clickable-history-cell" onclick="openServiceModal('${c.keyLocal}', ${penultIndex})">
                             <strong>${fStr}</strong> <span class="status-pill pill-no">PENDIENTE</span>
                             <div style="font-size:10px; color:#c62828; margin-top:2px;">${penult.motivo}</div>
                           </div>`;
@@ -1777,11 +1797,11 @@
         if (ult) {
           const fStr = formatDiaMes(ult.rawFecha);
           if (ult.realizado) {
-            ultHtml = `<div class="clickable-history-cell" onclick="openServiceModal('${c.idCCU}', ${ultIndex})">
+            ultHtml = `<div class="clickable-history-cell" onclick="openServiceModal('${c.keyLocal}', ${ultIndex})">
                           <strong>${fStr}</strong> <span class="status-pill pill-ok">REALIZADO</span>
                         </div>`;
           } else {
-            ultHtml = `<div class="clickable-history-cell" onclick="openServiceModal('${c.idCCU}', ${ultIndex})">
+            ultHtml = `<div class="clickable-history-cell" onclick="openServiceModal('${c.keyLocal}', ${ultIndex})">
                           <strong>${fStr}</strong> <span class="status-pill pill-no">PENDIENTE</span>
                           <div style="font-size:10px; color:#c62828; margin-top:2px;">${ult.motivo}</div>
                         </div>`;
@@ -1808,8 +1828,8 @@
     }
 
     /* FUNCIÓN ABRIR MODAL EMERGENTE DE DETALLE */
-    function openServiceModal(idCCU, mantencionIndex) {
-      const clienteData = globalClientesHistorialMap[idCCU];
+    function openServiceModal(keyLocal, mantencionIndex) {
+      const clienteData = globalClientesHistorialMap[keyLocal];
       if (!clienteData || !clienteData.mantenciones[mantencionIndex]) return;
 
       const item = clienteData.mantenciones[mantencionIndex];
