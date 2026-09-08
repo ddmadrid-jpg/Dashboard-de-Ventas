@@ -168,17 +168,11 @@
     .tab-btn:hover { color: var(--excel-green-dark); }
     .tab-btn.active { color: var(--excel-green-dark); border-bottom-color: var(--excel-green-header); }
 
-    .kpi-block-wrapper {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      margin-bottom: 24px;
-    }
-
     .kpi-container {
       display: grid;
       grid-template-columns: 1fr 0.8fr 0.8fr 1.6fr;
       gap: 16px;
+      margin-bottom: 24px;
     }
 
     .kpi-container.cobertura-kpis {
@@ -384,7 +378,7 @@
     </div>
   </div>
 
-  <!-- Navegación por Pestañas -->
+  <!-- Navegación por Pestañas (5 Pestañas Especializadas) -->
   <div class="dashboard-tabs">
     <button class="tab-btn active" data-sheet="preventiva">
       <i class="fa-solid fa-calendar-check"></i> Ruta Preventiva
@@ -395,76 +389,46 @@
     <button class="tab-btn" data-sheet="ejecuciones">
       <i class="fa-solid fa-gears"></i> Ejecuciones
     </button>
+    <button class="tab-btn" data-sheet="visitas">
+      <i class="fa-solid fa-clipboard-check"></i> Visitas Inspectivas
+    </button>
     <button class="tab-btn" data-sheet="cobertura">
       <i class="fa-solid fa-shield-halved"></i> Cobertura de Mantención
     </button>
   </div>
 
   <!-- Tarjetas KPI -->
-  <div class="kpi-block-wrapper">
-    <!-- BLOQUE KPI 1: Estándar (Preventiva, Urgencias, Cobertura o Bloque Superior Ejecuciones) -->
-    <div class="kpi-container" id="kpi-main-container">
-      <div class="kpi-card chart-card">
-        <div>
-          <div class="kpi-title" id="kpi-label-1">Total Servicios</div>
-          <div class="kpi-value" id="kpi-total">0</div>
-          <div class="kpi-subtext" id="kpi-subtext-legend">
-            <span style="color:#006100; font-weight:bold;">● Schop</span> | 
-            <span style="color:#004b93; font-weight:bold;">● Post Mix</span>
-          </div>
-        </div>
-        <div class="chart-box">
-          <canvas id="activosChart"></canvas>
+  <div class="kpi-container" id="kpi-main-container">
+    <div class="kpi-card chart-card">
+      <div>
+        <div class="kpi-title" id="kpi-label-1">Total Servicios</div>
+        <div class="kpi-value" id="kpi-total">0</div>
+        <div class="kpi-subtext" id="kpi-subtext-legend">
+          <span style="color:#006100; font-weight:bold;">● Schop</span> | 
+          <span style="color:#004b93; font-weight:bold;">● Post Mix</span>
         </div>
       </div>
-
-      <div class="kpi-card">
-        <div class="kpi-title" id="kpi-label-2">Cumplimiento Global</div>
-        <div class="kpi-value" id="kpi-cumplimiento">0%</div>
-        <div class="kpi-subtext" id="kpi-ejecutados-count" style="color: #888;">0 Ejecutadas</div>
-      </div>
-
-      <div class="kpi-card alert">
-        <div class="kpi-title" id="kpi-label-3">Visitas No Realizadas</div>
-        <div class="kpi-value" id="kpi-pendientes">0%</div>
-        <div class="kpi-subtext" id="kpi-no-count" style="color: #888;">0 Pendientes</div>
-      </div>
-
-      <div class="kpi-card" id="trend-kpi-card" style="border-left-color: var(--pepsi-blue);">
-        <div class="kpi-title" id="trend-card-title"><i class="fa-solid fa-chart-column"></i> Evolución Mensual (% SI)</div>
-        <div class="mini-trend-box">
-          <canvas id="trendChart"></canvas>
-        </div>
+      <div class="chart-box">
+        <canvas id="activosChart"></canvas>
       </div>
     </div>
 
-    <!-- BLOQUE KPI 2: Exclusivo Bloque Inferior Visitas Inspectivas (Pestaña Ejecuciones) -->
-    <div class="kpi-container" id="kpi-ejecuciones-second-container" style="display: none;">
-      <div class="kpi-card chart-card">
-        <div>
-          <div class="kpi-title">Visitas Inspectivas Totales</div>
-          <div class="kpi-value" id="kpi2-total">0</div>
-          <div class="kpi-subtext" style="color:#666; font-weight:bold;">Solicitudes SGS</div>
-        </div>
-      </div>
+    <div class="kpi-card">
+      <div class="kpi-title" id="kpi-label-2">Cumplimiento Global</div>
+      <div class="kpi-value" id="kpi-cumplimiento">0%</div>
+      <div class="kpi-subtext" id="kpi-ejecutados-count" style="color: #888;">0 Ejecutadas</div>
+    </div>
 
-      <div class="kpi-card">
-        <div class="kpi-title">Aprobadas / Éxito</div>
-        <div class="kpi-value" id="kpi2-cumplimiento">0%</div>
-        <div class="kpi-subtext" id="kpi2-ejecutados-count" style="color: #888;">0 Aprobadas</div>
-      </div>
+    <div class="kpi-card alert">
+      <div class="kpi-title" id="kpi-label-3">Visitas No Realizadas</div>
+      <div class="kpi-value" id="kpi-pendientes">0%</div>
+      <div class="kpi-subtext" id="kpi-no-count" style="color: #888;">0 Pendientes</div>
+    </div>
 
-      <div class="kpi-card alert">
-        <div class="kpi-title">Rechazadas / Anuladas</div>
-        <div class="kpi-value" id="kpi2-pendientes">0%</div>
-        <div class="kpi-subtext" id="kpi2-no-count" style="color: #888;">0 Rechazadas</div>
-      </div>
-
-      <div class="kpi-card" style="border-left-color: var(--pepsi-blue);">
-        <div class="kpi-title"><i class="fa-solid fa-chart-column"></i> Evolución Mensual Inspectiva (% Aprobado)</div>
-        <div class="mini-trend-box">
-          <canvas id="trendChart2"></canvas>
-        </div>
+    <div class="kpi-card" id="trend-kpi-card" style="border-left-color: var(--pepsi-blue);">
+      <div class="kpi-title" id="trend-card-title"><i class="fa-solid fa-chart-column"></i> Evolución Mensual (% SI)</div>
+      <div class="mini-trend-box">
+        <canvas id="trendChart"></canvas>
       </div>
     </div>
   </div>
@@ -670,6 +634,7 @@
       preventiva: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQHJUM26MwbPurx5FdJGQc-I-vlfwyEZYbPGeYE0F5HxEWpbMyhVeJpJKK7XjCD6No8RZCfeHgWaxZZ/pub?output=csv",
       urgencias: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTTNzXfjkM4mtZrHyPjzSVqjYOTG0tVFReUG3FPpR-nkyCud1hoR8rRPpqPToiz82Vmp0A5ubJqz3zx/pub?output=csv",
       ejecuciones: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQX1dUNGJcCrXEaZU5O-7NgAlGE506fg1arGc60-qd1TTPK3W_aM5NnK_drTT1in_HyH7-FbeLI-adg/pub?output=csv",
+      visitas: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQX1dUNGJcCrXEaZU5O-7NgAlGE506fg1arGc60-qd1TTPK3W_aM5NnK_drTT1in_HyH7-FbeLI-adg/pub?output=csv",
       cobertura: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTF-Kk3diC7SHMgZKKJVytUQ96yjgAaDD_zWXxvM9jk7eTzfwutocJiB3Lx7ARxzp2EYlVlSTdZXM5J/pub?output=csv",
       frecuenciasMaestro: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQpO3A3QI0Na_JPUWPuLNalUZeVirnbhnvss-4j4_suvnD2OcKhbXeO7jJ7SKtbS8KWeTWp-GECe9i2/pub?output=csv"
     };
@@ -681,7 +646,6 @@
     let maestroFrecuencias = [];
     let activosChartInstance = null;
     let trendChartInstance = null;
-    let trendChart2Instance = null;
 
     Chart.register(ChartDataLabels);
 
@@ -722,7 +686,7 @@
     }
 
     function getServiciosQty(d) {
-      if (currentSheetKey === "urgencias" || currentSheetKey === "cobertura" || currentSheetKey === "ejecuciones") return 1;
+      if (currentSheetKey === "urgencias" || currentSheetKey === "cobertura" || currentSheetKey === "ejecuciones" || currentSheetKey === "visitas") return 1;
       const val = d['Servicios'] || d['servicios'] || d['SERVICIOS'] || d['Cant'] || d['Cantidad'];
       const num = parseInt(val, 10);
       return isNaN(num) ? 1 : num;
@@ -735,9 +699,9 @@
       } else if (currentSheetKey === "cobertura") {
         const res = String(d['ESTADO (VIGENTE - NO VIGENTE)'] || d['ESTADO'] || d['Vigencia'] || d['Vigente'] || '').toUpperCase().trim();
         return res === "VIGENTE" || res === "SI" || res === "1";
-      } else if (currentSheetKey === "ejecuciones") {
-        const res = String(d['Resultado'] || d['Estado'] || d['Dictamen'] || d['Resultado Inspeccion'] || '').toUpperCase().trim();
-        return res.includes("APROBADA") || res.includes("EXITO") || res.includes("CERRADA CON EXITO") || res === "SI" || res === "1";
+      } else if (currentSheetKey === "ejecuciones" || currentSheetKey === "visitas") {
+        const res = String(d['Resultado'] || d['Estado'] || d['Estado Solicitud'] || d['Resultado Inspeccion'] || d['Dictamen'] || '').toUpperCase().trim();
+        return res.includes("APROBADA") || res.includes("EXITO") || res.includes("CERRADA CON EXITO") || res.includes("REALIZADA") || res === "SI" || res === "1";
       } else {
         const realizada = String(d['Realizada'] || d['Realizada 2'] || d['Cumplimiento'] || '').toUpperCase().trim();
         return realizada === "SI" || realizada === "1" || realizada === "EJECUTADA" || realizada === "REALIZADA";
@@ -745,7 +709,7 @@
     }
 
     function getTipoActivo(d) {
-      const codLocal = String(d['ID X LOCAL X TIPO MAQUINA'] || d['Local'] || d['local'] || d['Tipo de Activo'] || '').toUpperCase().trim();
+      const codLocal = String(d['ID X LOCAL X TIPO MAQUINA'] || d['Tipo de Maquina'] || d['Local'] || d['local'] || d['Tipo de Activo'] || '').toUpperCase().trim();
       if (codLocal.startsWith('LCSCH') || codLocal.includes('SCHOP')) return 'Schop';
       if (codLocal.startsWith('LCPM') || codLocal.includes('POST')) return 'Post Mix';
       return 'Post Mix';
@@ -762,6 +726,8 @@
     function getNumeroLlamado(d) {
       if (!d) return '-';
       const possibleKeys = [
+        'N° SGS/ N° CALL',
+        'N° SGS / N° CALL',
         'Numero Solicitud',
         'N° sgs / Call',
         'Numero Llamado de la Urgencia',
@@ -769,9 +735,6 @@
         'N° Llamado',
         'N° LLAMADO',
         'Llamado',
-        'N° Ticket',
-        'Ticket',
-        'Solicitud',
         'ID CCU',
         'ID'
       ];
@@ -796,7 +759,7 @@
         return rawAC;
       }
 
-      const raw = (d['Motivo No Servicio'] || d['motivo_no_servicio'] || d['Resuelto'] || d['Motivo'] || d['Por falta de repuesto'] || d['Causa Anulacion'] || '').trim();
+      const raw = (d['Motivo No Servicio'] || d['motivo_no_servicio'] || d['Resuelto'] || d['Motivo'] || d['Por falta de repuesto'] || d['Causa Anulacion'] || d['Acción'] || d['Accion'] || '').trim();
       const strUpper = raw.toUpperCase();
 
       if (!raw || strUpper === 'SIN ESPECIFICAR' || strUpper === 'SIN INFORMACIÓN' || strUpper === 'SIN INFORMACION' || strUpper === '-') {
@@ -882,7 +845,6 @@
           $('.filter-date-group').show();
           $('#filter-group-estado').hide();
           $('#trend-kpi-card').show();
-          $('#kpi-ejecutaciones-second-container').hide();
           $('#kpi-main-container').removeClass('cobertura-kpis');
 
           $('#col-motivos-left').show().css('flex', '0 0 35%');
@@ -891,21 +853,42 @@
           $('#container-no-realizadas').show().css('width', '100%');
 
         } else if (currentSheetKey === "ejecuciones") {
-          $('#main-title').html('<i class="fa-solid fa-gears" style="font-size: 20px; color: #e67e22;"></i> Dashboard Control de Ejecuciones');
+          $('#main-title').html('<i class="fa-solid fa-gears" style="font-size: 20px; color: #e67e22;"></i> Dashboard Control de Ejecuciones (Instalaciones y Retiros)');
           $('#kpi-label-1').text('Total Solicitudes Ejecución');
           $('#kpi-label-2').text('Cerradas con Éxito');
           $('#kpi-label-3').text('Solicitudes Anuladas');
-          $('#tabla-motivos-title').html('<i class="fa-solid fa-clipboard-check"></i> Control de Visitas Inspectivas & Tareas');
+          $('#tabla-motivos-title').html('<i class="fa-solid fa-clipboard-check"></i> Tiempos Promedio de Respuesta (Días Comodato / ST)');
           $('#trend-card-title').html('<i class="fa-solid fa-chart-column"></i> Evolución Mensual Ejecución (% Éxito)');
-          $('#tabla-no-title').html('<i class="fa-solid fa-truck-ramp-box"></i> Detalle Solicitudes Anuladas / Rechazadas');
+          $('#tabla-no-title').html('<i class="fa-solid fa-truck-ramp-box"></i> Detalle Solicitudes Anuladas');
           $('#historial-tabla-titulo').html('<i class="fa-solid fa-list-check"></i> Resumen de Ejecuciones por Oficina Comercial');
 
-          $('#label-filter-localId').html('<i class="fa-solid fa-hashtag"></i> N° Solicitud / SGS');
+          $('#label-filter-localId').html('<i class="fa-solid fa-hashtag"></i> N° Solicitud');
 
           $('.filter-date-group').show();
           $('#filter-group-estado').hide();
           $('#trend-kpi-card').show();
-          $('#kpi-ejecutaciones-second-container').show();
+          $('#kpi-main-container').removeClass('cobertura-kpis');
+
+          $('#col-motivos-left').show().css('flex', '0 0 50%');
+          $('#col-tablas-right').show();
+          $('#container-si-realizadas').hide();
+          $('#container-no-realizadas').show().css('width', '100%');
+
+        } else if (currentSheetKey === "visitas") {
+          $('#main-title').html('<i class="fa-solid fa-clipboard-check" style="font-size: 20px; color: #004b93;"></i> Dashboard Visitas Inspectivas & Tareas');
+          $('#kpi-label-1').text('Total Visitas SGS / Call');
+          $('#kpi-label-2').text('Porcentaje Aprobadas');
+          $('#kpi-label-3').text('Visitas Rechazadas');
+          $('#tabla-motivos-title').html('<i class="fa-solid fa-list-check"></i> Resumen por Acción Realizada');
+          $('#trend-card-title').html('<i class="fa-solid fa-chart-column"></i> Evolución Mensual Inspectiva (% Aprobación)');
+          $('#tabla-no-title').html('<i class="fa-solid fa-triangle-exclamation"></i> Detalle de Visitas Rechazadas');
+          $('#historial-tabla-titulo').html('<i class="fa-solid fa-building"></i> Control de Visitas Inspectivas por Oficina Comercial');
+
+          $('#label-filter-localId').html('<i class="fa-solid fa-phone-volume"></i> N° SGS / Call');
+
+          $('.filter-date-group').show();
+          $('#filter-group-estado').hide();
+          $('#trend-kpi-card').show();
           $('#kpi-main-container').removeClass('cobertura-kpis');
 
           $('#col-motivos-left').show().css('flex', '0 0 50%');
@@ -926,7 +909,6 @@
           $('.filter-date-group').hide();
           $('#filter-group-estado').show();
           $('#trend-kpi-card').hide();
-          $('#kpi-ejecutaciones-second-container').hide();
           $('#kpi-main-container').addClass('cobertura-kpis');
 
           $('#col-tablas-right').hide();
@@ -947,7 +929,6 @@
           $('.filter-date-group').show();
           $('#filter-group-estado').hide();
           $('#trend-kpi-card').show();
-          $('#kpi-ejecutaciones-second-container').hide();
           $('#kpi-main-container').removeClass('cobertura-kpis');
 
           $('#col-motivos-left').show().css('flex', '0 0 35%');
@@ -1169,7 +1150,6 @@
       });
     }
 
-    /* POPULAR FILTROS ORDENANDO LOS MESES DE FORMA CRONOLÓGICA (Enero -> Diciembre) */
     function populateFilterLists() {
       if (rawData.length === 0) return;
 
@@ -1191,7 +1171,6 @@
         });
         const unicos = [...new Set(values.filter(Boolean))];
         
-        // Orden cronológico estricto
         return unicos.sort((a, b) => {
           let idxA = nombresMeses.findIndex(nm => nm.toLowerCase().startsWith(a.toLowerCase().substring(0, 3)));
           let idxB = nombresMeses.findIndex(nm => nm.toLowerCase().startsWith(b.toLowerCase().substring(0, 3)));
@@ -1203,7 +1182,7 @@
 
       const getUniqueLocalAndCCU = () => {
         let values = [];
-        const isUrg = currentSheetKey === "urgencias" || currentSheetKey === "ejecuciones";
+        const isUrg = currentSheetKey === "urgencias" || currentSheetKey === "ejecuciones" || currentSheetKey === "visitas";
         rawData.forEach(d => {
           const loc = d['Local'] || d['local'] || d['ID X LOCAL X TIPO MAQUINA'];
           const ccu = isUrg ? getNumeroLlamado(d) : getIdCCU(d);
@@ -1247,7 +1226,7 @@
       const fInicio = fInicioStr ? new Date(fInicioStr) : null;
       const fFin = fFinStr ? new Date(fFinStr) : null;
 
-      const isUrg = currentSheetKey === "urgencias" || currentSheetKey === "ejecuciones";
+      const isUrg = currentSheetKey === "urgencias" || currentSheetKey === "ejecuciones" || currentSheetKey === "visitas";
 
       return rawData.filter(d => {
         const dOficina = String(d['Oficina Comercial'] || d['Oficina'] || d['OFICINA'] || '').trim();
@@ -1340,21 +1319,9 @@
       } else if (currentSheetKey === "ejecuciones") {
         document.getElementById('kpi-ejecutados-count').innerText = `${totalSI.toLocaleString()} Cerradas con Éxito`;
         document.getElementById('kpi-no-count').innerText = `${totalNO.toLocaleString()} Anuladas`;
-
-        // Renderizado del segundo bloque de KPI para Visitas Inspectivas
-        let inspectivasOK = Math.round(totalSI * 0.85);
-        let inspectivasNoOK = grandTotal - inspectivasOK;
-        let pctInspOK = grandTotal > 0 ? ((inspectivasOK / grandTotal) * 100).toFixed(1) : '0.0';
-        let pctInspNoOK = grandTotal > 0 ? ((inspectivasNoOK / grandTotal) * 100).toFixed(1) : '0.0';
-
-        document.getElementById('kpi2-total').innerText = grandTotal.toLocaleString();
-        document.getElementById('kpi2-cumplimiento').innerText = pctInspOK + '%';
-        document.getElementById('kpi2-ejecutados-count').innerText = `${inspectivasOK.toLocaleString()} Aprobadas`;
-        document.getElementById('kpi2-pendientes').innerText = pctInspNoOK + '%';
-        document.getElementById('kpi2-no-count').innerText = `${inspectivasNoOK.toLocaleString()} Rechazadas`;
-
-        renderTrendChart2();
-
+      } else if (currentSheetKey === "visitas") {
+        document.getElementById('kpi-ejecutados-count').innerText = `${totalSI.toLocaleString()} Visitas Aprobadas`;
+        document.getElementById('kpi-no-count').innerText = `${totalNO.toLocaleString()} Visitas Rechazadas`;
       } else if (currentSheetKey === "cobertura") {
         document.getElementById('kpi-ejecutados-count').innerText = `${totalSI.toLocaleString()} Clientes Vigentes`;
         document.getElementById('kpi-no-count').innerText = `${totalNO.toLocaleString()} Clientes No Vigentes`;
@@ -1422,7 +1389,6 @@
       });
     }
 
-    /* TENDENCIA MENSUAL ORDENADA CRONOLÓGICAMENTE (Enero -> Diciembre) */
     function renderTrendChart() {
       const monthlyStats = {};
       const dataWithoutMonth = getFilteredDataWithoutMonth();
@@ -1486,71 +1452,7 @@
       });
     }
 
-    /* SEGUNDO GRÁFICO DE TENDENCIA MENSUAL PARA VISITAS INSPECTIVAS EN EJECUCIONES */
-    function renderTrendChart2() {
-      const monthlyStats = {};
-      const dataWithoutMonth = getFilteredDataWithoutMonth();
-
-      dataWithoutMonth.forEach(d => {
-        const mes = d['Mes'] || d['mes'];
-        if (!mes) return;
-
-        const qty = getServiciosQty(d);
-        if (!monthlyStats[mes]) monthlyStats[mes] = { SI: 0, NO: 0 };
-
-        if (isServicioRealizado(d)) {
-          monthlyStats[mes].SI += qty;
-        } else {
-          monthlyStats[mes].NO += qty;
-        }
-      });
-
-      let labels = Object.keys(monthlyStats).sort((a, b) => {
-        let idxA = nombresMeses.findIndex(nm => nm.toLowerCase().startsWith(a.toLowerCase().substring(0, 3)));
-        let idxB = nombresMeses.findIndex(nm => nm.toLowerCase().startsWith(b.toLowerCase().substring(0, 3)));
-        if (idxA === -1) idxA = 99;
-        if (idxB === -1) idxB = 99;
-        return idxA - idxB;
-      });
-
-      if (labels.length > 12) labels = labels.slice(-12);
-
-      const ctx = document.getElementById('trendChart2').getContext('2d');
-      if (trendChart2Instance) trendChart2Instance.destroy();
-
-      trendChart2Instance = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: labels,
-          datasets: [{
-            label: '% Aprobación Visitas',
-            data: labels.map(m => {
-              const tot = (monthlyStats[m] ? monthlyStats[m].SI : 0) + (monthlyStats[m] ? monthlyStats[m].NO : 0);
-              return tot > 0 ? parseFloat((((monthlyStats[m].SI * 0.85) / tot) * 100).toFixed(1)) : 0;
-            }),
-            backgroundColor: '#004b93',
-            borderRadius: 3
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            x: { grid: { display: false }, ticks: { font: { size: 10, weight: 'bold' }, color: '#333333' } },
-            y: { display: false, max: 100 }
-          },
-          plugins: {
-            legend: { display: false },
-            datalabels: {
-              display: true, color: '#ffffff', textStrokeColor: '#000000', textStrokeWidth: 2,
-              font: { weight: 'bold', size: 10 }, formatter: (v) => v + '%', align: 'center', anchor: 'center'
-            }
-          }
-        }
-      });
-    }
-
-    /* RESUMEN DE MOTIVOS O CAUSAS */
+    /* TABLA RESUMEN DE CAUSAS / MOTIVOS / ACCIONES */
     function renderTablaMotivos(data, totalNO, grandTotal) {
       const motivosStats = {};
       const noRealizadasData = data.filter(d => !isServicioRealizado(d));
@@ -1562,7 +1464,10 @@
         motivosStats[motivo] += qty;
       });
 
-      let thTitulo = currentSheetKey === "cobertura" ? "Causa / Motivo No Vigente" : "Motivo / Causa";
+      let thTitulo = "Motivo / Causa";
+      if (currentSheetKey === "cobertura") thTitulo = "Causa / Motivo No Vigente";
+      if (currentSheetKey === "visitas") thTitulo = "Acción Realizada (Visita)";
+
       let html = `<table><thead><tr><th class="left">${thTitulo}</th><th>Cantidad</th><th>% del Total NO</th><th>% del Total General</th></tr></thead><tbody>`;
 
       const motivosKeys = Object.keys(motivosStats).sort((a, b) => motivosStats[b] - motivosStats[a]);
@@ -1585,7 +1490,6 @@
       document.getElementById('tabla-motivos-container').innerHTML = html;
     }
 
-    /* TABLA NO REALIZADAS */
     function renderTablaNoRealizadas(data) {
       if (currentSheetKey === "cobertura") return;
 
@@ -1595,8 +1499,8 @@
         return;
       }
 
-      const isUrg = currentSheetKey === "urgencias" || currentSheetKey === "ejecuciones";
-      const thColId = isUrg ? "N° Solicitud / Llamado" : "ID CCU";
+      const isUrg = currentSheetKey === "urgencias" || currentSheetKey === "ejecuciones" || currentSheetKey === "visitas";
+      const thColId = isUrg ? "N° Solicitud / SGS" : "ID CCU";
 
       let html = `
         <table>
@@ -1605,7 +1509,7 @@
               <th class="left">Fecha</th>
               <th class="left">${thColId}</th>
               <th class="left">Cliente</th>
-              <th class="left">Motivo / Estado</th>
+              <th class="left">Motivo / Acción</th>
               <th style="text-align:center;">Fotos</th>
             </tr>
           </thead>
@@ -1647,7 +1551,6 @@
       document.getElementById('tabla-no-realizadas-container').innerHTML = html;
     }
 
-    /* TABLA SI REALIZADAS */
     function renderTablaSiRealizadas(data) {
       const siRealizadas = data.filter(d => isServicioRealizado(d));
       if (siRealizadas.length === 0) {
@@ -1699,7 +1602,6 @@
       document.getElementById('tabla-si-realizadas-container').innerHTML = html;
     }
 
-    /* HISTORIAL O COBERTURA / EJECUCIONES POR OFICINAS COMERCIALES */
     function renderTablaHistorialCliente() {
       const fOficina = filtersState.oficina.selected;
       const fJefeVentas = filtersState.jefeVentas.selected;
@@ -1709,12 +1611,13 @@
       const esUrgencias = currentSheetKey === "urgencias";
       const esCobertura = currentSheetKey === "cobertura";
       const esEjecuciones = currentSheetKey === "ejecuciones";
+      const esVisitas = currentSheetKey === "visitas";
 
       const baseData = rawData.filter(d => {
         const dOficina = String(d['Oficina Comercial'] || d['Oficina'] || d['OFICINA'] || '').trim();
         const dJefe = String(d['Jefe de Ventas'] || d['JEFE DE VENTAS'] || '').trim();
         const dLocal = String(d['Local'] || d['ID X LOCAL X TIPO MAQUINA'] || '').trim();
-        const dIdCCU = String(esUrgencias || esEjecuciones ? getNumeroLlamado(d) : getIdCCU(d)).trim();
+        const dIdCCU = String(esUrgencias || esEjecuciones || esVisitas ? getNumeroLlamado(d) : getIdCCU(d)).trim();
         const dCliente = String(getNombreCliente(d)).trim();
 
         const matchOficina = fOficina.length === 0 || fOficina.some(fOf => dOficina.toUpperCase().includes(fOf.toUpperCase()));
@@ -1730,8 +1633,8 @@
         return;
       }
 
-      /* RENDERIZADO COBERTURA / EJECUCIONES POR OFICINA COMERCIAL */
-      if (esCobertura || esEjecuciones) {
+      /* RENDERIZADO COBERTURA / EJECUCIONES / VISITAS POR OFICINA COMERCIAL */
+      if (esCobertura || esEjecuciones || esVisitas) {
         const oficinasMap = {};
 
         let oficinasAMostrar = OFICINAS_PERMITIDAS;
@@ -1765,9 +1668,9 @@
 
         const totalGeneral = grandOK + grandNoOK;
 
-        let txtHeaderOK = esCobertura ? "Clientes Vigentes" : "Operaciones Exitosas / Aprobadas";
-        let txtHeaderNoOK = esCobertura ? "Clientes No Vigentes" : "Operaciones Anuladas / Rechazadas";
-        let txtHeaderPct = esCobertura ? "% Vigencia sobre Oficina" : "% Efectividad sobre Oficina";
+        let txtHeaderOK = esCobertura ? "Clientes Vigentes" : (esVisitas ? "Visitas Aprobadas" : "Cerradas con Éxito");
+        let txtHeaderNoOK = esCobertura ? "Clientes No Vigentes" : (esVisitas ? "Visitas Rechazadas" : "Anuladas");
+        let txtHeaderPct = esCobertura ? "% Vigencia sobre Oficina" : "% Cumplimiento sobre Oficina";
 
         let htmlCob = `
           <table>
