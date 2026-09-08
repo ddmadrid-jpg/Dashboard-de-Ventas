@@ -301,15 +301,18 @@
     .pill-no { background: #ffebee; color: #c62828; }
     .pill-pending { background: #fff3e0; color: #ef6c00; }
 
-    /* Celdas Clickeables del Historial */
+    /* Celdas Clickeables del Historial con indicador visual */
     .clickable-history-cell {
       cursor: pointer;
-      padding: 4px 6px;
+      padding: 5px 8px;
       border-radius: 6px;
-      transition: background-color 0.2s;
+      transition: all 0.2s ease;
+      display: inline-block;
+      user-select: none;
     }
     .clickable-history-cell:hover {
-      background-color: #e8f0fe;
+      background-color: #dbeafe;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
     .photos-flex { display: flex; gap: 6px; justify-content: center; }
@@ -330,12 +333,12 @@
     .scrollable-table { max-height: 400px; overflow-y: auto; position: relative; }
     .no-data { padding: 16px; text-align: center; color: #888; font-style: italic; font-size: 12px; }
 
-    /* ESTILOS DE LA VENTANA EMERGENTE (MODAL) ESTILO PROFESIONAL */
+    /* ESTILOS DE LA VENTANA EMERGENTE (MODAL) */
     .modal-overlay {
       position: fixed;
       top: 0; left: 0;
       width: 100vw; height: 100vh;
-      background: rgba(0, 0, 0, 0.6);
+      background: rgba(0, 0, 0, 0.65);
       backdrop-filter: blur(4px);
       z-index: 100000;
       display: none;
@@ -355,7 +358,7 @@
       max-width: 580px;
       max-height: 90vh;
       border-radius: 12px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.35);
       overflow: hidden;
       display: flex;
       flex-direction: column;
@@ -389,7 +392,7 @@
       background: transparent;
       border: none;
       color: #ffffff;
-      font-size: 18px;
+      font-size: 20px;
       cursor: pointer;
       opacity: 0.8;
       transition: opacity 0.2s;
@@ -1155,6 +1158,14 @@
         $(this).fadeOut(200);
       });
 
+      /* LISTENER GLOBAL ROBUSTO PARA CLIC EN CELDAS DEL HISTORIAL */
+      $(document).on('click', '.clickable-history-cell', function(e) {
+        e.stopPropagation();
+        const keyLocal = $(this).data('local');
+        const index = $(this).data('index');
+        openServiceModal(keyLocal, index);
+      });
+
       loadSheetData();
     });
 
@@ -1640,7 +1651,7 @@
       document.getElementById('tabla-si-realizadas-container').innerHTML = html;
     }
 
-    /* HISTORIAL COMPLETO CON AGRUPACIÓN POR CÓDIGO DE LOCAL Y AUTOCORRECCIÓN DE JEFE DE VENTAS */
+    /* HISTORIAL COMPLETO Y ASIGNACIÓN DE CELDAS CLICKEABLES CON ATRIBUTOS DATA-* */
     function renderTablaHistorialCliente() {
       const fOficina = filtersState.oficina.selected;
       const fJefeVentas = filtersState.jefeVentas.selected;
@@ -1667,7 +1678,6 @@
         return;
       }
 
-      // Mapa indexado por Código de Local (evita errores por tipex de ID CCU)
       globalClientesHistorialMap = {};
 
       baseHistorial.forEach(d => {
@@ -1697,13 +1707,11 @@
           };
         }
 
-        // Si antes decía 'Revisar' o no tenía jefe, pero en este registro sí hay uno válido, actualizarlo
         const jefeActual = globalClientesHistorialMap[codLocal].jefe.toLowerCase();
         if ((jefeActual.includes('revisar') || jefeActual.includes('sin') || jefeActual === '-') && jefe && !jefe.toLowerCase().includes('revisar')) {
           globalClientesHistorialMap[codLocal].jefe = jefe;
         }
 
-        // Mantener actualizado un ID CCU más limpio si el anterior era corrupto
         if (idCCU && idCCU !== '-' && idCCU.length <= 6) {
           globalClientesHistorialMap[codLocal].idCCU = idCCU;
         }
@@ -1728,7 +1736,6 @@
           if (mLocal && globalClientesHistorialMap[mLocal]) {
             const clienteObj = globalClientesHistorialMap[mLocal];
 
-            // Reemplazar "Revisar" si en la base maestra existe el nombre real del Jefe de Ventas
             const jefeActual = clienteObj.jefe.toLowerCase();
             if ((jefeActual.includes('revisar') || jefeActual.includes('sin') || jefeActual === '-') && mJefe && !mJefe.toLowerCase().includes('revisar')) {
               clienteObj.jefe = mJefe;
@@ -1782,11 +1789,11 @@
         if (penult) {
           const fStr = formatDiaMes(penult.rawFecha);
           if (penult.realizado) {
-            penultHtml = `<div class="clickable-history-cell" onclick="openServiceModal('${c.keyLocal}', ${penultIndex})">
+            penultHtml = `<div class="clickable-history-cell" data-local="${c.keyLocal}" data-index="${penultIndex}">
                             <strong>${fStr}</strong> <span class="status-pill pill-ok">REALIZADO</span>
                           </div>`;
           } else {
-            penultHtml = `<div class="clickable-history-cell" onclick="openServiceModal('${c.keyLocal}', ${penultIndex})">
+            penultHtml = `<div class="clickable-history-cell" data-local="${c.keyLocal}" data-index="${penultIndex}">
                             <strong>${fStr}</strong> <span class="status-pill pill-no">PENDIENTE</span>
                             <div style="font-size:10px; color:#c62828; margin-top:2px;">${penult.motivo}</div>
                           </div>`;
@@ -1797,11 +1804,11 @@
         if (ult) {
           const fStr = formatDiaMes(ult.rawFecha);
           if (ult.realizado) {
-            ultHtml = `<div class="clickable-history-cell" onclick="openServiceModal('${c.keyLocal}', ${ultIndex})">
+            ultHtml = `<div class="clickable-history-cell" data-local="${c.keyLocal}" data-index="${ultIndex}">
                           <strong>${fStr}</strong> <span class="status-pill pill-ok">REALIZADO</span>
                         </div>`;
           } else {
-            ultHtml = `<div class="clickable-history-cell" onclick="openServiceModal('${c.keyLocal}', ${ultIndex})">
+            ultHtml = `<div class="clickable-history-cell" data-local="${c.keyLocal}" data-index="${ultIndex}">
                           <strong>${fStr}</strong> <span class="status-pill pill-no">PENDIENTE</span>
                           <div style="font-size:10px; color:#c62828; margin-top:2px;">${ult.motivo}</div>
                         </div>`;
@@ -1827,31 +1834,31 @@
       document.getElementById('tabla-historial-container').innerHTML = html;
     }
 
-    /* FUNCIÓN ABRIR MODAL EMERGENTE DE DETALLE */
+    /* FUNCIÓN ABRIR MODAL EMERGENTE DE DETALLE DE SERVICIO */
     function openServiceModal(keyLocal, mantencionIndex) {
       const clienteData = globalClientesHistorialMap[keyLocal];
-      if (!clienteData || !clienteData.mantenciones[mantencionIndex]) return;
+      if (!clienteData || !clienteData.mantenciones || !clienteData.mantenciones[mantencionIndex]) return;
 
       const item = clienteData.mantenciones[mantencionIndex];
-      const d = item.rawObject;
+      const d = item.rawObject || {};
 
       const esRealizado = item.realizado;
       const $badge = $('#modal-status-badge');
       
       if (esRealizado) {
         $badge.removeClass('pending');
-        $('#modal-status-text').text('SERVICIOS REALIZADOS (GANADA / REALIZADA)');
+        $('#modal-status-text').text('SERVICIO REALIZADO');
       } else {
         $badge.addClass('pending');
         $('#modal-status-text').text('VISITA NO REALIZADA / PENDIENTE');
       }
 
       $('#modal-date-text').text(formatDiaMes(item.rawFecha));
-      $('#modal-id-ccu').text(clienteData.idCCU);
-      $('#modal-cod-local').text(clienteData.codLocal);
-      $('#modal-cliente').text(clienteData.cliente);
-      $('#modal-oficina').text(clienteData.oficina);
-      $('#modal-jefe').text(clienteData.jefe);
+      $('#modal-id-ccu').text(clienteData.idCCU || '-');
+      $('#modal-cod-local').text(clienteData.codLocal || '-');
+      $('#modal-cliente').text(clienteData.cliente || '-');
+      $('#modal-oficina').text(clienteData.oficina || '-');
+      $('#modal-jefe').text(clienteData.jefe || '-');
       
       $('#modal-tecnico').text(d['Usuario'] || d['Técnico'] || d['Tecnico'] || '-');
       $('#modal-activo').text(getTipoActivo(d));
@@ -1875,11 +1882,11 @@
       $gallery.empty();
 
       let countFotos = 0;
-      if (foto1 && foto1.startsWith('http')) {
+      if (foto1 && String(foto1).startsWith('http')) {
         countFotos++;
         $gallery.append(`<img src="${foto1}" class="modal-gallery-img" onclick="zoomImage('${foto1}')" alt="Evidencia 1">`);
       }
-      if (foto2 && foto2.startsWith('http')) {
+      if (foto2 && String(foto2).startsWith('http')) {
         countFotos++;
         $gallery.append(`<img src="${foto2}" class="modal-gallery-img" onclick="zoomImage('${foto2}')" alt="Evidencia 2">`);
       }
