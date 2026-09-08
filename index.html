@@ -955,9 +955,9 @@
       return d['ID CCU'] || d['ID'] || d['Id CCU'] || d['ID Cliente (Manual)'] || d['ID Cliente (Escaneado)'] || d['id_ccu'] || '-';
     }
 
-    /* OBTENER NÚMERO DE LLAMADO (EXCLUSIVO PARA URGENCIAS) */
+    /* OBTENER NÚMERO DE LLAMADO DE LA URGENCIA */
     function getNumeroLlamado(d) {
-      return d['N° Llamado'] || d['N° LLAMADO'] || d['Llamado'] || d['N° Ticket'] || d['Ticket'] || d['Solicitud'] || d['ID CCU'] || d['ID'] || '-';
+      return d['Numero Llamado de la Urgencia'] || d['Número Llamado de la Urgencia'] || d['N° Llamado'] || d['N° LLAMADO'] || d['Llamado'] || d['N° Ticket'] || d['Ticket'] || d['Solicitud'] || d['ID CCU'] || d['ID'] || '-';
     }
 
     function getNombreReceptor(d) {
@@ -1051,7 +1051,6 @@
           $('#tabla-no-title').html('<i class="fa-solid fa-triangle-exclamation"></i> Detalle de Urgencias No Resueltas');
           $('#historial-tabla-titulo').html('<i class="fa-solid fa-clock-rotate-left"></i> Historial de Urgencias del Cliente (Últimas 2 Urgencias Atendidas)');
           
-          // Cambiar nombre e icono del filtro
           $('#label-filter-localId').html('<i class="fa-solid fa-phone-volume"></i> N° Llamado');
           $('#modal-label-id').text('N° Llamado');
 
@@ -1066,7 +1065,6 @@
           $('#tabla-no-title').html('<i class="fa-solid fa-triangle-exclamation"></i> Justificación Visita No Realizada');
           $('#historial-tabla-titulo').html('<i class="fa-solid fa-clock-rotate-left"></i> Historial de Mantención del Cliente (-2 Meses y Próxima Mantención)');
           
-          // Restaurar nombre e icono del filtro
           $('#label-filter-localId').html('<i class="fa-solid fa-hashtag"></i> Local / ID CCU');
           $('#modal-label-id').text('ID CCU');
 
@@ -1850,7 +1848,16 @@
         }
 
         const tdProxima = esUrgencias ? "" : `<td style="text-align:center;"><strong style="color: var(--pepsi-blue);">${formatDiaMes(c.proxima)}</strong></td>`;
-        const valColId = esUrgencias ? (c.numLlamado || c.idCCU) : c.idCCU;
+        
+        // Obtener el N° Llamado del último registro o propiedad
+        let valColId = c.idCCU;
+        if (esUrgencias) {
+          if (ult && ult.rawObject) {
+            valColId = getNumeroLlamado(ult.rawObject);
+          } else {
+            valColId = c.numLlamado || c.idCCU;
+          }
+        }
 
         html += `
           <tr>
@@ -1889,7 +1896,7 @@
         $('#modal-status-text').text(esUrgencias ? 'URGENCIA NO RESUELTA' : 'VISITA NO REALIZADA / PENDIENTE');
       }
 
-      const valIdShow = esUrgencias ? (getNumeroLlamado(d) || clienteData.idCCU) : clienteData.idCCU;
+      const valIdShow = esUrgencias ? (getNumeroLlamado(d) || clienteData.numLlamado || clienteData.idCCU) : clienteData.idCCU;
 
       $('#modal-date-text').text(formatDiaMes(item.rawFecha));
       $('#modal-id-ccu').text(valIdShow || '-');
