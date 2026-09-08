@@ -579,7 +579,7 @@
         </div>
       </div>
 
-      <!-- DERECHA: Tablas Lado a Lado -->
+      <!-- DERECHA: Tablas Lado a Lado (50% - 50%) -->
       <div class="grid-col-right" id="col-tablas-right">
         <div class="side-by-side-tables">
           <!-- Detalle Servicios Realizados (SI) -->
@@ -622,7 +622,6 @@
       frecuenciasMaestro: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQpO3A3QI0Na_JPUWPuLNalUZeVirnbhnvss-4j4_suvnD2OcKhbXeO7jJ7SKtbS8KWeTWp-GECe9i2/pub?output=csv"
     };
 
-    // Lista oficial estricta de las 7 Oficinas Comerciales
     const OFICINAS_PERMITIDAS = ["CADENA", "IMAGEN", "LA FLORIDA", "MAIPU", "MODELO", "PIRAMIDE", "VESPUCIO"];
 
     let currentSheetKey = "preventiva";
@@ -630,7 +629,6 @@
     let maestroFrecuencias = [];
     let activosChartInstance = null;
     let trendChartInstance = null;
-    let globalClientesHistorialMap = {};
 
     Chart.register(ChartDataLabels);
 
@@ -688,7 +686,6 @@
       }
     }
 
-    /* REGLA SOLICITADA: LCSCH ES SCHOP / LCPM ES POST MIX */
     function getTipoActivo(d) {
       const codLocal = String(d['ID X LOCAL X TIPO MAQUINA'] || d['Local'] || d['local'] || d['Tipo de Activo'] || '').toUpperCase().trim();
       if (codLocal.startsWith('LCSCH') || codLocal.includes('SCHOP')) return 'Schop';
@@ -730,7 +727,6 @@
       return d['Nombre Receptor'] || d['Nombre Receptor Local'] || d['Receptor'] || '-';
     }
 
-    /* OBTENER CAUSA DE NO VIGENCIA DESDE COLUMNA AC ("Motivo No Vigente") */
     function getMotivoNoServicio(d) {
       if (currentSheetKey === "cobertura") {
         const rawAC = (d['Motivo No Vigente'] || d['Motivo No Servicio'] || d['Motivo'] || '').trim();
@@ -807,6 +803,11 @@
       $('.tab-btn').on('click', function() {
         const targetSheet = $(this).data('sheet');
 
+        if (targetSheet === "ejecuciones" && !SHEETS_URLS.ejecuciones) {
+          alert("La hoja de Ejecuciones estará disponible próximamente.");
+          return;
+        }
+
         $('.tab-btn').removeClass('active');
         $(this).addClass('active');
         currentSheetKey = targetSheet;
@@ -839,7 +840,6 @@
           
           $('#label-filter-localId').html('<i class="fa-solid fa-hashtag"></i> Local / ID CCU');
           
-          // Ajuste visual para Cobertura: Oculta la columna derecha de tablas individuales para darle ancho completo al resumen
           $('#col-tablas-right').hide();
           $('#col-motivos-left').show().css('flex', '1 1 100%');
 
@@ -1015,9 +1015,25 @@
       });
     }
 
+    /* CARGA SEGURA DE DATOS PARA EVITAR QUE LA PÁGINA QUEDE CONGELADA EN EL LOADER */
     function loadSheetData() {
       showLoader();
+      
+      // Temporizador de seguridad
+      const fallbackTimer = setTimeout(() => {
+        hideLoader();
+      }, 6000);
+
       const targetUrl = SHEETS_URLS[currentSheetKey];
+
+      if (!targetUrl) {
+        clearTimeout(fallbackTimer);
+        rawData = [];
+        document.getElementById('status-box').innerHTML = `<i class="fa-solid fa-info-circle"></i> Pestaña Próximamente`;
+        renderDashboard();
+        hideLoader();
+        return;
+      }
 
       document.getElementById('status-box').innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Cargando base...`;
 
@@ -1026,26 +1042,29 @@
         header: true,
         skipEmptyLines: true,
         complete: function(results) {
-          rawData = results.data;
+          clearTimeout(fallbackTimer);
+          rawData = results.data || [];
+          document.getElementById('status-box').innerHTML = `<i class="fa-solid fa-circle-check"></i> Base Actualizada (${rawData.length} registros)`;
+          populateFilterLists();
+          setMesActualDefault();
+          renderDashboard();
+          hideLoader();
 
-          Papa.parse(SHEETS_URLS.frecuenciasMaestro, {
-            download: true,
-            header: true,
-            skipEmptyLines: true,
-            complete: function(mResults) {
-              maestroFrecuencias = mResults.data;
-              document.getElementById('status-box').innerHTML = `<i class="fa-solid fa-circle-check"></i> Base Actualizada (${rawData.length} registros)`;
-              populateFilterLists();
-              setMesActualDefault();
-              renderDashboard();
-              hideLoader();
-            },
-            error: function() {
-              hideLoader();
-            }
-          });
+          // Carga en segundo plano del Maestro de Frecuencias de forma no bloqueante
+          if (SHEETS_URLS.frecuenciasMaestro && maestroFrecuencias.length === 0) {
+            Papa.parse(SHEETS_URLS.frecuenciasMaestro, {
+              download: true,
+              header: true,
+              skipEmptyLines: true,
+              complete: function(mResults) {
+                maestroFrecuencias = mResults.data || [];
+                renderDashboard();
+              }
+            });
+          }
         },
         error: function(err) {
+          clearTimeout(fallbackTimer);
           document.getElementById('status-box').style.background = "#ffebee";
           document.getElementById('status-box').style.color = "#c62828";
           document.getElementById('status-box').innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Error al conectar base`;
@@ -1338,7 +1357,7 @@
 
     /* TABLA NO REALIZADAS */
     function renderTablaNoRealizadas(data) {
-      if (currentSheetKey === "cobertura") return; // En Cobertura no se muestra esta tabla
+      if (currentSheetKey === "cobertura") return;
 
       const noRealizadas = data.filter(d => !isServicioRealizado(d));
       if (noRealizadas.length === 0) {
@@ -1484,7 +1503,6 @@
       if (esCobertura) {
         const oficinasMap = {};
         
-        // Inicializar las 7 oficinas en el mapa con contador en 0
         OFICINAS_PERMITIDAS.forEach(of => {
           oficinasMap[of] = { vigentes: 0, noVigentes: 0 };
         });
@@ -1495,7 +1513,6 @@
         baseData.forEach(d => {
           let oficinaRaw = String(d['Oficina'] || d['OFICINA'] || d['Oficina Comercial'] || '').toUpperCase().trim();
           
-          // Buscar coincidencia en la lista permitida
           const oficinaEncontrada = OFICINAS_PERMITIDAS.find(of => oficinaRaw.includes(of));
 
           if (oficinaEncontrada) {
@@ -1534,7 +1551,6 @@
           const pctSobreOficina = totOficina > 0 ? ((v / totOficina) * 100).toFixed(1) + '%' : '0.0%';
           const pctSobreTotal = totalGeneral > 0 ? ((totOficina / totalGeneral) * 100).toFixed(1) + '%' : '0.0%';
 
-          // Convertir primera letra a Mayúscula para presentación
           const ofNombrePretty = oficina.charAt(0) + oficina.slice(1).toLowerCase();
 
           htmlCob += `
