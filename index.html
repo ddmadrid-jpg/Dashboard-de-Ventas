@@ -310,7 +310,6 @@
     .pill-no { background: #ffebee; color: #c62828; }
     .pill-pending { background: #fff3e0; color: #ef6c00; }
 
-    /* Previsualizaciones de Imágenes Flotantes */
     .photos-flex { display: flex; gap: 6px; justify-content: center; }
     .img-container { position: relative; display: inline-block; width: 32px; height: 32px; }
 
@@ -325,7 +324,6 @@
       object-fit: contain; background: #ffffff;
     }
 
-    /* Scrollable a ~5 Filas exactamente iguales */
     .scrollable-table-equal { max-height: 260px; overflow-y: auto; position: relative; }
     .scrollable-table { max-height: 400px; overflow-y: auto; position: relative; }
     .no-data { padding: 16px; text-align: center; color: #888; font-style: italic; font-size: 12px; }
@@ -574,9 +572,9 @@
   <!-- Grid Principal -->
   <div class="dashboard-grid">
     
-    <!-- FILA 1: Resumen de Motivos (Izquierda) + Tablas de Cierre SI/NO lado a lado (Derecha) -->
+    <!-- FILA 1 -->
     <div class="grid-row-two-col">
-      <!-- IZQUIERDA: Resumen de Motivos No Realizados -->
+      <!-- IZQUIERDA: Resumen de Motivos -->
       <div class="grid-col-left">
         <div class="table-container">
           <div class="table-header" style="background-color: #fff8e1; color: #b78103;">
@@ -586,7 +584,7 @@
         </div>
       </div>
 
-      <!-- DERECHA: Lado a Lado (50% Detalle SI | 50% Justificación NO) -->
+      <!-- DERECHA: Tablas Lado a Lado (50% - 50%) -->
       <div class="grid-col-right">
         <div class="side-by-side-tables">
           <!-- Detalle Servicios Realizados (SI) -->
@@ -723,7 +721,7 @@
       return raw;
     }
 
-    /* CONVERSIÓN MEJORADA DE FECHAS (INCLUYENDO SERIALES DÍAS DE EXCEL COMO 46272) */
+    /* CONVERSIÓN MEJORADA DE FECHAS (SERIALES DE EXCEL + TEXTOS COMO 8-sept) */
     function parseDate(dateStr) {
       if (!dateStr) return null;
       const str = String(dateStr).trim();
@@ -735,6 +733,18 @@
         return new Date(excelEpoch.getTime() + serial * 86400000);
       }
 
+      // Detección de Formatos Texto Corto (ej: 8-sept, 18-ago)
+      const matchTextoMes = str.match(/^(\d{1,2})[-/]([a-zA-Z]{3,4})$/i);
+      if (matchTextoMes) {
+        const dia = parseInt(matchTextoMes[1], 10);
+        const mesTxt = matchTextoMes[2].toLowerCase();
+        let idxMes = nombresMeses.findIndex(m => m.toLowerCase().startsWith(mesTxt.substring(0, 3)));
+        if (idxMes !== -1) {
+          const year = new Date().getFullYear();
+          return new Date(year, idxMes, dia);
+        }
+      }
+
       const cleaned = str.split(' ')[0].replace(/\//g, '-');
       const parts = cleaned.split('-');
       if (parts.length === 3) {
@@ -744,7 +754,7 @@
       return null;
     }
 
-    /* FORMATO DE FECHA CON DÍA DE LA SEMANA Y DÍA/MES (Ej: Mié 16/09 o Lun 31/08) */
+    /* FORMATO DE FECHA CON DÍA DE LA SEMANA Y DÍA/MES (Ej: Mié 16/09) */
     function formatDiaMes(dateStr) {
       if (!dateStr || dateStr === '-' || dateStr.toLowerCase().includes('sin') || dateStr.toLowerCase().includes('programado')) {
         return dateStr || '-';
@@ -1259,7 +1269,7 @@
       document.getElementById('tabla-motivos-container').innerHTML = html;
     }
 
-    /* TABLA NO REALIZADAS CON COLUMNA ID CCU Y CORRECCIÓN DE FECHAS (APROX 5 FILAS) */
+    /* TABLA NO REALIZADAS CON ID CCU Y CORRECCIÓN DE FECHAS SERIALES DE EXCEL */
     function renderTablaNoRealizadas(data) {
       const noRealizadas = data.filter(d => !isServicioRealizado(d));
       if (noRealizadas.length === 0) {
@@ -1316,7 +1326,7 @@
       document.getElementById('tabla-no-realizadas-container').innerHTML = html;
     }
 
-    /* TABLA SI REALIZADAS CON FORMATO CORREGIDO DE FECHAS (APROX 5 FILAS) */
+    /* TABLA SI REALIZADAS CON FECHAS FORMATO LIMPIO Y DÍA DE LA SEMANA */
     function renderTablaSiRealizadas(data) {
       const siRealizadas = data.filter(d => isServicioRealizado(d));
       if (siRealizadas.length === 0) {
@@ -1368,7 +1378,7 @@
       document.getElementById('tabla-si-realizadas-container').innerHTML = html;
     }
 
-    /* HISTORIAL COMPLETO INDEPENDIENTE DEL FILTRO DE FECHAS/MESES */
+    /* HISTORIAL COMPLETO MEJORADO CON VINCULACIÓN POR LOCAL Y FECHAS DE PRÓXIMA MANTENCIÓN */
     function renderTablaHistorialCliente() {
       const fOficina = filtersState.oficina.selected;
       const fJefeVentas = filtersState.jefeVentas.selected;
@@ -1431,21 +1441,30 @@
         }
       });
 
+      // Cruzar con la base Maestro buscando 우선 por LOCAL, luego por ID
       if (maestroFrecuencias && maestroFrecuencias.length > 0) {
         maestroFrecuencias.forEach(m => {
-          const mCCU = m['ID CCU'] || m['ID'] || m['Id CCU'] || m['id_ccu'];
-          if (mCCU && clientesMap[mCCU]) {
-            const proxFecha = m['starts_at_date'] || m['Fecha Realizado'] || m['Fecha Programada'] || m['Fecha'] || '';
-            const sem = m['Semana'] ? `Semana ${m['Semana']}` : '';
-            
-            if (proxFecha) {
-              clientesMap[mCCU].proxima = proxFecha;
-            } else if (sem) {
-              clientesMap[mCCU].proxima = sem;
-            } else {
-              clientesMap[mCCU].proxima = 'Programado';
+          const mLocal = String(m['Local'] || m['local'] || '').trim();
+          const mCCU = String(m['ID CCU'] || m['ID'] || m['Id CCU'] || m['id_ccu'] || '').trim();
+
+          // Buscar coincidencia en la estructura de clientes cargados
+          Object.values(clientesMap).forEach(c => {
+            const matchByLocal = mLocal && c.codLocal && mLocal.toUpperCase() === c.codLocal.toUpperCase();
+            const matchByID = mCCU && c.idCCU && mCCU.endsWith(c.idCCU);
+
+            if (matchByLocal || matchByID) {
+              const proxFecha = m['starts_at_date'] || m['Dia'] || m['Fecha Realizado'] || m['Fecha Programada'] || m['Fecha'] || '';
+              const sem = m['Semana'] ? `Semana ${m['Semana']}` : '';
+
+              if (proxFecha) {
+                c.proxima = proxFecha;
+              } else if (sem) {
+                c.proxima = sem;
+              } else {
+                c.proxima = 'Programado';
+              }
             }
-          }
+          });
         });
       }
 
