@@ -586,7 +586,6 @@
 
   <!-- Grid Principal -->
   <div class="dashboard-grid">
-    <!-- FILA 1 -->
     <div class="grid-row-two-col">
       <div class="grid-col-left" id="col-motivos-left">
         <div class="table-container">
@@ -614,7 +613,6 @@
           </div>
         </div>
 
-        <!-- Fila de Tiempos Promedio en Ejecuciones -->
         <div class="table-container" id="container-tiempos-ejecuciones" style="display: none;">
           <div class="table-header" style="background-color: #e8f5e9; color: var(--excel-green-dark);">
             <span><i class="fa-solid fa-clock"></i> Tiempos Promedio de Gestión por Oficina</span>
@@ -624,7 +622,6 @@
       </div>
     </div>
 
-    <!-- FILA 2: HISTORIAL DEL CLIENTE / CONTROL DE COBERTURA -->
     <div class="grid-row-full" id="row-historial-bottom">
       <div class="table-container">
         <div class="table-header" style="background-color: #0d47a1; color: #ffffff;">
@@ -885,7 +882,7 @@
           $('#col-tablas-right').show();
           $('#wrap-si-no-tables').hide();
           $('#container-tiempos-ejecuciones').show();
-          $('#row-historial-bottom').hide(); // Se elimina la tabla inferior de Ejecuciones como solicitaste
+          $('#row-historial-bottom').hide();
 
         } else if (currentSheetKey === "visitas") {
           $('#main-title').html('<i class="fa-solid fa-clipboard-check" style="font-size: 20px; color: #004b93;"></i> Dashboard Visitas Inspectivas & Tareas');
@@ -1388,9 +1385,7 @@
           renderTablaSiNoDerecha(data);
         }
 
-        if (currentSheetKey !== "ejecuciones") {
-          renderTablaHistorialCliente();
-        }
+        renderTablaHistorialCliente();
 
       } catch (err) {
         console.error("Error en renderDashboard:", err);
@@ -1503,7 +1498,6 @@
       });
     }
 
-    /* TABLA IZQUIERDA: RESUMEN DE PROCESO (INSTALACIÓN VS RETIRO EN EJECUCIONES) O MOTIVOS */
     function renderTablaMotivos(data, totalNO, grandTotal) {
       if (currentSheetKey === "ejecuciones") {
         const procesosStats = { 'Instalación': 0, 'Retiro': 0 };
@@ -1568,7 +1562,6 @@
       document.getElementById('tabla-motivos-container').innerHTML = html;
     }
 
-    /* TABLA DERECHA TIEMPOS EN EJECUCIONES */
     function renderTablaTiemposEjecuciones(data) {
       const oficinasStats = {};
 
@@ -1626,7 +1619,6 @@
       document.getElementById('tabla-tiempos-container').innerHTML = htmlTiempos;
     }
 
-    /* TABLA DERECHA SI / NO EN PREVENTIVA, URGENCIAS Y VISITAS */
     function renderTablaSiNoDerecha(data) {
       if (currentSheetKey === "cobertura") return;
 
@@ -1687,7 +1679,6 @@
       html += `</tbody></table>`;
       document.getElementById('tabla-no-realizadas-container').innerHTML = html;
 
-      // Render SI Realizadas si estamos en Preventiva
       if (currentSheetKey === "preventiva") {
         const siRealizadas = data.filter(d => isServicioRealizado(d));
         let htmlSi = `
@@ -1735,7 +1726,7 @@
       }
     }
 
-    /* HISTORIAL O COBERTURA / VISITAS POR OFICINA COMERCIAL */
+    /* RENDER EXCLUSIVO PARA HISTORIAL / COBERTURA Y VISITAS POR OFICINA COMERCIAL */
     function renderTablaHistorialCliente() {
       const fOficina = filtersState.oficina.selected;
       const fJefeVentas = filtersState.jefeVentas.selected;
@@ -1766,7 +1757,7 @@
         return;
       }
 
-      /* RENDERIZADO COBERTURA / VISITAS POR OFICINA COMERCIAL */
+      /* COBERTURA Y VISITAS INSPECTIVAS POR OFICINA COMERCIAL */
       if (esCobertura || esVisitas) {
         const oficinasMap = {};
 
@@ -1857,7 +1848,7 @@
         return;
       }
 
-      /* RENDERIZADO PARA PREVENTIVA Y URGENCIAS */
+      /* PREVENTIVA Y URGENCIAS: TABLA ORIGINAL DE HISTORIAL DEL CLIENTE */
       globalClientesHistorialMap = {};
 
       baseData.forEach(d => {
@@ -2016,7 +2007,7 @@
           <tr>
             <td class="left"><strong>${valColId}</strong></td>
             <td class="left" style="font-weight: 500;">${c.codLocal}</td>
-            <td class="left">${cliente}</td>
+            <td class="left">${c.cliente}</td>
             <td class="left">${c.oficina}</td>
             <td class="left">${c.jefe}</td>
             <td style="text-align:center;">${penultHtml}</td>
