@@ -782,11 +782,11 @@
       </div>
     </div>
 
-    <!-- FILA 2: HISTORIAL DEL CLIENTE & PRÓXIMA MANTENCIÓN -->
+    <!-- FILA 2: HISTORIAL DEL CLIENTE & PRÓXIMA MANTENCIÓN / URGENCIAS -->
     <div class="grid-row-full">
       <div class="table-container">
         <div class="table-header" style="background-color: #0d47a1; color: #ffffff;">
-          <span><i class="fa-solid fa-clock-rotate-left"></i> Historial de Mantención del Cliente (-2 Meses y Próxima Mantención)</span>
+          <span id="historial-tabla-titulo"><i class="fa-solid fa-clock-rotate-left"></i> Historial de Mantención del Cliente (-2 Meses y Próxima Mantención)</span>
         </div>
         <div class="scrollable-table" id="tabla-historial-container"></div>
       </div>
@@ -883,7 +883,7 @@
     let maestroFrecuencias = [];
     let activosChartInstance = null;
     let trendChartInstance = null;
-    let globalClientesHistorialMap = {}; // Mapa para modal emergente
+    let globalClientesHistorialMap = {};
 
     Chart.register(ChartDataLabels);
 
@@ -959,7 +959,7 @@
     }
 
     function getMotivoNoServicio(d) {
-      const raw = (d['Motivo No Servicio'] || d['motivo_no_servicio'] || d['Resuelto'] || d['Motivo'] || '').trim();
+      const raw = (d['Motivo No Servicio'] || d['motivo_no_servicio'] || d['Resuelto'] || d['Motivo'] || d['Por falta de repuesto'] || '').trim();
       const strUpper = raw.toUpperCase();
 
       if (!raw || strUpper === 'SIN ESPECIFICAR' || strUpper === 'SIN INFORMACIÓN' || strUpper === 'SIN INFORMACION' || strUpper === '-') {
@@ -974,7 +974,7 @@
       return raw;
     }
 
-    /* CONVERSIÓN MEJORADA DE FECHAS (SERIALES DE EXCEL + TEXTOS COMO 8-sept) */
+    /* CONVERSIÓN DE FECHAS MEJORADA */
     function parseDate(dateStr) {
       if (!dateStr) return null;
       const str = String(dateStr).trim();
@@ -1043,6 +1043,7 @@
           $('#tabla-motivos-title').html('<i class="fa-solid fa-list-check"></i> Resumen de Motivos No Resueltos');
           $('#trend-card-title').html('<i class="fa-solid fa-chart-column"></i> Evolución Mensual (% Resueltas)');
           $('#tabla-no-title').html('<i class="fa-solid fa-triangle-exclamation"></i> Detalle de Urgencias No Resueltas');
+          $('#historial-tabla-titulo').html('<i class="fa-solid fa-clock-rotate-left"></i> Historial de Urgencias del Cliente (Últimas 2 Urgencias Atendidas)');
           $('#container-si-realizadas').hide();
         } else {
           $('#main-title').html('<i class="fa-solid fa-chart-line" style="font-size: 20px; color: var(--primary-green);"></i> Dashboard Ejecutivo - Ventas');
@@ -1052,6 +1053,7 @@
           $('#tabla-motivos-title').html('<i class="fa-solid fa-list-check"></i> Resumen de Motivos No Realizados');
           $('#trend-card-title').html('<i class="fa-solid fa-chart-column"></i> Evolución Mensual (% SI)');
           $('#tabla-no-title').html('<i class="fa-solid fa-triangle-exclamation"></i> Justificación Visita No Realizada');
+          $('#historial-tabla-titulo').html('<i class="fa-solid fa-clock-rotate-left"></i> Historial de Mantención del Cliente (-2 Meses y Próxima Mantención)');
           $('#container-si-realizadas').show();
           $('#tabla-si-title').html('<i class="fa-solid fa-circle-check"></i> Detalle de Servicios Realizados (SI)');
         }
@@ -1143,7 +1145,7 @@
         renderDashboard();
       });
 
-      /* EVENTOS CERRAR Y ZOOM EN VENTANA EMERGENTE (MODAL) */
+      /* EVENTOS MODAL Y ZOOM */
       $('#modal-close-btn, #modal-bottom-close').on('click', function() {
         $('#service-modal').removeClass('show');
       });
@@ -1158,7 +1160,7 @@
         $(this).fadeOut(200);
       });
 
-      /* LISTENER GLOBAL ROBUSTO PARA CLIC EN CELDAS DEL HISTORIAL */
+      /* LISTENER CLIC CELDAS HISTORIAL */
       $(document).on('click', '.clickable-history-cell', function(e) {
         e.stopPropagation();
         const keyLocal = $(this).data('local');
@@ -1542,7 +1544,6 @@
       document.getElementById('tabla-motivos-container').innerHTML = html;
     }
 
-    /* TABLA NO REALIZADAS CON ID CCU Y CORRECCIÓN DE FECHAS SERIALES DE EXCEL */
     function renderTablaNoRealizadas(data) {
       const noRealizadas = data.filter(d => !isServicioRealizado(d));
       if (noRealizadas.length === 0) {
@@ -1599,7 +1600,6 @@
       document.getElementById('tabla-no-realizadas-container').innerHTML = html;
     }
 
-    /* TABLA SI REALIZADAS CON FECHAS FORMATO LIMPIO Y DÍA DE LA SEMANA */
     function renderTablaSiRealizadas(data) {
       const siRealizadas = data.filter(d => isServicioRealizado(d));
       if (siRealizadas.length === 0) {
@@ -1651,12 +1651,14 @@
       document.getElementById('tabla-si-realizadas-container').innerHTML = html;
     }
 
-    /* HISTORIAL COMPLETO Y ASIGNACIÓN DE CELDAS CLICKEABLES CON ATRIBUTOS DATA-* */
+    /* HISTORIAL ADAPTATIVO (PREVENTIVA vs URGENCIAS) */
     function renderTablaHistorialCliente() {
       const fOficina = filtersState.oficina.selected;
       const fJefeVentas = filtersState.jefeVentas.selected;
       const fLocalId = filtersState.localId.selected;
       const fCliente = filtersState.cliente.selected;
+
+      const esUrgencias = currentSheetKey === "urgencias";
 
       const baseHistorial = rawData.filter(d => {
         const dOficina = String(d['Oficina'] || d['OFICINA'] || '').trim();
@@ -1682,21 +1684,24 @@
 
       baseHistorial.forEach(d => {
         const codLocal = String(d['Local'] || d['local'] || '').trim();
-        if (!codLocal) return;
-
         const idCCU = getIdCCU(d);
+        
+        // Asignar una clave de mapa unificada
+        const keyLocal = codLocal || idCCU;
+        if (!keyLocal || keyLocal === '-') return;
+
         const cliente = getNombreCliente(d);
         const oficina = d['Oficina'] || d['OFICINA'] || '-';
         const jefe = d['Jefe de Ventas'] || d['JEFE DE VENTAS'] || '-';
         
-        const rawFecha = d['Fecha Realizado'] || d['Fecha/Hora Ejecución 1'] || d['Fecha Programada 2'] || d['Fecha'] || '';
+        const rawFecha = d['Fecha Realizado'] || d['Fecha/Hora Ejecución 1'] || d['Fecha Programada 2'] || d['Fecha'] || d['Fecha/Hora'] || '';
         const parsedDate = parseDate(rawFecha);
         const realizado = isServicioRealizado(d);
         const motivo = realizado ? '' : getMotivoNoServicio(d);
 
-        if (!globalClientesHistorialMap[codLocal]) {
-          globalClientesHistorialMap[codLocal] = {
-            keyLocal: codLocal,
+        if (!globalClientesHistorialMap[keyLocal]) {
+          globalClientesHistorialMap[keyLocal] = {
+            keyLocal: keyLocal,
             idCCU,
             codLocal,
             cliente,
@@ -1707,17 +1712,17 @@
           };
         }
 
-        const jefeActual = globalClientesHistorialMap[codLocal].jefe.toLowerCase();
+        const jefeActual = globalClientesHistorialMap[keyLocal].jefe.toLowerCase();
         if ((jefeActual.includes('revisar') || jefeActual.includes('sin') || jefeActual === '-') && jefe && !jefe.toLowerCase().includes('revisar')) {
-          globalClientesHistorialMap[codLocal].jefe = jefe;
+          globalClientesHistorialMap[keyLocal].jefe = jefe;
         }
 
         if (idCCU && idCCU !== '-' && idCCU.length <= 6) {
-          globalClientesHistorialMap[codLocal].idCCU = idCCU;
+          globalClientesHistorialMap[keyLocal].idCCU = idCCU;
         }
 
         if (rawFecha) {
-          globalClientesHistorialMap[codLocal].mantenciones.push({
+          globalClientesHistorialMap[keyLocal].mantenciones.push({
             rawFecha,
             parsedDate,
             realizado,
@@ -1727,33 +1732,42 @@
         }
       });
 
-      // Cruzar con la base Maestro buscando por Código de Local
-      if (maestroFrecuencias && maestroFrecuencias.length > 0) {
+      // Si estamos en Ruta Preventiva, cruzar con la base Maestro de Frecuencias
+      if (!esUrgencias && maestroFrecuencias && maestroFrecuencias.length > 0) {
         maestroFrecuencias.forEach(m => {
           const mLocal = String(m['Local'] || m['local'] || '').trim();
-          const mJefe = m['Jefe de Ventas'] || m['JEFE DE VENTAS'] || m['Jefe Ventas'];
+          const mCCU = String(m['ID CCU'] || m['ID'] || m['Id CCU'] || m['id_ccu'] || '').trim();
 
-          if (mLocal && globalClientesHistorialMap[mLocal]) {
-            const clienteObj = globalClientesHistorialMap[mLocal];
+          Object.values(globalClientesHistorialMap).forEach(c => {
+            const matchByLocal = mLocal && c.codLocal && mLocal.toUpperCase() === c.codLocal.toUpperCase();
+            const matchByID = mCCU && c.idCCU && mCCU.endsWith(c.idCCU);
 
-            const jefeActual = clienteObj.jefe.toLowerCase();
-            if ((jefeActual.includes('revisar') || jefeActual.includes('sin') || jefeActual === '-') && mJefe && !mJefe.toLowerCase().includes('revisar')) {
-              clienteObj.jefe = mJefe;
+            if (matchByLocal || matchByID) {
+              const jefeActual = c.jefe.toLowerCase();
+              const mJefe = m['Jefe de Ventas'] || m['JEFE DE VENTAS'] || m['Jefe Ventas'];
+              if ((jefeActual.includes('revisar') || jefeActual.includes('sin') || jefeActual === '-') && mJefe && !mJefe.toLowerCase().includes('revisar')) {
+                c.jefe = mJefe;
+              }
+
+              const proxFecha = m['starts_at_date'] || m['Dia'] || m['Fecha Realizado'] || m['Fecha Programada'] || m['Fecha'] || '';
+              const sem = m['Semana'] ? `Semana ${m['Semana']}` : '';
+
+              if (proxFecha) {
+                c.proxima = proxFecha;
+              } else if (sem) {
+                c.proxima = sem;
+              } else {
+                c.proxima = 'Programado';
+              }
             }
-
-            const proxFecha = m['starts_at_date'] || m['Dia'] || m['Fecha Realizado'] || m['Fecha Programada'] || m['Fecha'] || '';
-            const sem = m['Semana'] ? `Semana ${m['Semana']}` : '';
-
-            if (proxFecha) {
-              clienteObj.proxima = proxFecha;
-            } else if (sem) {
-              clienteObj.proxima = sem;
-            } else {
-              clienteObj.proxima = 'Programado';
-            }
-          }
+          });
         });
       }
+
+      // Definición de Columnas de Encabezado
+      const colPenultima = esUrgencias ? "Penúltima Urgencia" : "Penúltima Mantención";
+      const colUltima = esUrgencias ? "Última Urgencia" : "Última Mantención";
+      const thProxima = esUrgencias ? "" : `<th style="text-align:center;">Próxima Mantención</th>`;
 
       let html = `
         <table>
@@ -1764,9 +1778,9 @@
               <th class="left">Nombre Fantasía</th>
               <th class="left">Oficina Comercial</th>
               <th class="left">Jefe de Ventas</th>
-              <th style="text-align:center;">Penúltima Mantención</th>
-              <th style="text-align:center;">Última Mantención</th>
-              <th style="text-align:center;">Próxima Mantención</th>
+              <th style="text-align:center;">${colPenultima}</th>
+              <th style="text-align:center;">${colUltima}</th>
+              ${thProxima}
             </tr>
           </thead>
           <tbody>`;
@@ -1788,34 +1802,28 @@
         let penultHtml = '<span style="color:#bbb;">-</span>';
         if (penult) {
           const fStr = formatDiaMes(penult.rawFecha);
-          if (penult.realizado) {
-            penultHtml = `<div class="clickable-history-cell" data-local="${c.keyLocal}" data-index="${penultIndex}">
-                            <strong>${fStr}</strong> <span class="status-pill pill-ok">REALIZADO</span>
-                          </div>`;
-          } else {
-            penultHtml = `<div class="clickable-history-cell" data-local="${c.keyLocal}" data-index="${penultIndex}">
-                            <strong>${fStr}</strong> <span class="status-pill pill-no">PENDIENTE</span>
-                            <div style="font-size:10px; color:#c62828; margin-top:2px;">${penult.motivo}</div>
-                          </div>`;
-          }
+          const txtStatus = esUrgencias ? (penult.realizado ? 'RESUELTO' : 'NO RESUELTO') : (penult.realizado ? 'REALIZADO' : 'PENDIENTE');
+          const pillClass = penult.realizado ? 'pill-ok' : 'pill-no';
+
+          penultHtml = `<div class="clickable-history-cell" data-local="${c.keyLocal}" data-index="${penultIndex}">
+                          <strong>${fStr}</strong> <span class="status-pill ${pillClass}">${txtStatus}</span>
+                          ${!penult.realizado ? `<div style="font-size:10px; color:#c62828; margin-top:2px;">${penult.motivo}</div>` : ''}
+                        </div>`;
         }
 
         let ultHtml = '<span style="color:#bbb;">-</span>';
         if (ult) {
           const fStr = formatDiaMes(ult.rawFecha);
-          if (ult.realizado) {
-            ultHtml = `<div class="clickable-history-cell" data-local="${c.keyLocal}" data-index="${ultIndex}">
-                          <strong>${fStr}</strong> <span class="status-pill pill-ok">REALIZADO</span>
-                        </div>`;
-          } else {
-            ultHtml = `<div class="clickable-history-cell" data-local="${c.keyLocal}" data-index="${ultIndex}">
-                          <strong>${fStr}</strong> <span class="status-pill pill-no">PENDIENTE</span>
-                          <div style="font-size:10px; color:#c62828; margin-top:2px;">${ult.motivo}</div>
-                        </div>`;
-          }
+          const txtStatus = esUrgencias ? (ult.realizado ? 'RESUELTO' : 'NO RESUELTO') : (ult.realizado ? 'REALIZADO' : 'PENDIENTE');
+          const pillClass = ult.realizado ? 'pill-ok' : 'pill-no';
+
+          ultHtml = `<div class="clickable-history-cell" data-local="${c.keyLocal}" data-index="${ultIndex}">
+                        <strong>${fStr}</strong> <span class="status-pill ${pillClass}">${txtStatus}</span>
+                        ${!ult.realizado ? `<div style="font-size:10px; color:#c62828; margin-top:2px;">${ult.motivo}</div>` : ''}
+                      </div>`;
         }
 
-        const proxStr = formatDiaMes(c.proxima);
+        const tdProxima = esUrgencias ? "" : `<td style="text-align:center;"><strong style="color: var(--pepsi-blue);">${formatDiaMes(c.proxima)}</strong></td>`;
 
         html += `
           <tr>
@@ -1826,7 +1834,7 @@
             <td class="left">${c.jefe}</td>
             <td style="text-align:center;">${penultHtml}</td>
             <td style="text-align:center;">${ultHtml}</td>
-            <td style="text-align:center;"><strong style="color: var(--pepsi-blue);">${proxStr}</strong></td>
+            ${tdProxima}
           </tr>`;
       });
 
@@ -1834,23 +1842,24 @@
       document.getElementById('tabla-historial-container').innerHTML = html;
     }
 
-    /* FUNCIÓN ABRIR MODAL EMERGENTE DE DETALLE DE SERVICIO */
+    /* ABRIR MODAL EMERGENTE DE DETALLE */
     function openServiceModal(keyLocal, mantencionIndex) {
       const clienteData = globalClientesHistorialMap[keyLocal];
       if (!clienteData || !clienteData.mantenciones || !clienteData.mantenciones[mantencionIndex]) return;
 
       const item = clienteData.mantenciones[mantencionIndex];
       const d = item.rawObject || {};
+      const esUrgencias = currentSheetKey === "urgencias";
 
       const esRealizado = item.realizado;
       const $badge = $('#modal-status-badge');
       
       if (esRealizado) {
         $badge.removeClass('pending');
-        $('#modal-status-text').text('SERVICIO REALIZADO');
+        $('#modal-status-text').text(esUrgencias ? 'URGENCIA RESUELTA' : 'SERVICIO REALIZADO');
       } else {
         $badge.addClass('pending');
-        $('#modal-status-text').text('VISITA NO REALIZADA / PENDIENTE');
+        $('#modal-status-text').text(esUrgencias ? 'URGENCIA NO RESUELTA' : 'VISITA NO REALIZADA / PENDIENTE');
       }
 
       $('#modal-date-text').text(formatDiaMes(item.rawFecha));
