@@ -301,18 +301,20 @@
     .pill-no { background: #ffebee; color: #c62828; }
     .pill-pending { background: #fff3e0; color: #ef6c00; }
 
-    /* Celdas Clickeables del Historial con indicador visual */
+    /* Celdas Clickeables del Historial */
+    td.td-clickable-history {
+      cursor: pointer !important;
+      transition: background-color 0.2s ease;
+    }
+    td.td-clickable-history:hover {
+      background-color: #dbeafe !important;
+    }
+
     .clickable-history-cell {
-      cursor: pointer;
-      padding: 5px 8px;
+      padding: 4px 6px;
       border-radius: 6px;
-      transition: all 0.2s ease;
       display: inline-block;
       user-select: none;
-    }
-    .clickable-history-cell:hover {
-      background-color: #dbeafe;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
     .photos-flex { display: flex; gap: 6px; justify-content: center; }
@@ -955,9 +957,27 @@
       return d['ID CCU'] || d['ID'] || d['Id CCU'] || d['ID Cliente (Manual)'] || d['ID Cliente (Escaneado)'] || d['id_ccu'] || '-';
     }
 
-    /* OBTENER NÚMERO DE LLAMADO DE LA URGENCIA */
+    /* OBTENER NÚMERO DE LLAMADO DE LA URGENCIA CON EXTRACTOR MULTI-COLUMNA ROBUSTO */
     function getNumeroLlamado(d) {
-      return d['Numero Llamado de la Urgencia'] || d['Número Llamado de la Urgencia'] || d['N° Llamado'] || d['N° LLAMADO'] || d['Llamado'] || d['N° Ticket'] || d['Ticket'] || d['Solicitud'] || d['ID CCU'] || d['ID'] || '-';
+      if (!d) return '-';
+      const possibleKeys = [
+        'Numero Llamado de la Urgencia',
+        'Número Llamado de la Urgencia',
+        'N° Llamado',
+        'N° LLAMADO',
+        'Llamado',
+        'N° Ticket',
+        'Ticket',
+        'Solicitud',
+        'ID CCU',
+        'ID'
+      ];
+      for (let k of possibleKeys) {
+        if (d[k] && String(d[k]).trim() !== '' && String(d[k]).trim() !== '-') {
+          return String(d[k]).trim();
+        }
+      }
+      return '-';
     }
 
     function getNombreReceptor(d) {
@@ -978,6 +998,12 @@
       if (strUpper.includes('OTRO')) return 'Otro';
 
       return raw;
+    }
+
+    /* SANITIZAR Y ESCAPAR CLAVE ÚNICA PARA ATRIBUTOS HTML */
+    function sanitizeKey(str) {
+      if (!str) return 'key_empty';
+      return String(str).replace(/[^a-zA-Z0-9_-]/g, '_');
     }
 
     /* CONVERSIÓN DE FECHAS MEJORADA */
@@ -1174,12 +1200,15 @@
         $(this).fadeOut(200);
       });
 
-      /* LISTENER CLIC CELDAS HISTORIAL */
-      $(document).on('click', '.clickable-history-cell', function(e) {
+      /* DELEGACIÓN DIRECTA DEL CLIC EN CELDAS DEL HISTORIAL DE TABLA */
+      $(document).on('click', 'td.td-clickable-history', function(e) {
+        e.preventDefault();
         e.stopPropagation();
-        const keyLocal = $(this).data('local');
-        const index = $(this).data('index');
-        openServiceModal(keyLocal, index);
+        const keyLocal = $(this).attr('data-key');
+        const index = $(this).attr('data-idx');
+        if (keyLocal !== undefined && index !== undefined) {
+          openServiceModal(keyLocal, parseInt(index, 10));
+        }
       });
 
       loadSheetData();
@@ -1709,8 +1738,9 @@
         const idCCU = getIdCCU(d);
         const numLlamado = getNumeroLlamado(d);
         
-        const keyLocal = codLocal || idCCU || numLlamado;
-        if (!keyLocal || keyLocal === '-') return;
+        const keyLocalRaw = codLocal || idCCU || numLlamado;
+        if (!keyLocalRaw || keyLocalRaw === '-') return;
+        const keyLocal = sanitizeKey(keyLocalRaw);
 
         const cliente = getNombreCliente(d);
         const oficina = d['Oficina'] || d['OFICINA'] || '-';
@@ -1823,33 +1853,36 @@
         const ult = totalRegistros > 0 ? c.mantenciones[ultIndex] : null;
         const penult = totalRegistros > 1 ? c.mantenciones[penultIndex] : null;
 
-        let penultHtml = '<span style="color:#bbb;">-</span>';
+        let penultTd = '<td style="text-align:center;"><span style="color:#bbb;">-</span></td>';
         if (penult) {
           const fStr = formatDiaMes(penult.rawFecha);
           const txtStatus = esUrgencias ? (penult.realizado ? 'RESUELTO' : 'NO RESUELTO') : (penult.realizado ? 'REALIZADO' : 'PENDIENTE');
           const pillClass = penult.realizado ? 'pill-ok' : 'pill-no';
 
-          penultHtml = `<div class="clickable-history-cell" data-local="${c.keyLocal}" data-index="${penultIndex}">
+          penultTd = `<td style="text-align:center;" class="td-clickable-history" data-key="${c.keyLocal}" data-idx="${penultIndex}">
+                        <div class="clickable-history-cell">
                           <strong>${fStr}</strong> <span class="status-pill ${pillClass}">${txtStatus}</span>
                           ${!penult.realizado ? `<div style="font-size:10px; color:#c62828; margin-top:2px;">${penult.motivo}</div>` : ''}
-                        </div>`;
+                        </div>
+                      </td>`;
         }
 
-        let ultHtml = '<span style="color:#bbb;">-</span>';
+        let ultTd = '<td style="text-align:center;"><span style="color:#bbb;">-</span></td>';
         if (ult) {
           const fStr = formatDiaMes(ult.rawFecha);
           const txtStatus = esUrgencias ? (ult.realizado ? 'RESUELTO' : 'NO RESUELTO') : (ult.realizado ? 'REALIZADO' : 'PENDIENTE');
           const pillClass = ult.realizado ? 'pill-ok' : 'pill-no';
 
-          ultHtml = `<div class="clickable-history-cell" data-local="${c.keyLocal}" data-index="${ultIndex}">
-                        <strong>${fStr}</strong> <span class="status-pill ${pillClass}">${txtStatus}</span>
-                        ${!ult.realizado ? `<div style="font-size:10px; color:#c62828; margin-top:2px;">${ult.motivo}</div>` : ''}
-                      </div>`;
+          ultTd = `<td style="text-align:center;" class="td-clickable-history" data-key="${c.keyLocal}" data-idx="${ultIndex}">
+                    <div class="clickable-history-cell">
+                      <strong>${fStr}</strong> <span class="status-pill ${pillClass}">${txtStatus}</span>
+                      ${!ult.realizado ? `<div style="font-size:10px; color:#c62828; margin-top:2px;">${ult.motivo}</div>` : ''}
+                    </div>
+                  </td>`;
         }
 
         const tdProxima = esUrgencias ? "" : `<td style="text-align:center;"><strong style="color: var(--pepsi-blue);">${formatDiaMes(c.proxima)}</strong></td>`;
         
-        // Obtener el N° Llamado del último registro o propiedad
         let valColId = c.idCCU;
         if (esUrgencias) {
           if (ult && ult.rawObject) {
@@ -1866,8 +1899,8 @@
             <td class="left">${c.cliente}</td>
             <td class="left">${c.oficina}</td>
             <td class="left">${c.jefe}</td>
-            <td style="text-align:center;">${penultHtml}</td>
-            <td style="text-align:center;">${ultHtml}</td>
+            ${penultTd}
+            ${ultTd}
             ${tdProxima}
           </tr>`;
       });
