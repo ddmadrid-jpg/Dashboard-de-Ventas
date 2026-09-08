@@ -267,22 +267,29 @@
 
     /* Layout principal */
     .dashboard-grid { display: flex; flex-direction: column; gap: 24px; margin-bottom: 24px; }
-    .grid-row-two-col { display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; }
-    .grid-col-half { flex: 1; min-width: 380px; }
-    .grid-row-full { width: 100%; }
+    .grid-row-two-col { display: flex; gap: 24px; flex-wrap: wrap; align-items: stretch; }
+    
+    .grid-col-left { flex: 0 0 35%; min-width: 320px; }
+    .grid-col-right { flex: 1; min-width: 500px; }
 
-    /* Contenedor vertical apilado para la derecha */
-    .stacked-tables-container {
+    .side-by-side-tables {
       display: flex;
-      flex-direction: column;
       gap: 16px;
+      width: 100%;
     }
 
-    .table-container { background: var(--card-bg); border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); overflow: hidden; }
+    .table-half-width {
+      flex: 1;
+      min-width: 240px;
+    }
+
+    .grid-row-full { width: 100%; }
+
+    .table-container { background: var(--card-bg); border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); overflow: hidden; height: 100%; }
     .table-header { padding: 10px 16px; background: #f8f9fa; border-bottom: 1px solid #e9ecef; font-weight: 700; color: var(--excel-green-dark); display: flex; justify-content: space-between; align-items: center; }
 
     table { border-collapse: collapse; width: 100%; font-size: 12px; }
-    th, td { padding: 6px 10px; text-align: right; border-bottom: 1px solid #eef0f2; vertical-align: middle; }
+    th, td { padding: 8px 10px; text-align: right; border-bottom: 1px solid #eef0f2; vertical-align: middle; }
     th.left, td.left { text-align: left; }
 
     thead tr th {
@@ -303,22 +310,23 @@
     .pill-no { background: #ffebee; color: #c62828; }
     .pill-pending { background: #fff3e0; color: #ef6c00; }
 
+    /* Previsualizaciones de Imágenes Flotantes */
     .photos-flex { display: flex; gap: 6px; justify-content: center; }
-    .img-container { position: relative; display: inline-block; width: 35px; height: 35px; }
+    .img-container { position: relative; display: inline-block; width: 32px; height: 32px; }
 
     .thumb-img {
-      width: 35px; height: 35px; object-fit: cover; border-radius: 4px; border: 1px solid #ccc;
+      width: 32px; height: 32px; object-fit: cover; border-radius: 4px; border: 1px solid #ccc;
       box-shadow: 0 1px 3px rgba(0,0,0,0.2); transition: all 0.25s ease-in-out; cursor: zoom-in;
     }
 
     .img-container:hover .thumb-img {
-      position: absolute; right: 0; top: -60px; width: 200px; height: 220px; z-index: 999;
-      border-radius: 10px; border: 3px solid var(--excel-green-header); box-shadow: 0 8px 20px rgba(0,0,0,0.35);
+      position: absolute; right: 0; top: -50px; width: 180px; height: 180px; z-index: 9999;
+      border-radius: 8px; border: 3px solid var(--excel-green-header); box-shadow: 0 8px 20px rgba(0,0,0,0.35);
       object-fit: contain; background: #ffffff;
     }
 
-    /* Limitación a ~3 líneas por tabla pequeña */
-    .scrollable-table-compact { max-height: 180px; overflow-y: auto; position: relative; }
+    /* Scrollable a ~5 Filas exactamente iguales */
+    .scrollable-table-equal { max-height: 260px; overflow-y: auto; position: relative; }
     .scrollable-table { max-height: 400px; overflow-y: auto; position: relative; }
     .no-data { padding: 16px; text-align: center; color: #888; font-style: italic; font-size: 12px; }
   </style>
@@ -566,10 +574,10 @@
   <!-- Grid Principal -->
   <div class="dashboard-grid">
     
-    <!-- FILA 1: Resumen de Motivos (Izquierda) + Tablas Apiladas (Derecha) -->
+    <!-- FILA 1: Resumen de Motivos (Izquierda) + Tablas de Cierre SI/NO lado a lado (Derecha) -->
     <div class="grid-row-two-col">
       <!-- IZQUIERDA: Resumen de Motivos No Realizados -->
-      <div class="grid-col-half">
+      <div class="grid-col-left">
         <div class="table-container">
           <div class="table-header" style="background-color: #fff8e1; color: #b78103;">
             <span id="tabla-motivos-title"><i class="fa-solid fa-list-check"></i> Resumen de Motivos (No Realizados / No Resueltos)</span>
@@ -578,22 +586,24 @@
         </div>
       </div>
 
-      <!-- DERECHA: Detalle Servicios Realizados (Arriba) + Justificación Visita No Realizada (Abajo) -->
-      <div class="grid-col-half stacked-tables-container">
-        <!-- Detalle Servicios Realizados -->
-        <div class="table-container" id="container-si-realizadas">
-          <div class="table-header" style="background-color: #e8f5e9; color: var(--excel-green-dark);">
-            <span id="tabla-si-title"><i class="fa-solid fa-circle-check"></i> Detalle de Servicios Realizados (SI)</span>
+      <!-- DERECHA: Lado a Lado (50% Detalle SI | 50% Justificación NO) -->
+      <div class="grid-col-right">
+        <div class="side-by-side-tables">
+          <!-- Detalle Servicios Realizados (SI) -->
+          <div class="table-container table-half-width" id="container-si-realizadas">
+            <div class="table-header" style="background-color: #e8f5e9; color: var(--excel-green-dark);">
+              <span id="tabla-si-title"><i class="fa-solid fa-circle-check"></i> Detalle Realizados (SI)</span>
+            </div>
+            <div class="scrollable-table-equal" id="tabla-si-realizadas-container"></div>
           </div>
-          <div class="scrollable-table-compact" id="tabla-si-realizadas-container"></div>
-        </div>
 
-        <!-- Justificación Visita No Realizada -->
-        <div class="table-container">
-          <div class="table-header" style="background-color: #fff3f3; color: #c62828;">
-            <span id="tabla-no-title"><i class="fa-solid fa-triangle-exclamation"></i> Justificación Visita No Realizada</span>
+          <!-- Justificación Visita No Realizada (NO) -->
+          <div class="table-container table-half-width">
+            <div class="table-header" style="background-color: #fff3f3; color: #c62828;">
+              <span id="tabla-no-title"><i class="fa-solid fa-triangle-exclamation"></i> Justificación No Realizada</span>
+            </div>
+            <div class="scrollable-table-equal" id="tabla-no-realizadas-container"></div>
           </div>
-          <div class="scrollable-table-compact" id="tabla-no-realizadas-container"></div>
         </div>
       </div>
     </div>
@@ -713,24 +723,38 @@
       return raw;
     }
 
-    /* FORMATO DE FECHA CON DÍA DE LA SEMANA Y DÍA/MES (Ej: Mié 16/09) */
+    /* CONVERSIÓN MEJORADA DE FECHAS (INCLUYENDO SERIALES DÍAS DE EXCEL COMO 46272) */
+    function parseDate(dateStr) {
+      if (!dateStr) return null;
+      const str = String(dateStr).trim();
+
+      // Detección de Número Serial de Excel (ej: 46272)
+      if (/^\d{5}$/.test(str)) {
+        const serial = parseInt(str, 10);
+        const excelEpoch = new Date(1899, 11, 30);
+        return new Date(excelEpoch.getTime() + serial * 86400000);
+      }
+
+      const cleaned = str.split(' ')[0].replace(/\//g, '-');
+      const parts = cleaned.split('-');
+      if (parts.length === 3) {
+        if (parts[0].length === 4) return new Date(parts[0], parts[1] - 1, parts[2]);
+        if (parts[2].length === 4) return new Date(parts[2], parts[1] - 1, parts[0]);
+      }
+      return null;
+    }
+
+    /* FORMATO DE FECHA CON DÍA DE LA SEMANA Y DÍA/MES (Ej: Mié 16/09 o Lun 31/08) */
     function formatDiaMes(dateStr) {
       if (!dateStr || dateStr === '-' || dateStr.toLowerCase().includes('sin') || dateStr.toLowerCase().includes('programado')) {
         return dateStr || '-';
       }
       const parsed = parseDate(dateStr);
-      if (parsed) {
+      if (parsed && !isNaN(parsed.getTime())) {
         const nomDia = diasSemana[parsed.getDay()];
         const dia = String(parsed.getDate()).padStart(2, '0');
         const mes = String(parsed.getMonth() + 1).padStart(2, '0');
         return `${nomDia} ${dia}/${mes}`;
-      }
-      
-      const cleaned = dateStr.split(' ')[0].replace(/\//g, '-');
-      const parts = cleaned.split('-');
-      if (parts.length === 3) {
-        if (parts[0].length === 4) return `${parts[2].padStart(2, '0')}/${parts[1].padStart(2, '0')}`;
-        if (parts[2].length === 4) return `${parts[0].padStart(2, '0')}/${parts[1].padStart(2, '0')}`;
       }
       return dateStr;
     }
@@ -1009,17 +1033,6 @@
       });
     }
 
-    function parseDate(dateStr) {
-      if (!dateStr) return null;
-      const cleaned = dateStr.split(' ')[0].replace(/\//g, '-');
-      const parts = cleaned.split('-');
-      if (parts.length === 3) {
-        if (parts[0].length === 4) return new Date(parts[0], parts[1] - 1, parts[2]);
-        if (parts[2].length === 4) return new Date(parts[2], parts[1] - 1, parts[0]);
-      }
-      return null;
-    }
-
     function getFilteredDataWithoutMonth() {
       const fOficina = filtersState.oficina.selected;
       const fJefeVentas = filtersState.jefeVentas.selected;
@@ -1246,7 +1259,7 @@
       document.getElementById('tabla-motivos-container').innerHTML = html;
     }
 
-    /* RENDER TABLA NO REALIZADAS SIN COLUMNA TÉCNICO NI COMENTARIO (APROX 3 FILAS) */
+    /* TABLA NO REALIZADAS CON COLUMNA ID CCU Y CORRECCIÓN DE FECHAS (APROX 5 FILAS) */
     function renderTablaNoRealizadas(data) {
       const noRealizadas = data.filter(d => !isServicioRealizado(d));
       if (noRealizadas.length === 0) {
@@ -1259,15 +1272,18 @@
           <thead>
             <tr>
               <th class="left">Fecha</th>
+              <th class="left">ID CCU</th>
               <th class="left">Cliente</th>
-              <th class="left">Motivo / Resuelto</th>
+              <th class="left">Motivo</th>
               <th style="text-align:center;">Fotos</th>
             </tr>
           </thead>
           <tbody>`;
 
       noRealizadas.forEach(d => {
-        const fecha = d['Fecha/Hora Ejecución 1'] || d['Fecha Programada 2'] || d['Fecha'] || d['Fecha Realizado'] || d['Fecha/Hora'] || '-';
+        const rawFecha = d['Fecha/Hora Ejecución 1'] || d['Fecha Programada 2'] || d['Fecha'] || d['Fecha Realizado'] || d['Fecha/Hora'] || '-';
+        const fechaFormateada = formatDiaMes(rawFecha);
+        const idCCU = getIdCCU(d);
         const cliente = getNombreCliente(d);
         const motivo = getMotivoNoServicio(d);
 
@@ -1288,7 +1304,8 @@
 
         html += `
           <tr>
-            <td class="left">${fecha}</td>
+            <td class="left">${fechaFormateada}</td>
+            <td class="left" style="font-weight: 500;">${idCCU}</td>
             <td class="left">${cliente}</td>
             <td class="left" style="color: #c62828; font-weight: 500;">${motivo}</td>
             <td style="text-align:center;">${fotosHtml}</td>
@@ -1299,7 +1316,7 @@
       document.getElementById('tabla-no-realizadas-container').innerHTML = html;
     }
 
-    /* RENDER TABLA SI REALIZADAS SIN COLUMNA TÉCNICO NI COMENTARIO (APROX 3 FILAS) */
+    /* TABLA SI REALIZADAS CON FORMATO CORREGIDO DE FECHAS (APROX 5 FILAS) */
     function renderTablaSiRealizadas(data) {
       const siRealizadas = data.filter(d => isServicioRealizado(d));
       if (siRealizadas.length === 0) {
@@ -1314,14 +1331,15 @@
               <th class="left">Fecha</th>
               <th class="left">ID CCU</th>
               <th class="left">Cliente (Nombre Fantasía)</th>
-              <th class="left">Nombre Receptor</th>
-              <th style="text-align:center;">Foto Columnas / Post Mix</th>
+              <th class="left">Receptor</th>
+              <th style="text-align:center;">Foto</th>
             </tr>
           </thead>
           <tbody>`;
 
       siRealizadas.forEach(d => {
-        const fecha = d['Fecha/Hora Ejecución 1'] || d['Fecha Programada 2'] || d['Fecha'] || d['Fecha Realizado'] || d['Fecha/Hora'] || '-';
+        const rawFecha = d['Fecha/Hora Ejecución 1'] || d['Fecha Programada 2'] || d['Fecha'] || d['Fecha Realizado'] || d['Fecha/Hora'] || '-';
+        const fechaFormateada = formatDiaMes(rawFecha);
         const idCCU = getIdCCU(d);
         const cliente = getNombreCliente(d);
         const receptor = getNombreReceptor(d);
@@ -1338,8 +1356,8 @@
 
         html += `
           <tr>
-            <td class="left">${fecha}</td>
-            <td class="left">${idCCU}</td>
+            <td class="left">${fechaFormateada}</td>
+            <td class="left" style="font-weight: 500;">${idCCU}</td>
             <td class="left">${cliente}</td>
             <td class="left">${receptor}</td>
             <td style="text-align:center;">${fotoHtml}</td>
@@ -1413,7 +1431,6 @@
         }
       });
 
-      // Cruzar con la columna starts_at_date de la base Maestro
       if (maestroFrecuencias && maestroFrecuencias.length > 0) {
         maestroFrecuencias.forEach(m => {
           const mCCU = m['ID CCU'] || m['ID'] || m['Id CCU'] || m['id_ccu'];
