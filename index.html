@@ -696,6 +696,7 @@
       return isNaN(num) ? 1 : num;
     }
 
+    /* EVALUACIÓN EXACTA PARA CADA HOJA */
     function isServicioRealizado(d) {
       if (currentSheetKey === "urgencias") {
         const res = String(d['Pudo Resolver Problema'] || d['Pudo resolver problema'] || d['Resuelto'] || '').toUpperCase().trim();
@@ -705,7 +706,7 @@
         return res === "VIGENTE" || res === "SI" || res === "1";
       } else if (currentSheetKey === "ejecuciones") {
         const res = String(d['Estado Solicitud'] || d['Estado'] || d['Resultado'] || '').toUpperCase().trim();
-        return res.includes("CERRADA") || res.includes("EXITO") || res === "SI" || res === "1";
+        return res.includes("SOLICITUD CERRADA") || res.includes("CERRADA") || res === "SI" || res === "1";
       } else if (currentSheetKey === "visitas") {
         const res = String(d['Estado'] || d['Resultado'] || d['Dictamen'] || d['Resultado Inspeccion'] || '').toUpperCase().trim();
         return res.includes("APROBADA") || res.includes("EXITO") || res === "SI" || res === "1";
@@ -734,6 +735,7 @@
       if (!d) return '-';
       const possibleKeys = [
         'Numero',
+        'Número',
         'N° SGS/ N° CALL',
         'N° SGS / N° CALL',
         'Numero Solicitud',
@@ -752,10 +754,6 @@
         }
       }
       return '-';
-    }
-
-    function getNombreReceptor(d) {
-      return d['Nombre Receptor'] || d['Nombre Receptor Local'] || d['Receptor'] || '-';
     }
 
     function getMotivoNoServicio(d) {
@@ -845,7 +843,7 @@
           $('#kpi-label-3').text('Casos No Resueltos');
           $('#tabla-motivos-title').html('<i class="fa-solid fa-list-check"></i> Resumen de Motivos No Resueltos');
           $('#trend-card-title').html('<i class="fa-solid fa-chart-column"></i> Evolución Mensual (% Resueltas)');
-          $('#tabla-no-title').html('<i class="fa-solid fa-triangle-exclamation"></i> Detalle de Urgencias No Resueltas');
+          $('#tabla-derecha-title').html('<i class="fa-solid fa-triangle-exclamation"></i> Detalle de Urgencias No Resueltas');
           $('#historial-tabla-titulo').html('<i class="fa-solid fa-clock-rotate-left"></i> Historial de Urgencias del Cliente (Últimas 2 Urgencias Atendidas)');
           
           $('#label-filter-localId').html('<i class="fa-solid fa-phone-volume"></i> N° Llamado');
@@ -891,7 +889,7 @@
           $('#kpi-label-3').text('Visitas Rechazadas');
           $('#tabla-motivos-title').html('<i class="fa-solid fa-list-check"></i> Resumen por Acción Realizada');
           $('#trend-card-title').html('<i class="fa-solid fa-chart-column"></i> Evolución Mensual Inspectiva (% Aprobación)');
-          $('#tabla-no-title').html('<i class="fa-solid fa-triangle-exclamation"></i> Detalle de Visitas Rechazadas');
+          $('#tabla-derecha-title').html('<i class="fa-solid fa-triangle-exclamation"></i> Detalle de Visitas Rechazadas');
           $('#historial-tabla-titulo').html('<i class="fa-solid fa-building"></i> Control de Visitas Inspectivas por Oficina Comercial');
 
           $('#label-filter-localId').html('<i class="fa-solid fa-phone-volume"></i> N° SGS / Call');
@@ -936,7 +934,7 @@
           $('#kpi-label-3').text('Visitas No Realizadas');
           $('#tabla-motivos-title').html('<i class="fa-solid fa-list-check"></i> Resumen de Motivos No Realizados');
           $('#trend-card-title').html('<i class="fa-solid fa-chart-column"></i> Evolución Mensual (% SI)');
-          $('#tabla-no-title').html('<i class="fa-solid fa-triangle-exclamation"></i> Justificación Visita No Realizada');
+          $('#tabla-derecha-title').html('<i class="fa-solid fa-triangle-exclamation"></i> Justificación Visita No Realizada');
           $('#historial-tabla-titulo').html('<i class="fa-solid fa-clock-rotate-left"></i> Historial de Mantención del Cliente (-2 Meses y Próxima Mantención)');
           
           $('#label-filter-localId').html('<i class="fa-solid fa-hashtag"></i> Local / ID CCU');
@@ -1307,9 +1305,10 @@
           if (currentSheetKey === "ejecuciones") {
             if (numSol && numSol !== '-') {
               solicitudesUnicas.add(numSol);
-              if (isServicioRealizado(d)) {
+              const estado = String(d['Estado Solicitud'] || d['Estado'] || '').toUpperCase().trim();
+              if (estado.includes('CERRADA')) {
                 solicitudesExitosas.add(numSol);
-              } else {
+              } else if (estado.includes('ANULADA')) {
                 solicitudesAnuladas.add(numSol);
               }
             }
@@ -1385,7 +1384,9 @@
           renderTablaSiNoDerecha(data);
         }
 
-        renderTablaHistorialCliente();
+        if (currentSheetKey !== "ejecuciones") {
+          renderTablaHistorialCliente();
+        }
 
       } catch (err) {
         console.error("Error en renderDashboard:", err);
@@ -1498,30 +1499,32 @@
       });
     }
 
+    /* RESUMEN DE PROCESO (EN EJECUCIONES: INSTALACIÓN VS RETIRO CON VALORES REALES DE LA COLUMNA H) */
     function renderTablaMotivos(data, totalNO, grandTotal) {
       if (currentSheetKey === "ejecuciones") {
-        const procesosStats = { 'Instalación': 0, 'Retiro': 0 };
+        let sumInstalaciones = 0;
+        let sumRetiros = 0;
         
         data.forEach(d => {
           const tipoProc = String(d['Tipo Proceso'] || d['Proceso'] || '').toUpperCase().trim();
+          const salidasQty = parseFloat(d['Salidas'] || d['SALIDAS'] || 0);
+          const valSalidas = isNaN(salidasQty) ? 0 : salidasQty;
+
           if (tipoProc.includes('INSTALACI')) {
-            procesosStats['Instalación']++;
+            sumInstalaciones += valSalidas;
           } else if (tipoProc.includes('RETIRO')) {
-            procesosStats['Retiro']++;
+            sumRetiros += valSalidas;
           }
         });
 
-        const totProc = procesosStats['Instalación'] + procesosStats['Retiro'];
+        const totSalidas = sumInstalaciones + sumRetiros;
 
-        let html = `<table><thead><tr><th class="left">Tipo Proceso (Columna K)</th><th>Cantidad Salidas</th><th>% del Total</th></tr></thead><tbody>`;
+        let html = `<table><thead><tr><th class="left">Tipo Proceso (Columna K)</th><th>Cantidad Salidas (Columna H)</th><th>% del Total</th></tr></thead><tbody>`;
 
-        ['Instalación', 'Retiro'].forEach(proc => {
-          const cant = procesosStats[proc];
-          const pct = totProc > 0 ? ((cant / totProc) * 100).toFixed(1) + '%' : '0.0%';
-          html += `<tr><td class="left">• <strong>${proc}</strong></td><td><strong>${cant}</strong></td><td><span class="qty-badge" style="font-weight:bold; color:var(--excel-green-dark);">${pct}</span></td></tr>`;
-        });
+        html += `<tr><td class="left">• <strong>Instalación</strong></td><td><strong>${sumInstalaciones}</strong></td><td><span class="qty-badge" style="font-weight:bold; color:var(--excel-green-dark);">${totSalidas > 0 ? ((sumInstalaciones/totSalidas)*100).toFixed(1)+'%' : '0.0%'}</span></td></tr>`;
+        html += `<tr><td class="left">• <strong>Retiro</strong></td><td><strong>${sumRetiros}</strong></td><td><span class="qty-badge" style="font-weight:bold; color:var(--excel-green-dark);">${totSalidas > 0 ? ((sumRetiros/totSalidas)*100).toFixed(1)+'%' : '0.0%'}</span></td></tr>`;
 
-        html += `<tr class="total-general"><td class="left">Total Movimientos Salidas</td><td>${totProc}</td><td>100%</td></tr></tbody></table>`;
+        html += `<tr class="total-general"><td class="left">Total Movimientos Salidas</td><td>${totSalidas}</td><td>100%</td></tr></tbody></table>`;
         document.getElementById('tabla-motivos-container').innerHTML = html;
         return;
       }
@@ -1562,6 +1565,7 @@
       document.getElementById('tabla-motivos-container').innerHTML = html;
     }
 
+    /* TABLA DERECHA TIEMPOS PROMEDIO EN EJECUCIONES (Lector exacto Columnas D y E) */
     function renderTablaTiemposEjecuciones(data) {
       const oficinasStats = {};
 
@@ -1574,8 +1578,8 @@
         const ofEncontrada = OFICINAS_PERMITIDAS.find(of => oficRaw.includes(of));
 
         if (ofEncontrada) {
-          const diasComodato = parseFloat(d['Q Dias Ingreso/Comodato'] || d['Q Dias Ingreso / Comodato'] || 0);
-          const diasST = parseFloat(d['Q Dias Comodato/ Ejecución'] || d['Q Dias Comodato / Ejecucion'] || 0);
+          const diasComodato = parseFloat(d['Q Dias Ingreso/Comodato'] || d['Q Dias Ingreso / Comodato'] || d['Q Dias Ingreso/Comodato '] || 0);
+          const diasST = parseFloat(d['Q Dias Comodato/ Ejecución'] || d['Q Dias Comodato / Ejecución'] || d['Q Dias Comodato/Ejecución'] || 0);
 
           if (!isNaN(diasComodato) && diasComodato >= 0) {
             oficinasStats[ofEncontrada].sumComodato += diasComodato;
@@ -1619,6 +1623,7 @@
       document.getElementById('tabla-tiempos-container').innerHTML = htmlTiempos;
     }
 
+    /* TABLA DERECHA SI / NO EN PREVENTIVA, URGENCIAS Y VISITAS */
     function renderTablaSiNoDerecha(data) {
       if (currentSheetKey === "cobertura") return;
 
@@ -1726,8 +1731,10 @@
       }
     }
 
-    /* RENDER EXCLUSIVO PARA HISTORIAL / COBERTURA Y VISITAS POR OFICINA COMERCIAL */
+    /* RENDER HISTORIAL PREVENTIVA, URGENCIAS, VISITAS Y COBERTURA (EXCLUYE EJECUCIONES) */
     function renderTablaHistorialCliente() {
+      if (currentSheetKey === "ejecuciones") return;
+
       const fOficina = filtersState.oficina.selected;
       const fJefeVentas = filtersState.jefeVentas.selected;
       const fLocalId = filtersState.localId.selected;
@@ -1848,7 +1855,7 @@
         return;
       }
 
-      /* PREVENTIVA Y URGENCIAS: TABLA ORIGINAL DE HISTORIAL DEL CLIENTE */
+      /* PREVENTIVA Y URGENCIAS: HISTORIAL DE MANTENCIÓN */
       globalClientesHistorialMap = {};
 
       baseData.forEach(d => {
