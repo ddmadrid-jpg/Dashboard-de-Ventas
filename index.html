@@ -266,8 +266,8 @@
     .dashboard-grid { display: flex; flex-direction: column; gap: 24px; margin-bottom: 24px; }
     .grid-row-two-col { display: flex; gap: 24px; flex-wrap: wrap; align-items: stretch; }
     
-    .grid-col-left { flex: 0 0 50%; min-width: 320px; }
-    .grid-col-right { flex: 1; min-width: 320px; }
+    .grid-col-left { flex: 0 0 35%; min-width: 320px; }
+    .grid-col-right { flex: 1; min-width: 500px; }
 
     .side-by-side-tables { display: flex; gap: 16px; width: 100%; }
     .table-half-width { flex: 1; min-width: 240px; }
@@ -298,6 +298,21 @@
     .pill-no { background: #ffebee; color: #c62828; }
     .pill-pending { background: #fff3e0; color: #ef6c00; }
 
+    .photos-flex { display: flex; gap: 6px; justify-content: center; }
+    .img-container { position: relative; display: inline-block; width: 32px; height: 32px; }
+
+    .thumb-img {
+      width: 32px; height: 32px; object-fit: cover; border-radius: 4px; border: 1px solid #ccc;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2); transition: all 0.25s ease-in-out; cursor: zoom-in;
+    }
+
+    .img-container:hover .thumb-img {
+      position: absolute; right: 0; top: -50px; width: 180px; height: 180px; z-index: 9999;
+      border-radius: 8px; border: 3px solid var(--excel-green-header); box-shadow: 0 8px 20px rgba(0,0,0,0.35);
+      object-fit: contain; background: #ffffff;
+    }
+
+    .scrollable-table-equal { max-height: 260px; overflow-y: auto; position: relative; }
     .scrollable-table { max-height: 400px; overflow-y: auto; position: relative; }
     .no-data { padding: 16px; text-align: center; color: #888; font-style: italic; font-size: 12px; }
   </style>
@@ -571,6 +586,7 @@
 
   <!-- Grid Principal -->
   <div class="dashboard-grid">
+    <!-- FILA 1 -->
     <div class="grid-row-two-col">
       <div class="grid-col-left" id="col-motivos-left">
         <div class="table-container">
@@ -582,12 +598,39 @@
       </div>
 
       <div class="grid-col-right" id="col-tablas-right">
-        <div class="table-container" id="col-tablas-right-container">
-          <div class="table-header" style="background-color: #e8f5e9; color: var(--excel-green-dark);">
-            <span id="tabla-derecha-title"><i class="fa-solid fa-clock"></i> Tiempos Promedio de Respuesta por Oficina</span>
+        <div class="side-by-side-tables" id="wrap-si-no-tables">
+          <div class="table-container table-half-width" id="container-si-realizadas">
+            <div class="table-header" style="background-color: #e8f5e9; color: var(--excel-green-dark);">
+              <span id="tabla-si-title"><i class="fa-solid fa-circle-check"></i> Detalle Realizados (SI)</span>
+            </div>
+            <div class="scrollable-table-equal" id="tabla-si-realizadas-container"></div>
           </div>
-          <div class="scrollable-table" id="tabla-derecha-container"></div>
+
+          <div class="table-container table-half-width" id="container-no-realizadas">
+            <div class="table-header" style="background-color: #fff3f3; color: #c62828;">
+              <span id="tabla-no-title"><i class="fa-solid fa-triangle-exclamation"></i> Justificación No Realizada</span>
+            </div>
+            <div class="scrollable-table-equal" id="tabla-no-realizadas-container"></div>
+          </div>
         </div>
+
+        <!-- Fila de Tiempos Promedio en Ejecuciones -->
+        <div class="table-container" id="container-tiempos-ejecuciones" style="display: none;">
+          <div class="table-header" style="background-color: #e8f5e9; color: var(--excel-green-dark);">
+            <span><i class="fa-solid fa-clock"></i> Tiempos Promedio de Gestión por Oficina</span>
+          </div>
+          <div class="scrollable-table-equal" id="tabla-tiempos-container"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FILA 2: HISTORIAL DEL CLIENTE / CONTROL DE COBERTURA -->
+    <div class="grid-row-full" id="row-historial-bottom">
+      <div class="table-container">
+        <div class="table-header" style="background-color: #0d47a1; color: #ffffff;">
+          <span id="historial-tabla-titulo"><i class="fa-solid fa-clock-rotate-left"></i> Historial de Mantención del Cliente (-2 Meses y Próxima Mantención)</span>
+        </div>
+        <div class="scrollable-table" id="tabla-historial-container"></div>
       </div>
     </div>
   </div>
@@ -609,6 +652,7 @@
     let maestroFrecuencias = [];
     let activosChartInstance = null;
     let trendChartInstance = null;
+    let globalClientesHistorialMap = {};
 
     Chart.register(ChartDataLabels);
 
@@ -713,6 +757,10 @@
       return '-';
     }
 
+    function getNombreReceptor(d) {
+      return d['Nombre Receptor'] || d['Nombre Receptor Local'] || d['Receptor'] || '-';
+    }
+
     function getMotivoNoServicio(d) {
       if (currentSheetKey === "cobertura") {
         const rawAC = (d['Motivo No Vigente'] || d['Motivo No Servicio'] || d['Motivo'] || '').trim();
@@ -800,7 +848,8 @@
           $('#kpi-label-3').text('Casos No Resueltos');
           $('#tabla-motivos-title').html('<i class="fa-solid fa-list-check"></i> Resumen de Motivos No Resueltos');
           $('#trend-card-title').html('<i class="fa-solid fa-chart-column"></i> Evolución Mensual (% Resueltas)');
-          $('#tabla-derecha-title').html('<i class="fa-solid fa-triangle-exclamation"></i> Detalle de Urgencias No Resueltas');
+          $('#tabla-no-title').html('<i class="fa-solid fa-triangle-exclamation"></i> Detalle de Urgencias No Resueltas');
+          $('#historial-tabla-titulo').html('<i class="fa-solid fa-clock-rotate-left"></i> Historial de Urgencias del Cliente (Últimas 2 Urgencias Atendidas)');
           
           $('#label-filter-localId').html('<i class="fa-solid fa-phone-volume"></i> N° Llamado');
           
@@ -811,6 +860,11 @@
 
           $('#col-motivos-left').show().css('flex', '0 0 35%');
           $('#col-tablas-right').show();
+          $('#wrap-si-no-tables').show();
+          $('#container-si-realizadas').hide();
+          $('#container-no-realizadas').show().css('width', '100%');
+          $('#container-tiempos-ejecuciones').hide();
+          $('#row-historial-bottom').show();
 
         } else if (currentSheetKey === "ejecuciones") {
           $('#main-title').html('<i class="fa-solid fa-gears" style="font-size: 20px; color: #e67e22;"></i> Dashboard Control de Ejecuciones (Instalaciones y Retiros)');
@@ -819,7 +873,6 @@
           $('#kpi-label-3').text('Solicitudes Anuladas');
           $('#tabla-motivos-title').html('<i class="fa-solid fa-truck-ramp-box"></i> Resumen Tipo Proceso (Instalación vs Retiro)');
           $('#trend-card-title').html('<i class="fa-solid fa-chart-column"></i> Evolución Mensual Ejecución (% Éxito)');
-          $('#tabla-derecha-title').html('<i class="fa-solid fa-clock"></i> Tiempos Promedio de Gestión por Oficina (Días Comodato / ST)');
 
           $('#label-filter-localId').html('<i class="fa-solid fa-hashtag"></i> N° Solicitud');
 
@@ -830,6 +883,9 @@
 
           $('#col-motivos-left').show().css('flex', '0 0 50%');
           $('#col-tablas-right').show();
+          $('#wrap-si-no-tables').hide();
+          $('#container-tiempos-ejecuciones').show();
+          $('#row-historial-bottom').hide(); // Se elimina la tabla inferior de Ejecuciones como solicitaste
 
         } else if (currentSheetKey === "visitas") {
           $('#main-title').html('<i class="fa-solid fa-clipboard-check" style="font-size: 20px; color: #004b93;"></i> Dashboard Visitas Inspectivas & Tareas');
@@ -838,7 +894,8 @@
           $('#kpi-label-3').text('Visitas Rechazadas');
           $('#tabla-motivos-title').html('<i class="fa-solid fa-list-check"></i> Resumen por Acción Realizada');
           $('#trend-card-title').html('<i class="fa-solid fa-chart-column"></i> Evolución Mensual Inspectiva (% Aprobación)');
-          $('#tabla-derecha-title').html('<i class="fa-solid fa-triangle-exclamation"></i> Detalle de Visitas Rechazadas');
+          $('#tabla-no-title').html('<i class="fa-solid fa-triangle-exclamation"></i> Detalle de Visitas Rechazadas');
+          $('#historial-tabla-titulo').html('<i class="fa-solid fa-building"></i> Control de Visitas Inspectivas por Oficina Comercial');
 
           $('#label-filter-localId').html('<i class="fa-solid fa-phone-volume"></i> N° SGS / Call');
 
@@ -849,6 +906,11 @@
 
           $('#col-motivos-left').show().css('flex', '0 0 50%');
           $('#col-tablas-right').show();
+          $('#wrap-si-no-tables').show();
+          $('#container-si-realizadas').hide();
+          $('#container-no-realizadas').show().css('width', '100%');
+          $('#container-tiempos-ejecuciones').hide();
+          $('#row-historial-bottom').show();
 
         } else if (currentSheetKey === "cobertura") {
           $('#main-title').html('<i class="fa-solid fa-shield-halved" style="font-size: 20px; color: var(--pepsi-blue);"></i> Dashboard Cobertura de Mantención');
@@ -856,6 +918,7 @@
           $('#kpi-label-2').text('Porcentaje Vigentes');
           $('#kpi-label-3').text('Clientes No Vigentes');
           $('#tabla-motivos-title').html('<i class="fa-solid fa-list-check"></i> Resumen Causa de No Vigencia');
+          $('#historial-tabla-titulo').html('<i class="fa-solid fa-building"></i> Cobertura y Vigencia por Oficina Comercial');
           
           $('#label-filter-localId').html('<i class="fa-solid fa-hashtag"></i> Local / ID CCU');
           
@@ -866,6 +929,8 @@
 
           $('#col-tablas-right').hide();
           $('#col-motivos-left').show().css('flex', '1 1 100%');
+          $('#container-tiempos-ejecuciones').hide();
+          $('#row-historial-bottom').show();
 
         } else {
           $('#main-title').html('<i class="fa-solid fa-chart-line" style="font-size: 20px; color: var(--primary-green);"></i> Dashboard Ejecutivo - Ventas');
@@ -874,7 +939,8 @@
           $('#kpi-label-3').text('Visitas No Realizadas');
           $('#tabla-motivos-title').html('<i class="fa-solid fa-list-check"></i> Resumen de Motivos No Realizados');
           $('#trend-card-title').html('<i class="fa-solid fa-chart-column"></i> Evolución Mensual (% SI)');
-          $('#tabla-derecha-title').html('<i class="fa-solid fa-triangle-exclamation"></i> Justificación Visita No Realizada');
+          $('#tabla-no-title').html('<i class="fa-solid fa-triangle-exclamation"></i> Justificación Visita No Realizada');
+          $('#historial-tabla-titulo').html('<i class="fa-solid fa-clock-rotate-left"></i> Historial de Mantención del Cliente (-2 Meses y Próxima Mantención)');
           
           $('#label-filter-localId').html('<i class="fa-solid fa-hashtag"></i> Local / ID CCU');
           
@@ -885,6 +951,12 @@
 
           $('#col-motivos-left').show().css('flex', '0 0 35%');
           $('#col-tablas-right').show();
+          $('#wrap-si-no-tables').show();
+          $('#container-si-realizadas').show();
+          $('#container-no-realizadas').show();
+          $('#tabla-si-title').html('<i class="fa-solid fa-circle-check"></i> Detalle de Servicios Realizados (SI)');
+          $('#container-tiempos-ejecuciones').hide();
+          $('#row-historial-bottom').show();
         }
 
         resetFiltersState();
@@ -1309,7 +1381,16 @@
         }
 
         renderTablaMotivos(data, totalNO, grandTotal);
-        renderTablaDerecha(data);
+
+        if (currentSheetKey === "ejecuciones") {
+          renderTablaTiemposEjecuciones(data);
+        } else {
+          renderTablaSiNoDerecha(data);
+        }
+
+        if (currentSheetKey !== "ejecuciones") {
+          renderTablaHistorialCliente();
+        }
 
       } catch (err) {
         console.error("Error en renderDashboard:", err);
@@ -1422,7 +1503,7 @@
       });
     }
 
-    /* RESUMEN DE PROCESO (EN EJECUCIONES: INSTALACIÓN VS RETIRO) O MOTIVOS */
+    /* TABLA IZQUIERDA: RESUMEN DE PROCESO (INSTALACIÓN VS RETIRO EN EJECUCIONES) O MOTIVOS */
     function renderTablaMotivos(data, totalNO, grandTotal) {
       if (currentSheetKey === "ejecuciones") {
         const procesosStats = { 'Instalación': 0, 'Retiro': 0 };
@@ -1487,72 +1568,71 @@
       document.getElementById('tabla-motivos-container').innerHTML = html;
     }
 
-    /* TABLA DERECHA: TIEMPOS PROMEDIO EN EJECUCIONES O NO REALIZADAS EN OTRAS PESTAÑAS */
-    function renderTablaDerecha(data) {
+    /* TABLA DERECHA TIEMPOS EN EJECUCIONES */
+    function renderTablaTiemposEjecuciones(data) {
+      const oficinasStats = {};
+
+      OFICINAS_PERMITIDAS.forEach(of => {
+        oficinasStats[of] = { sumComodato: 0, countComodato: 0, sumST: 0, countST: 0 };
+      });
+
+      data.forEach(d => {
+        let oficRaw = String(d['Oficina Comercial'] || d['Oficina'] || d['OFICINA'] || '').toUpperCase().trim();
+        const ofEncontrada = OFICINAS_PERMITIDAS.find(of => oficRaw.includes(of));
+
+        if (ofEncontrada) {
+          const diasComodato = parseFloat(d['Q Dias Ingreso/Comodato'] || d['Q Dias Ingreso / Comodato'] || 0);
+          const diasST = parseFloat(d['Q Dias Comodato/ Ejecución'] || d['Q Dias Comodato / Ejecucion'] || 0);
+
+          if (!isNaN(diasComodato) && diasComodato >= 0) {
+            oficinasStats[ofEncontrada].sumComodato += diasComodato;
+            oficinasStats[ofEncontrada].countComodato++;
+          }
+
+          if (!isNaN(diasST) && diasST >= 0) {
+            oficinasStats[ofEncontrada].sumST += diasST;
+            oficinasStats[ofEncontrada].countST++;
+          }
+        }
+      });
+
+      let htmlTiempos = `
+        <table>
+          <thead>
+            <tr>
+              <th class="left">Oficina Comercial</th>
+              <th>Promedio Días Carga Comodato (Ventas)</th>
+              <th>Promedio Días Ejecución (ST)</th>
+            </tr>
+          </thead>
+          <tbody>`;
+
+      OFICINAS_PERMITIDAS.forEach(oficina => {
+        const st = oficinasStats[oficina];
+        const avgComodato = st.countComodato > 0 ? (st.sumComodato / st.countComodato).toFixed(1) : '0.0';
+        const avgST = st.countST > 0 ? (st.sumST / st.countST).toFixed(1) : '0.0';
+
+        const ofNombrePretty = oficina.charAt(0) + oficina.slice(1).toLowerCase();
+
+        htmlTiempos += `
+          <tr>
+            <td class="left"><strong>${ofNombrePretty}</strong></td>
+            <td><strong style="color:var(--pepsi-blue);">${avgComodato} días</strong></td>
+            <td><strong style="color:var(--excel-green-dark);">${avgST} días</strong></td>
+          </tr>`;
+      });
+
+      htmlTiempos += `</tbody></table>`;
+      document.getElementById('tabla-tiempos-container').innerHTML = htmlTiempos;
+    }
+
+    /* TABLA DERECHA SI / NO EN PREVENTIVA, URGENCIAS Y VISITAS */
+    function renderTablaSiNoDerecha(data) {
       if (currentSheetKey === "cobertura") return;
 
-      if (currentSheetKey === "ejecuciones") {
-        const oficinasStats = {};
-
-        OFICINAS_PERMITIDAS.forEach(of => {
-          oficinasStats[of] = { sumComodato: 0, countComodato: 0, sumST: 0, countST: 0 };
-        });
-
-        data.forEach(d => {
-          let oficRaw = String(d['Oficina Comercial'] || d['Oficina'] || d['OFICINA'] || '').toUpperCase().trim();
-          const ofEncontrada = OFICINAS_PERMITIDAS.find(of => oficRaw.includes(of));
-
-          if (ofEncontrada) {
-            const diasComodato = parseFloat(d['Q Dias Ingreso/Comodato'] || d['Q Dias Ingreso / Comodato'] || 0);
-            const diasST = parseFloat(d['Q Dias Comodato/ Ejecución'] || d['Q Dias Comodato / Ejecucion'] || 0);
-
-            if (!isNaN(diasComodato) && diasComodato >= 0) {
-              oficinasStats[ofEncontrada].sumComodato += diasComodato;
-              oficinasStats[ofEncontrada].countComodato++;
-            }
-
-            if (!isNaN(diasST) && diasST >= 0) {
-              oficinasStats[ofEncontrada].sumST += diasST;
-              oficinasStats[ofEncontrada].countST++;
-            }
-          }
-        });
-
-        let htmlTiempos = `
-          <table>
-            <thead>
-              <tr>
-                <th class="left">Oficina Comercial</th>
-                <th>Promedio Días Carga Comodato (Ventas)</th>
-                <th>Promedio Días Ejecución (ST)</th>
-              </tr>
-            </thead>
-            <tbody>`;
-
-        OFICINAS_PERMITIDAS.forEach(oficina => {
-          const st = oficinasStats[oficina];
-          const avgComodato = st.countComodato > 0 ? (st.sumComodato / st.countComodato).toFixed(1) : '0.0';
-          const avgST = st.countST > 0 ? (st.sumST / st.countST).toFixed(1) : '0.0';
-
-          const ofNombrePretty = oficina.charAt(0) + oficina.slice(1).toLowerCase();
-
-          htmlTiempos += `
-            <tr>
-              <td class="left"><strong>${ofNombrePretty}</strong></td>
-              <td><strong style="color:var(--pepsi-blue);">${avgComodato} días</strong></td>
-              <td><strong style="color:var(--excel-green-dark);">${avgST} días</strong></td>
-            </tr>`;
-        });
-
-        htmlTiempos += `</tbody></table>`;
-        document.getElementById('tabla-derecha-container').innerHTML = htmlTiempos;
-        return;
-      }
-
-      // Para Preventiva, Urgencias y Visitas
       const noRealizadas = data.filter(d => !isServicioRealizado(d));
       if (noRealizadas.length === 0) {
-        document.getElementById('tabla-derecha-container').innerHTML = `<div class="no-data">🎉 No hay casuística pendiente.</div>`;
+        document.getElementById('tabla-no-realizadas-container').innerHTML = `<div class="no-data">🎉 No hay casuística pendiente.</div>`;
         return;
       }
 
@@ -1567,6 +1647,7 @@
               <th class="left">${thColId}</th>
               <th class="left">Cliente</th>
               <th class="left">Motivo / Acción</th>
+              <th style="text-align:center;">Fotos</th>
             </tr>
           </thead>
           <tbody>`;
@@ -1578,17 +1659,374 @@
         const cliente = getNombreCliente(d);
         const motivo = getMotivoNoServicio(d);
 
+        const fotoUrl1 = d['Foto Equipo'] || d['Foto Motivo'] || d['Foto Columnas o Post Mix'] || '';
+        const fotoUrl2 = d['Foto Equipo 2'] || d['Foto Salida FNE'] || '';
+
+        let fotosHtml = '<span style="color:#bbb;">Sin fotos</span>';
+        if ((fotoUrl1 && fotoUrl1.startsWith('http')) || (fotoUrl2 && fotoUrl2.startsWith('http'))) {
+          fotosHtml = '<div class="photos-flex">';
+          if (fotoUrl1 && fotoUrl1.startsWith('http')) {
+            fotosHtml += `<div class="img-container"><img src="${fotoUrl1}" class="thumb-img" alt="Foto 1" loading="lazy" onerror="this.src='https://via.placeholder.com/50?text=Error'"></div>`;
+          }
+          if (fotoUrl2 && fotoUrl2.startsWith('http')) {
+            fotosHtml += `<div class="img-container"><img src="${fotoUrl2}" class="thumb-img" alt="Foto 2" loading="lazy" onerror="this.src='https://via.placeholder.com/50?text=Error'"></div>`;
+          }
+          fotosHtml += '</div>';
+        }
+
         html += `
           <tr>
             <td class="left">${fechaFormateada}</td>
             <td class="left" style="font-weight: 500;">${colIdVal}</td>
             <td class="left">${cliente}</td>
             <td class="left" style="color: #c62828; font-weight: 500;">${motivo}</td>
+            <td style="text-align:center;">${fotosHtml}</td>
           </tr>`;
       });
 
       html += `</tbody></table>`;
-      document.getElementById('tabla-derecha-container').innerHTML = html;
+      document.getElementById('tabla-no-realizadas-container').innerHTML = html;
+
+      // Render SI Realizadas si estamos en Preventiva
+      if (currentSheetKey === "preventiva") {
+        const siRealizadas = data.filter(d => isServicioRealizado(d));
+        let htmlSi = `
+          <table>
+            <thead>
+              <tr>
+                <th class="left">Fecha</th>
+                <th class="left">ID CCU</th>
+                <th class="left">Cliente (Nombre Fantasía)</th>
+                <th class="left">Receptor</th>
+                <th style="text-align:center;">Foto</th>
+              </tr>
+            </thead>
+            <tbody>`;
+
+        siRealizadas.forEach(d => {
+          const rawFecha = d['Fecha/Hora Ejecución 1'] || d['Fecha Programada 2'] || d['Fecha'] || d['Fecha Realizado'] || d['Fecha/Hora'] || '-';
+          const fechaFormateada = formatDiaMes(rawFecha);
+          const idCCU = getIdCCU(d);
+          const cliente = getNombreCliente(d);
+          const receptor = getNombreReceptor(d);
+
+          const fotoUrl = d['Foto Columnas o Post Mix'] || d['Foto Equipo'] || d['Foto Motivo'] || d['Foto Salida FNE'] || '';
+
+          let fotoHtml = '<span style="color:#bbb;">Sin fotos</span>';
+          if (fotoUrl && fotoUrl.startsWith('http')) {
+            fotoHtml = `
+              <div class="img-container">
+                <img src="${fotoUrl}" class="thumb-img" alt="Foto Columnas o Post Mix" loading="lazy" onerror="this.src='https://via.placeholder.com/50?text=Error'">
+              </div>`;
+          }
+
+          htmlSi += `
+            <tr>
+              <td class="left">${fechaFormateada}</td>
+              <td class="left" style="font-weight: 500;">${idCCU}</td>
+              <td class="left">${cliente}</td>
+              <td class="left">${receptor}</td>
+              <td style="text-align:center;">${fotoHtml}</td>
+            </tr>`;
+        });
+
+        htmlSi += `</tbody></table>`;
+        document.getElementById('tabla-si-realizadas-container').innerHTML = htmlSi;
+      }
+    }
+
+    /* HISTORIAL O COBERTURA / VISITAS POR OFICINA COMERCIAL */
+    function renderTablaHistorialCliente() {
+      const fOficina = filtersState.oficina.selected;
+      const fJefeVentas = filtersState.jefeVentas.selected;
+      const fLocalId = filtersState.localId.selected;
+      const fCliente = filtersState.cliente.selected;
+
+      const esUrgencias = currentSheetKey === "urgencias";
+      const esCobertura = currentSheetKey === "cobertura";
+      const esVisitas = currentSheetKey === "visitas";
+
+      const baseData = rawData.filter(d => {
+        const dOficina = String(d['Oficina Comercial'] || d['Oficina'] || d['OFICINA'] || '').trim();
+        const dJefe = String(d['Jefe de Ventas'] || d['JEFE DE VENTAS'] || '').trim();
+        const dLocal = String(d['Local'] || d['ID X LOCAL X TIPO MAQUINA'] || '').trim();
+        const dIdCCU = String(esUrgencias || esVisitas ? getNumeroLlamado(d) : getIdCCU(d)).trim();
+        const dCliente = String(getNombreCliente(d)).trim();
+
+        const matchOficina = fOficina.length === 0 || fOficina.some(fOf => dOficina.toUpperCase().includes(fOf.toUpperCase()));
+        const matchJefe = fJefeVentas.length === 0 || fJefeVentas.includes(dJefe);
+        const matchLocalId = fLocalId.length === 0 || fLocalId.includes(dLocal) || fLocalId.includes(dIdCCU);
+        const matchCliente = fCliente.length === 0 || fCliente.includes(dCliente);
+
+        return matchOficina && matchJefe && matchLocalId && matchCliente;
+      });
+
+      if (baseData.length === 0) {
+        document.getElementById('tabla-historial-container').innerHTML = `<div class="no-data">Sin registros para mostrar.</div>`;
+        return;
+      }
+
+      /* RENDERIZADO COBERTURA / VISITAS POR OFICINA COMERCIAL */
+      if (esCobertura || esVisitas) {
+        const oficinasMap = {};
+
+        let oficinasAMostrar = OFICINAS_PERMITIDAS;
+        if (fOficina.length > 0) {
+          oficinasAMostrar = OFICINAS_PERMITIDAS.filter(of => fOficina.some(fOf => of.includes(fOf.toUpperCase())));
+        }
+
+        oficinasAMostrar.forEach(of => {
+          oficinasMap[of] = { ok: 0, noOk: 0 };
+        });
+
+        let grandOK = 0;
+        let grandNoOK = 0;
+
+        baseData.forEach(d => {
+          let oficinaRaw = String(d['Oficina Comercial'] || d['Oficina'] || d['OFICINA'] || '').toUpperCase().trim();
+          
+          const oficinaEncontrada = oficinasAMostrar.find(of => oficinaRaw.includes(of));
+
+          if (oficinaEncontrada) {
+            const realizado = isServicioRealizado(d);
+            if (realizado) {
+              oficinasMap[oficinaEncontrada].ok++;
+              grandOK++;
+            } else {
+              oficinasMap[oficinaEncontrada].noOk++;
+              grandNoOK++;
+            }
+          }
+        });
+
+        const totalGeneral = grandOK + grandNoOK;
+
+        let txtHeaderOK = esCobertura ? "Clientes Vigentes" : "Visitas Aprobadas";
+        let txtHeaderNoOK = esCobertura ? "Clientes No Vigentes" : "Visitas Rechazadas";
+        let txtHeaderPct = esCobertura ? "% Vigencia sobre Oficina" : "% Cumplimiento sobre Oficina";
+
+        let htmlCob = `
+          <table>
+            <thead>
+              <tr>
+                <th class="left">Oficina Comercial</th>
+                <th>${txtHeaderOK}</th>
+                <th>${txtHeaderNoOK}</th>
+                <th>Total Registros</th>
+                <th>${txtHeaderPct}</th>
+                <th>% sobre el Total General</th>
+              </tr>
+            </thead>
+            <tbody>`;
+
+        oficinasAMostrar.forEach(oficina => {
+          const v = oficinasMap[oficina].ok;
+          const nv = oficinasMap[oficina].noOk;
+          const totOficina = v + nv;
+
+          const pctSobreOficina = totOficina > 0 ? ((v / totOficina) * 100).toFixed(1) + '%' : '0.0%';
+          const pctSobreTotal = totalGeneral > 0 ? ((totOficina / totalGeneral) * 100).toFixed(1) + '%' : '0.0%';
+
+          const ofNombrePretty = oficina.charAt(0) + oficina.slice(1).toLowerCase();
+
+          htmlCob += `
+            <tr>
+              <td class="left"><strong>${ofNombrePretty}</strong></td>
+              <td><span class="status-pill pill-ok">${v}</span></td>
+              <td><span class="status-pill pill-no">${nv}</span></td>
+              <td><strong>${totOficina}</strong></td>
+              <td><strong style="color:var(--excel-green-dark);">${pctSobreOficina}</strong></td>
+              <td><span class="qty-badge" style="font-weight:bold;">${pctSobreTotal}</span></td>
+            </tr>`;
+        });
+
+        const grandPctVigencia = totalGeneral > 0 ? ((grandOK / totalGeneral) * 100).toFixed(1) + '%' : '0.0%';
+
+        htmlCob += `
+          <tr class="total-general">
+            <td class="left">Total General</td>
+            <td>${grandOK}</td>
+            <td>${grandNoOK}</td>
+            <td>${totalGeneral}</td>
+            <td>${grandPctVigencia}</td>
+            <td>100%</td>
+          </tr>
+          </tbody></table>`;
+
+        document.getElementById('tabla-historial-container').innerHTML = htmlCob;
+        return;
+      }
+
+      /* RENDERIZADO PARA PREVENTIVA Y URGENCIAS */
+      globalClientesHistorialMap = {};
+
+      baseData.forEach(d => {
+        const codLocal = String(d['Local'] || d['local'] || '').trim();
+        const idCCU = getIdCCU(d);
+        const numLlamado = getNumeroLlamado(d);
+        
+        const keyLocal = codLocal || idCCU || numLlamado;
+        if (!keyLocal || keyLocal === '-') return;
+
+        const cliente = getNombreCliente(d);
+        const oficina = d['Oficina Comercial'] || d['Oficina'] || d['OFICINA'] || '-';
+        const jefe = d['Jefe de Ventas'] || d['JEFE DE VENTAS'] || '-';
+        
+        const rawFecha = d['Fecha Realizado'] || d['Fecha/Hora Ejecución 1'] || d['Fecha Programada 2'] || d['Fecha'] || d['Fecha/Hora'] || '';
+        const parsedDate = parseDate(rawFecha);
+        const realizado = isServicioRealizado(d);
+        const motivo = realizado ? '' : getMotivoNoServicio(d);
+
+        if (!globalClientesHistorialMap[keyLocal]) {
+          globalClientesHistorialMap[keyLocal] = {
+            keyLocal: keyLocal,
+            idCCU,
+            numLlamado,
+            codLocal,
+            cliente,
+            oficina,
+            jefe,
+            mantenciones: [],
+            proxima: 'Sin Programación'
+          };
+        }
+
+        const jefeActual = globalClientesHistorialMap[keyLocal].jefe.toLowerCase();
+        if ((jefeActual.includes('revisar') || jefeActual.includes('sin') || jefeActual === '-') && jefe && !jefe.toLowerCase().includes('revisar')) {
+          globalClientesHistorialMap[keyLocal].jefe = jefe;
+        }
+
+        if (idCCU && idCCU !== '-' && idCCU.length <= 6) {
+          globalClientesHistorialMap[keyLocal].idCCU = idCCU;
+        }
+
+        if (rawFecha) {
+          globalClientesHistorialMap[keyLocal].mantenciones.push({
+            rawFecha,
+            parsedDate,
+            realizado,
+            motivo,
+            rawObject: d
+          });
+        }
+      });
+
+      if (!esUrgencias && maestroFrecuencias && maestroFrecuencias.length > 0) {
+        maestroFrecuencias.forEach(m => {
+          const mLocal = String(m['Local'] || m['local'] || '').trim();
+          const mCCU = String(m['ID CCU'] || m['ID'] || m['Id CCU'] || m['id_ccu'] || '').trim();
+
+          Object.values(globalClientesHistorialMap).forEach(c => {
+            const matchByLocal = mLocal && c.codLocal && mLocal.toUpperCase() === c.codLocal.toUpperCase();
+            const matchByID = mCCU && c.idCCU && mCCU.endsWith(c.idCCU);
+
+            if (matchByLocal || matchByID) {
+              const jefeActual = c.jefe.toLowerCase();
+              const mJefe = m['Jefe de Ventas'] || m['JEFE DE VENTAS'] || m['Jefe Ventas'];
+              if ((jefeActual.includes('revisar') || jefeActual.includes('sin') || jefeActual === '-') && mJefe && !mJefe.toLowerCase().includes('revisar')) {
+                c.jefe = mJefe;
+              }
+
+              const proxFecha = m['starts_at_date'] || m['Dia'] || m['Fecha Realizado'] || m['Fecha Programada'] || m['Fecha'] || '';
+              const sem = m['Semana'] ? `Semana ${m['Semana']}` : '';
+
+              if (proxFecha) {
+                c.proxima = proxFecha;
+              } else if (sem) {
+                c.proxima = sem;
+              } else {
+                c.proxima = 'Programado';
+              }
+            }
+          });
+        });
+      }
+
+      const thColId = esUrgencias ? "N° Llamado" : "ID CCU";
+      const colPenultima = esUrgencias ? "Penúltima Urgencia" : "Penúltima Mantención";
+      const colUltima = esUrgencias ? "Última Urgencia" : "Última Mantención";
+      const thProxima = esUrgencias ? "" : `<th style="text-align:center;">Próxima Mantención</th>`;
+
+      let html = `
+        <table>
+          <thead>
+            <tr>
+              <th class="left">${thColId}</th>
+              <th class="left">Cod. Local</th>
+              <th class="left">Nombre Fantasía</th>
+              <th class="left">Oficina Comercial</th>
+              <th class="left">Jefe de Ventas</th>
+              <th style="text-align:center;">${colPenultima}</th>
+              <th style="text-align:center;">${colUltima}</th>
+              ${thProxima}
+            </tr>
+          </thead>
+          <tbody>`;
+
+      Object.values(globalClientesHistorialMap).forEach(c => {
+        c.mantenciones.sort((a, b) => {
+          if (!a.parsedDate) return -1;
+          if (!b.parsedDate) return 1;
+          return a.parsedDate - b.parsedDate;
+        });
+
+        const totalRegistros = c.mantenciones.length;
+        const ultIndex = totalRegistros - 1;
+        const penultIndex = totalRegistros - 2;
+
+        const ult = totalRegistros > 0 ? c.mantenciones[ultIndex] : null;
+        const penult = totalRegistros > 1 ? c.mantenciones[penultIndex] : null;
+
+        let penultHtml = '<span style="color:#bbb;">-</span>';
+        if (penult) {
+          const fStr = formatDiaMes(penult.rawFecha);
+          const txtStatus = esUrgencias ? (penult.realizado ? 'RESUELTO' : 'NO RESUELTO') : (penult.realizado ? 'REALIZADO' : 'PENDIENTE');
+          const pillClass = penult.realizado ? 'pill-ok' : 'pill-no';
+
+          penultHtml = `<div>
+                          <strong>${fStr}</strong> <span class="status-pill ${pillClass}">${txtStatus}</span>
+                          ${!penult.realizado ? `<div style="font-size:10px; color:#c62828; margin-top:2px;">${penult.motivo}</div>` : ''}
+                        </div>`;
+        }
+
+        let ultHtml = '<span style="color:#bbb;">-</span>';
+        if (ult) {
+          const fStr = formatDiaMes(ult.rawFecha);
+          const txtStatus = esUrgencias ? (ult.realizado ? 'RESUELTO' : 'NO RESUELTO') : (ult.realizado ? 'REALIZADO' : 'PENDIENTE');
+          const pillClass = ult.realizado ? 'pill-ok' : 'pill-no';
+
+          ultHtml = `<div>
+                        <strong>${fStr}</strong> <span class="status-pill ${pillClass}">${txtStatus}</span>
+                        ${!ult.realizado ? `<div style="font-size:10px; color:#c62828; margin-top:2px;">${ult.motivo}</div>` : ''}
+                      </div>`;
+        }
+
+        const tdProxima = esUrgencias ? "" : `<td style="text-align:center;"><strong style="color: var(--pepsi-blue);">${formatDiaMes(c.proxima)}</strong></td>`;
+        
+        let valColId = c.idCCU;
+        if (esUrgencias) {
+          if (ult && ult.rawObject) {
+            valColId = getNumeroLlamado(ult.rawObject);
+          } else {
+            valColId = c.numLlamado || c.idCCU;
+          }
+        }
+
+        html += `
+          <tr>
+            <td class="left"><strong>${valColId}</strong></td>
+            <td class="left" style="font-weight: 500;">${c.codLocal}</td>
+            <td class="left">${cliente}</td>
+            <td class="left">${c.oficina}</td>
+            <td class="left">${c.jefe}</td>
+            <td style="text-align:center;">${penultHtml}</td>
+            <td style="text-align:center;">${ultHtml}</td>
+            ${tdProxima}
+          </tr>`;
+      });
+
+      html += `</tbody></table>`;
+      document.getElementById('tabla-historial-container').innerHTML = html;
     }
   </script>
 </body>
