@@ -298,21 +298,6 @@
     .pill-no { background: #ffebee; color: #c62828; }
     .pill-pending { background: #fff3e0; color: #ef6c00; }
 
-    .photos-flex { display: flex; gap: 6px; justify-content: center; }
-    .img-container { position: relative; display: inline-block; width: 32px; height: 32px; }
-
-    .thumb-img {
-      width: 32px; height: 32px; object-fit: cover; border-radius: 4px; border: 1px solid #ccc;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.2); transition: all 0.25s ease-in-out; cursor: zoom-in;
-    }
-
-    .img-container:hover .thumb-img {
-      position: absolute; right: 0; top: -50px; width: 180px; height: 180px; z-index: 9999;
-      border-radius: 8px; border: 3px solid var(--excel-green-header); box-shadow: 0 8px 20px rgba(0,0,0,0.35);
-      object-fit: contain; background: #ffffff;
-    }
-
-    .scrollable-table-equal { max-height: 260px; overflow-y: auto; position: relative; }
     .scrollable-table { max-height: 400px; overflow-y: auto; position: relative; }
     .no-data { padding: 16px; text-align: center; color: #888; font-style: italic; font-size: 12px; }
   </style>
@@ -586,8 +571,6 @@
 
   <!-- Grid Principal -->
   <div class="dashboard-grid">
-    
-    <!-- FILA 1 -->
     <div class="grid-row-two-col">
       <div class="grid-col-left" id="col-motivos-left">
         <div class="table-container">
@@ -607,7 +590,6 @@
         </div>
       </div>
     </div>
-
   </div>
 
   <script>
@@ -729,10 +711,6 @@
         }
       }
       return '-';
-    }
-
-    function getNombreReceptor(d) {
-      return d['Nombre Receptor'] || d['Nombre Receptor Local'] || d['Receptor'] || '-';
     }
 
     function getMotivoNoServicio(d) {
@@ -1067,7 +1045,7 @@
       
       const fallbackTimer = setTimeout(() => {
         hideLoader();
-      }, 6000);
+      }, 3500);
 
       const targetUrl = SHEETS_URLS[currentSheetKey];
 
@@ -1241,99 +1219,103 @@
     }
 
     function renderDashboard() {
-      const data = getFilteredData();
+      try {
+        const data = getFilteredData();
 
-      let totalSI = 0;
-      let totalNO = 0;
-      let countSchop = 0;
-      let countPostMix = 0;
+        let totalSI = 0;
+        let totalNO = 0;
+        let countSchop = 0;
+        let countPostMix = 0;
 
-      // Para Ejecuciones se cuenta por Número de Solicitud Único
-      let solicitudesUnicas = new Set();
-      let solicitudesExitosas = new Set();
-      let solicitudesAnuladas = new Set();
+        let solicitudesUnicas = new Set();
+        let solicitudesExitosas = new Set();
+        let solicitudesAnuladas = new Set();
 
-      data.forEach(d => {
-        const qty = getServiciosQty(d);
-        const numSol = getNumeroLlamado(d);
+        data.forEach(d => {
+          const qty = getServiciosQty(d);
+          const numSol = getNumeroLlamado(d);
 
-        if (currentSheetKey === "ejecuciones") {
-          if (numSol && numSol !== '-') {
-            solicitudesUnicas.add(numSol);
+          if (currentSheetKey === "ejecuciones") {
+            if (numSol && numSol !== '-') {
+              solicitudesUnicas.add(numSol);
+              if (isServicioRealizado(d)) {
+                solicitudesExitosas.add(numSol);
+              } else {
+                solicitudesAnuladas.add(numSol);
+              }
+            }
+          } else {
             if (isServicioRealizado(d)) {
-              solicitudesExitosas.add(numSol);
+              totalSI += qty;
             } else {
-              solicitudesAnuladas.add(numSol);
+              totalNO += qty;
             }
           }
-        } else {
-          if (isServicioRealizado(d)) {
-            totalSI += qty;
-          } else {
-            totalNO += qty;
-          }
-        }
 
-        const tipo = getTipoActivo(d).toUpperCase();
-        if (tipo.includes('SCHOP')) {
-          countSchop += qty;
-        } else if (tipo.includes('POST')) {
-          countPostMix += qty;
-        }
-      });
-
-      let grandTotal = totalSI + totalNO;
-
-      if (currentSheetKey === "ejecuciones") {
-        totalSI = solicitudesExitosas.size;
-        totalNO = solicitudesAnuladas.size;
-        grandTotal = solicitudesUnicas.size;
-      } else if (currentSheetKey === "cobertura") {
-        let cobCountFilter = 0;
-        data.forEach(d => {
-          let ofic = String(d['Oficina Comercial'] || d['Oficina'] || d['OFICINA'] || '').toUpperCase().trim();
-          if (OFICINAS_PERMITIDAS.some(of => ofic.includes(of))) {
-            cobCountFilter++;
+          const tipo = getTipoActivo(d).toUpperCase();
+          if (tipo.includes('SCHOP')) {
+            countSchop += qty;
+          } else if (tipo.includes('POST')) {
+            countPostMix += qty;
           }
         });
-        grandTotal = cobCountFilter;
+
+        let grandTotal = totalSI + totalNO;
+
+        if (currentSheetKey === "ejecuciones") {
+          totalSI = solicitudesExitosas.size;
+          totalNO = solicitudesAnuladas.size;
+          grandTotal = solicitudesUnicas.size;
+        } else if (currentSheetKey === "cobertura") {
+          let cobCountFilter = 0;
+          data.forEach(d => {
+            let ofic = String(d['Oficina Comercial'] || d['Oficina'] || d['OFICINA'] || '').toUpperCase().trim();
+            if (OFICINAS_PERMITIDAS.some(of => ofic.includes(of))) {
+              cobCountFilter++;
+            }
+          });
+          grandTotal = cobCountFilter;
+        }
+
+        const pctSI = grandTotal > 0 ? ((totalSI / grandTotal) * 100).toFixed(1) : '0.0';
+        const pctNO = grandTotal > 0 ? ((totalNO / grandTotal) * 100).toFixed(1) : '0.0';
+
+        document.getElementById('kpi-total').innerText = grandTotal.toLocaleString();
+        document.getElementById('kpi-cumplimiento').innerText = pctSI + '%';
+        
+        if (currentSheetKey === "urgencias") {
+          document.getElementById('kpi-ejecutados-count').innerText = `${totalSI.toLocaleString()} Casos Resueltos`;
+          document.getElementById('kpi-no-count').innerText = `${totalNO.toLocaleString()} Casos No Resueltos`;
+        } else if (currentSheetKey === "ejecuciones") {
+          document.getElementById('kpi-ejecutados-count').innerText = `${totalSI.toLocaleString()} Cerradas con Éxito`;
+          document.getElementById('kpi-no-count').innerText = `${totalNO.toLocaleString()} Anuladas`;
+        } else if (currentSheetKey === "visitas") {
+          document.getElementById('kpi-ejecutados-count').innerText = `${totalSI.toLocaleString()} Visitas Aprobadas`;
+          document.getElementById('kpi-no-count').innerText = `${totalNO.toLocaleString()} Visitas Rechazadas`;
+        } else if (currentSheetKey === "cobertura") {
+          document.getElementById('kpi-ejecutados-count').innerText = `${totalSI.toLocaleString()} Clientes Vigentes`;
+          document.getElementById('kpi-no-count').innerText = `${totalNO.toLocaleString()} Clientes No Vigentes`;
+        } else {
+          document.getElementById('kpi-ejecutados-count').innerText = `${totalSI.toLocaleString()} Servicios Realizados`;
+          document.getElementById('kpi-no-count').innerText = `${totalNO.toLocaleString()} Servicios Pendientes`;
+        }
+
+        document.getElementById('kpi-pendientes').innerText = pctNO + '%';
+
+        renderActivosChart(countSchop, countPostMix);
+        
+        if (currentSheetKey !== "cobertura") {
+          renderTrendChart();
+        }
+
+        renderTablaMotivos(data, totalNO, grandTotal);
+        renderTablaDerecha(data);
+
+      } catch (err) {
+        console.error("Error en renderDashboard:", err);
+      } finally {
+        hideLoader();
       }
-
-      const pctSI = grandTotal > 0 ? ((totalSI / grandTotal) * 100).toFixed(1) : '0.0';
-      const pctNO = grandTotal > 0 ? ((totalNO / grandTotal) * 100).toFixed(1) : '0.0';
-
-      document.getElementById('kpi-total').innerText = grandTotal.toLocaleString();
-      document.getElementById('kpi-cumplimiento').innerText = pctSI + '%';
-      
-      if (currentSheetKey === "urgencias") {
-        document.getElementById('kpi-ejecutados-count').innerText = `${totalSI.toLocaleString()} Casos Resueltos`;
-        document.getElementById('kpi-no-count').innerText = `${totalNO.toLocaleString()} Casos No Resueltos`;
-      } else if (currentSheetKey === "ejecuciones") {
-        document.getElementById('kpi-ejecutados-count').innerText = `${totalSI.toLocaleString()} Cerradas con Éxito`;
-        document.getElementById('kpi-no-count').innerText = `${totalNO.toLocaleString()} Anuladas`;
-      } else if (currentSheetKey === "visitas") {
-        document.getElementById('kpi-ejecutados-count').innerText = `${totalSI.toLocaleString()} Visitas Aprobadas`;
-        document.getElementById('kpi-no-count').innerText = `${totalNO.toLocaleString()} Visitas Rechazadas`;
-      } else if (currentSheetKey === "cobertura") {
-        document.getElementById('kpi-ejecutados-count').innerText = `${totalSI.toLocaleString()} Clientes Vigentes`;
-        document.getElementById('kpi-no-count').innerText = `${totalNO.toLocaleString()} Clientes No Vigentes`;
-      } else {
-        document.getElementById('kpi-ejecutados-count').innerText = `${totalSI.toLocaleString()} Servicios Realizados`;
-        document.getElementById('kpi-no-count').innerText = `${totalNO.toLocaleString()} Servicios Pendientes`;
-      }
-
-      document.getElementById('kpi-pendientes').innerText = pctNO + '%';
-
-      renderActivosChart(countSchop, countPostMix);
-      
-      if (currentSheetKey !== "cobertura") {
-        renderTrendChart();
-      }
-
-      renderTablaMotivos(data, totalNO, grandTotal);
-      renderTablaDerecha(data);
-
-      document.getElementById('tabla-historial-container').innerHTML = `<div class="no-data">Filtros aplicados para ${currentSheetKey}.</div>`;
     }
 
     function renderActivosChart(schop, postMix) {
@@ -1524,12 +1506,12 @@
             const diasComodato = parseFloat(d['Q Dias Ingreso/Comodato'] || d['Q Dias Ingreso / Comodato'] || 0);
             const diasST = parseFloat(d['Q Dias Comodato/ Ejecución'] || d['Q Dias Comodato / Ejecucion'] || 0);
 
-            if (!isNaN(diasComodato)) {
+            if (!isNaN(diasComodato) && diasComodato >= 0) {
               oficinasStats[ofEncontrada].sumComodato += diasComodato;
               oficinasStats[ofEncontrada].countComodato++;
             }
 
-            if (!isNaN(diasST)) {
+            if (!isNaN(diasST) && diasST >= 0) {
               oficinasStats[ofEncontrada].sumST += diasST;
               oficinasStats[ofEncontrada].countST++;
             }
@@ -1585,7 +1567,6 @@
               <th class="left">${thColId}</th>
               <th class="left">Cliente</th>
               <th class="left">Motivo / Acción</th>
-              <th style="text-align:center;">Fotos</th>
             </tr>
           </thead>
           <tbody>`;
@@ -1597,28 +1578,12 @@
         const cliente = getNombreCliente(d);
         const motivo = getMotivoNoServicio(d);
 
-        const fotoUrl1 = d['Foto Equipo'] || d['Foto Motivo'] || d['Foto Columnas o Post Mix'] || '';
-        const fotoUrl2 = d['Foto Equipo 2'] || d['Foto Salida FNE'] || '';
-
-        let fotosHtml = '<span style="color:#bbb;">Sin fotos</span>';
-        if ((fotoUrl1 && fotoUrl1.startsWith('http')) || (fotoUrl2 && fotoUrl2.startsWith('http'))) {
-          fotosHtml = '<div class="photos-flex">';
-          if (fotoUrl1 && fotoUrl1.startsWith('http')) {
-            fotosHtml += `<div class="img-container"><img src="${fotoUrl1}" class="thumb-img" alt="Foto 1" loading="lazy" onerror="this.src='https://via.placeholder.com/50?text=Error'"></div>`;
-          }
-          if (fotoUrl2 && fotoUrl2.startsWith('http')) {
-            fotosHtml += `<div class="img-container"><img src="${fotoUrl2}" class="thumb-img" alt="Foto 2" loading="lazy" onerror="this.src='https://via.placeholder.com/50?text=Error'"></div>`;
-          }
-          fotosHtml += '</div>';
-        }
-
         html += `
           <tr>
             <td class="left">${fechaFormateada}</td>
             <td class="left" style="font-weight: 500;">${colIdVal}</td>
             <td class="left">${cliente}</td>
             <td class="left" style="color: #c62828; font-weight: 500;">${motivo}</td>
-            <td style="text-align:center;">${fotosHtml}</td>
           </tr>`;
       });
 
