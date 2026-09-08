@@ -392,6 +392,9 @@
     <button class="tab-btn" data-sheet="ejecuciones">
       <i class="fa-solid fa-gears"></i> Ejecuciones
     </button>
+    <button class="tab-btn" data-sheet="cobertura">
+      <i class="fa-solid fa-shield-halved"></i> Cobertura de Mantención
+    </button>
   </div>
 
   <!-- Tarjetas KPI -->
@@ -513,7 +516,7 @@
       </div>
     </div>
 
-    <!-- Filtro Dinámico (Local/ID CCU en Preventiva ó N° Llamado en Urgencias) -->
+    <!-- Filtro Dinámico -->
     <div class="filter-group" data-filter="localId">
       <label id="label-filter-localId"><i class="fa-solid fa-hashtag"></i> Local / ID CCU</label>
       <div class="gs-filter-box">
@@ -598,7 +601,7 @@
       </div>
     </div>
 
-    <!-- FILA 2: HISTORIAL DEL CLIENTE & PRÓXIMA MANTENCIÓN / URGENCIAS -->
+    <!-- FILA 2: HISTORIAL DEL CLIENTE & PRÓXIMA MANTENCIÓN / URGENCIAS / COBERTURA -->
     <div class="grid-row-full">
       <div class="table-container">
         <div class="table-header" style="background-color: #0d47a1; color: #ffffff;">
@@ -615,6 +618,7 @@
       preventiva: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQHJUM26MwbPurx5FdJGQc-I-vlfwyEZYbPGeYE0F5HxEWpbMyhVeJpJKK7XjCD6No8RZCfeHgWaxZZ/pub?output=csv",
       urgencias: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTTNzXfjkM4mtZrHyPjzSVqjYOTG0tVFReUG3FPpR-nkyCud1hoR8rRPpqPToiz82Vmp0A5ubJqz3zx/pub?output=csv",
       ejecuciones: "",
+      cobertura: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTF-Kk3diC7SHMgZKKJVytUQ96yjgAaDD_zWXxvM9jk7eTzfwutocJiB3Lx7ARxzp2EYlVlSTdZXM5J/pub?output=csv",
       frecuenciasMaestro: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQpO3A3QI0Na_JPUWPuLNalUZeVirnbhnvss-4j4_suvnD2OcKhbXeO7jJ7SKtbS8KWeTWp-GECe9i2/pub?output=csv"
     };
 
@@ -623,6 +627,7 @@
     let maestroFrecuencias = [];
     let activosChartInstance = null;
     let trendChartInstance = null;
+    let globalClientesHistorialMap = {};
 
     Chart.register(ChartDataLabels);
 
@@ -661,7 +666,7 @@
     }
 
     function getServiciosQty(d) {
-      if (currentSheetKey === "urgencias") return 1;
+      if (currentSheetKey === "urgencias" || currentSheetKey === "cobertura") return 1;
       const val = d['Servicios'] || d['servicios'] || d['SERVICIOS'] || d['Cant'] || d['Cantidad'];
       const num = parseInt(val, 10);
       return isNaN(num) ? 1 : num;
@@ -671,6 +676,9 @@
       if (currentSheetKey === "urgencias") {
         const res = String(d['Pudo Resolver Problema'] || d['Pudo resolver problema'] || d['Resuelto'] || '').toUpperCase().trim();
         return res === "SI" || res === "1" || res === "RESUELTO";
+      } else if (currentSheetKey === "cobertura") {
+        const res = String(d['Vigencia'] || d['Estado'] || d['Vigente'] || '').toUpperCase().trim();
+        return res === "VIGENTE" || res === "SI" || res === "1";
       } else {
         const realizada = String(d['Realizada'] || d['Realizada 2'] || d['Cumplimiento'] || '').toUpperCase().trim();
         return realizada === "SI" || realizada === "1" || realizada === "EJECUTADA" || realizada === "REALIZADA";
@@ -693,7 +701,6 @@
       return d['ID CCU'] || d['ID'] || d['Id CCU'] || d['ID Cliente (Manual)'] || d['ID Cliente (Escaneado)'] || d['id_ccu'] || '-';
     }
 
-    /* OBTENER NÚMERO DE LLAMADO DE LA URGENCIA */
     function getNumeroLlamado(d) {
       if (!d) return '-';
       const possibleKeys = [
@@ -736,7 +743,6 @@
       return raw;
     }
 
-    /* CONVERSIÓN DE FECHAS MEJORADA */
     function parseDate(dateStr) {
       if (!dateStr) return null;
       const str = String(dateStr).trim();
@@ -788,10 +794,6 @@
 
       $('.tab-btn').on('click', function() {
         const targetSheet = $(this).data('sheet');
-        if (targetSheet === "ejecuciones" && !SHEETS_URLS.ejecuciones) {
-          alert("La hoja de Ejecuciones estará disponible próximamente.");
-          return;
-        }
 
         $('.tab-btn').removeClass('active');
         $(this).addClass('active');
@@ -808,8 +810,21 @@
           $('#historial-tabla-titulo').html('<i class="fa-solid fa-clock-rotate-left"></i> Historial de Urgencias del Cliente (Últimas 2 Urgencias Atendidas)');
           
           $('#label-filter-localId').html('<i class="fa-solid fa-phone-volume"></i> N° Llamado');
-
           $('#container-si-realizadas').hide();
+
+        } else if (currentSheetKey === "cobertura") {
+          $('#main-title').html('<i class="fa-solid fa-shield-halved" style="font-size: 20px; color: var(--pepsi-blue);"></i> Dashboard Cobertura de Mantención');
+          $('#kpi-label-1').text('Total Clientes');
+          $('#kpi-label-2').text('Porcentaje Vigentes');
+          $('#kpi-label-3').text('Clientes No Vigentes');
+          $('#tabla-motivos-title').html('<i class="fa-solid fa-list-check"></i> Resumen por Causa de No Vigencia');
+          $('#trend-card-title').html('<i class="fa-solid fa-chart-column"></i> Evolución Mensual (% Vigencia)');
+          $('#tabla-no-title').html('<i class="fa-solid fa-triangle-exclamation"></i> Detalle Clientes No Vigentes');
+          $('#historial-tabla-titulo').html('<i class="fa-solid fa-clock-rotate-left"></i> Control de Cobertura y Vigencia de Clientes');
+          
+          $('#label-filter-localId').html('<i class="fa-solid fa-hashtag"></i> Local / ID CCU');
+          $('#container-si-realizadas').hide();
+
         } else {
           $('#main-title').html('<i class="fa-solid fa-chart-line" style="font-size: 20px; color: var(--primary-green);"></i> Dashboard Ejecutivo - Ventas');
           $('#kpi-label-1').text('Total Servicios');
@@ -821,7 +836,6 @@
           $('#historial-tabla-titulo').html('<i class="fa-solid fa-clock-rotate-left"></i> Historial de Mantención del Cliente (-2 Meses y Próxima Mantención)');
           
           $('#label-filter-localId').html('<i class="fa-solid fa-hashtag"></i> Local / ID CCU');
-
           $('#container-si-realizadas').show();
           $('#tabla-si-title').html('<i class="fa-solid fa-circle-check"></i> Detalle de Servicios Realizados (SI)');
         }
@@ -1147,6 +1161,9 @@
       if (currentSheetKey === "urgencias") {
         document.getElementById('kpi-ejecutados-count').innerText = `${totalSI.toLocaleString()} Casos Resueltos`;
         document.getElementById('kpi-no-count').innerText = `${totalNO.toLocaleString()} Casos No Resueltos`;
+      } else if (currentSheetKey === "cobertura") {
+        document.getElementById('kpi-ejecutados-count').innerText = `${totalSI.toLocaleString()} Clientes Vigentes`;
+        document.getElementById('kpi-no-count').innerText = `${totalNO.toLocaleString()} Clientes No Vigentes`;
       } else {
         document.getElementById('kpi-ejecutados-count').innerText = `${totalSI.toLocaleString()} Servicios Realizados`;
         document.getElementById('kpi-no-count').innerText = `${totalNO.toLocaleString()} Servicios Pendientes`;
@@ -1487,7 +1504,7 @@
       });
 
       // Si estamos en Ruta Preventiva, cruzar con la base Maestro
-      if (!esUrgencias && maestroFrecuencias && maestroFrecuencias.length > 0) {
+      if (!esUrgencias && currentSheetKey !== "cobertura" && maestroFrecuencias && maestroFrecuencias.length > 0) {
         maestroFrecuencias.forEach(m => {
           const mLocal = String(m['Local'] || m['local'] || '').trim();
           const mCCU = String(m['ID CCU'] || m['ID'] || m['Id CCU'] || m['id_ccu'] || '').trim();
