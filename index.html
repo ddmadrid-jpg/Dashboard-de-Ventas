@@ -570,7 +570,7 @@
     <!-- FILA 1 -->
     <div class="grid-row-two-col">
       <!-- IZQUIERDA: Resumen de Motivos -->
-      <div class="grid-col-left">
+      <div class="grid-col-left" id="col-motivos-left">
         <div class="table-container">
           <div class="table-header" style="background-color: #fff8e1; color: #b78103;">
             <span id="tabla-motivos-title"><i class="fa-solid fa-list-check"></i> Resumen de Motivos (No Realizados / No Resueltos)</span>
@@ -579,8 +579,8 @@
         </div>
       </div>
 
-      <!-- DERECHA: Tablas Lado a Lado (50% - 50%) -->
-      <div class="grid-col-right">
+      <!-- DERECHA: Tablas Lado a Lado -->
+      <div class="grid-col-right" id="col-tablas-right">
         <div class="side-by-side-tables">
           <!-- Detalle Servicios Realizados (SI) -->
           <div class="table-container table-half-width" id="container-si-realizadas">
@@ -591,7 +591,7 @@
           </div>
 
           <!-- Justificación Visita No Realizada (NO) -->
-          <div class="table-container table-half-width">
+          <div class="table-container table-half-width" id="container-no-realizadas">
             <div class="table-header" style="background-color: #fff3f3; color: #c62828;">
               <span id="tabla-no-title"><i class="fa-solid fa-triangle-exclamation"></i> Justificación No Realizada</span>
             </div>
@@ -621,6 +621,9 @@
       cobertura: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTF-Kk3diC7SHMgZKKJVytUQ96yjgAaDD_zWXxvM9jk7eTzfwutocJiB3Lx7ARxzp2EYlVlSTdZXM5J/pub?output=csv",
       frecuenciasMaestro: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQpO3A3QI0Na_JPUWPuLNalUZeVirnbhnvss-4j4_suvnD2OcKhbXeO7jJ7SKtbS8KWeTWp-GECe9i2/pub?output=csv"
     };
+
+    // Lista oficial estricta de las 7 Oficinas Comerciales
+    const OFICINAS_PERMITIDAS = ["CADENA", "IMAGEN", "LA FLORIDA", "MAIPU", "MODELO", "PIRAMIDE", "VESPUCIO"];
 
     let currentSheetKey = "preventiva";
     let rawData = [];
@@ -819,20 +822,26 @@
           $('#historial-tabla-titulo').html('<i class="fa-solid fa-clock-rotate-left"></i> Historial de Urgencias del Cliente (Últimas 2 Urgencias Atendidas)');
           
           $('#label-filter-localId').html('<i class="fa-solid fa-phone-volume"></i> N° Llamado');
+          
+          $('#col-motivos-left').show().css('flex', '0 0 35%');
+          $('#col-tablas-right').show();
           $('#container-si-realizadas').hide();
+          $('#container-no-realizadas').show().css('width', '100%');
 
         } else if (currentSheetKey === "cobertura") {
           $('#main-title').html('<i class="fa-solid fa-shield-halved" style="font-size: 20px; color: var(--pepsi-blue);"></i> Dashboard Cobertura de Mantención');
           $('#kpi-label-1').text('Total Clientes / Equipos');
           $('#kpi-label-2').text('Porcentaje Vigentes');
           $('#kpi-label-3').text('Clientes No Vigentes');
-          $('#tabla-motivos-title').html('<i class="fa-solid fa-list-check"></i> Resumen de Causa de No Vigencia (Columna AC)');
+          $('#tabla-motivos-title').html('<i class="fa-solid fa-list-check"></i> Resumen Causa de No Vigencia (Columna AC)');
           $('#trend-card-title').html('<i class="fa-solid fa-chart-column"></i> Evolución Mensual (% Vigencia)');
-          $('#tabla-no-title').html('<i class="fa-solid fa-triangle-exclamation"></i> Detalle Clientes No Vigentes');
           $('#historial-tabla-titulo').html('<i class="fa-solid fa-building"></i> Cobertura y Vigencia por Oficina Comercial');
           
           $('#label-filter-localId').html('<i class="fa-solid fa-hashtag"></i> Local / ID CCU');
-          $('#container-si-realizadas').hide();
+          
+          // Ajuste visual para Cobertura: Oculta la columna derecha de tablas individuales para darle ancho completo al resumen
+          $('#col-tablas-right').hide();
+          $('#col-motivos-left').show().css('flex', '1 1 100%');
 
         } else {
           $('#main-title').html('<i class="fa-solid fa-chart-line" style="font-size: 20px; color: var(--primary-green);"></i> Dashboard Ejecutivo - Ventas');
@@ -845,7 +854,11 @@
           $('#historial-tabla-titulo').html('<i class="fa-solid fa-clock-rotate-left"></i> Historial de Mantención del Cliente (-2 Meses y Próxima Mantención)');
           
           $('#label-filter-localId').html('<i class="fa-solid fa-hashtag"></i> Local / ID CCU');
+          
+          $('#col-motivos-left').show().css('flex', '0 0 35%');
+          $('#col-tablas-right').show();
           $('#container-si-realizadas').show();
+          $('#container-no-realizadas').show();
           $('#tabla-si-title').html('<i class="fa-solid fa-circle-check"></i> Detalle de Servicios Realizados (SI)');
         }
 
@@ -1325,6 +1338,8 @@
 
     /* TABLA NO REALIZADAS */
     function renderTablaNoRealizadas(data) {
+      if (currentSheetKey === "cobertura") return; // En Cobertura no se muestra esta tabla
+
       const noRealizadas = data.filter(d => !isServicioRealizado(d));
       if (noRealizadas.length === 0) {
         document.getElementById('tabla-no-realizadas-container').innerHTML = `<div class="no-data">🎉 No hay casuística pendiente.</div>`;
@@ -1332,7 +1347,6 @@
       }
 
       const isUrg = currentSheetKey === "urgencias";
-      const isCob = currentSheetKey === "cobertura";
       const thColId = isUrg ? "N° Llamado" : "ID CCU";
 
       let html = `
@@ -1436,7 +1450,7 @@
       document.getElementById('tabla-si-realizadas-container').innerHTML = html;
     }
 
-    /* HISTORIAL O COBERTURA POR OFICINA COMERCIAL (Pestaña Cobertura) */
+    /* HISTORIAL O COBERTURA POR LAS 7 OFICINAS COMERCIALES (Pestaña Cobertura) */
     function renderTablaHistorialCliente() {
       const fOficina = filtersState.oficina.selected;
       const fJefeVentas = filtersState.jefeVentas.selected;
@@ -1466,26 +1480,33 @@
         return;
       }
 
-      /* RENDERIZADO EXCLUSIVO PARA COBERTURA DE MANTENCIÓN: CUADRO POR OFICINA COMERCIAL */
+      /* RENDERIZADO EXCLUSIVO PARA COBERTURA DE MANTENCIÓN: SOLO LAS 7 OFICINAS SOLICITADAS */
       if (esCobertura) {
         const oficinasMap = {};
+        
+        // Inicializar las 7 oficinas en el mapa con contador en 0
+        OFICINAS_PERMITIDAS.forEach(of => {
+          oficinasMap[of] = { vigentes: 0, noVigentes: 0 };
+        });
+
         let grandVigentes = 0;
         let grandNoVigentes = 0;
 
         baseData.forEach(d => {
-          const oficina = d['Oficina'] || d['OFICINA'] || d['Oficina Comercial'] || 'Sin Oficina';
-          const vigente = isServicioRealizado(d);
+          let oficinaRaw = String(d['Oficina'] || d['OFICINA'] || d['Oficina Comercial'] || '').toUpperCase().trim();
+          
+          // Buscar coincidencia en la lista permitida
+          const oficinaEncontrada = OFICINAS_PERMITIDAS.find(of => oficinaRaw.includes(of));
 
-          if (!oficinasMap[oficina]) {
-            oficinasMap[oficina] = { vigentes: 0, noVigentes: 0 };
-          }
-
-          if (vigente) {
-            oficinasMap[oficina].vigentes++;
-            grandVigentes++;
-          } else {
-            oficinasMap[oficina].noVigentes++;
-            grandNoVigentes++;
+          if (oficinaEncontrada) {
+            const vigente = isServicioRealizado(d);
+            if (vigente) {
+              oficinasMap[oficinaEncontrada].vigentes++;
+              grandVigentes++;
+            } else {
+              oficinasMap[oficinaEncontrada].noVigentes++;
+              grandNoVigentes++;
+            }
           }
         });
 
@@ -1505,7 +1526,7 @@
             </thead>
             <tbody>`;
 
-        Object.keys(oficinasMap).sort().forEach(oficina => {
+        OFICINAS_PERMITIDAS.forEach(oficina => {
           const v = oficinasMap[oficina].vigentes;
           const nv = oficinasMap[oficina].noVigentes;
           const totOficina = v + nv;
@@ -1513,9 +1534,12 @@
           const pctSobreOficina = totOficina > 0 ? ((v / totOficina) * 100).toFixed(1) + '%' : '0.0%';
           const pctSobreTotal = totalGeneral > 0 ? ((totOficina / totalGeneral) * 100).toFixed(1) + '%' : '0.0%';
 
+          // Convertir primera letra a Mayúscula para presentación
+          const ofNombrePretty = oficina.charAt(0) + oficina.slice(1).toLowerCase();
+
           htmlCob += `
             <tr>
-              <td class="left"><strong>${oficina}</strong></td>
+              <td class="left"><strong>${ofNombrePretty}</strong></td>
               <td><span class="status-pill pill-ok">${v}</span></td>
               <td><span class="status-pill pill-no">${nv}</span></td>
               <td><strong>${totOficina}</strong></td>
