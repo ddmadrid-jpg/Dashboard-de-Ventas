@@ -1763,7 +1763,38 @@
           </thead>
           <tbody>`;
 
-      Object.values(globalClientesHistorialMap).forEach(c => {
+      // Obtener fecha actual al inicio del día (sin horas) para comparación limpia
+      const hoy = new Date();
+      hoy.setHours(0, 0, 0, 0);
+
+      // Convertir lista a Array para ordenar
+      const clientesArray = Object.values(globalClientesHistorialMap);
+
+      clientesArray.sort((a, b) => {
+        const dateA = parseDate(a.proxima);
+        const dateB = parseDate(b.proxima);
+
+        // Si alguna fecha no existe o es inválida, se manda al final
+        if (!dateA && !dateB) return 0;
+        if (!dateA) return 1;
+        if (!dateB) return -1;
+
+        // Normalizar fechas a medianoche
+        dateA.setHours(0, 0, 0, 0);
+        dateB.setHours(0, 0, 0, 0);
+
+        const esHoyOProximaA = dateA >= hoy;
+        const esHoyOProximaB = dateB >= hoy;
+
+        // Si una es de hoy/futura y la otra es pasada
+        if (esHoyOProximaA && !esHoyOProximaB) return -1; // A va primero
+        if (!esHoyOProximaA && esHoyOProximaB) return 1;  // B va primero
+
+        // Si ambas son de hoy/futuras o ambas son pasadas, ordenar cronológicamente
+        return dateA - dateB;
+      });
+
+      clientesArray.forEach(c => {
         c.mantenciones.sort((a, b) => {
           if (!a.parsedDate) return -1;
           if (!b.parsedDate) return 1;
