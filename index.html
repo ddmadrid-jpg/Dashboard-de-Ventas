@@ -614,7 +614,7 @@
     <div class="grid-row-full" id="row-historial-bottom">
       <div class="table-container">
         <div class="table-header" style="background-color: #0d47a1; color: #ffffff;">
-          <span id="historial-tabla-titulo"><i class="fa-solid fa-clock-rotate-left"></i> Historial de Mantención del Cliente (-2 Meses y Próxima Mantención)</span>
+          <span id="historial-tabla-titulo"><i class="fa-solid fa-clock-rotate-left"></i> Historial de Mantención del Cliente (-3 Meses y Próxima Mantención)</span>
         </div>
         <div class="scrollable-table" id="tabla-historial-container"></div>
       </div>
@@ -825,7 +825,7 @@
           $('#tabla-motivos-title').html('<i class="fa-solid fa-list-check"></i> Resumen de Motivos No Resueltos');
           $('#trend-card-title').html('<i class="fa-solid fa-chart-column"></i> Evolución Mensual (% Resueltas)');
           $('#tabla-no-title').html('<i class="fa-solid fa-triangle-exclamation"></i> Detalle de Urgencias No Resueltas');
-          $('#historial-tabla-titulo').html('<i class="fa-solid fa-clock-rotate-left"></i> Historial de Urgencias del Cliente (Últimas 2 Urgencias Atendidas)');
+          $('#historial-tabla-titulo').html('<i class="fa-solid fa-clock-rotate-left"></i> Historial de Urgencias del Cliente (Últimas 3 Urgencias Atendidas)');
           
           $('#label-filter-localId').html('<i class="fa-solid fa-phone-volume"></i> N° Llamado');
           
@@ -865,7 +865,7 @@
           $('#tabla-motivos-title').html('<i class="fa-solid fa-list-check"></i> Resumen de Motivos No Realizados');
           $('#trend-card-title').html('<i class="fa-solid fa-chart-column"></i> Evolución Mensual (% SI)');
           $('#tabla-no-title').html('<i class="fa-solid fa-triangle-exclamation"></i> Justificación Visita No Realizada');
-          $('#historial-tabla-titulo').html('<i class="fa-solid fa-clock-rotate-left"></i> Historial de Mantención del Cliente (-2 Meses y Próxima Mantención)');
+          $('#historial-tabla-titulo').html('<i class="fa-solid fa-clock-rotate-left"></i> Historial de Mantención del Cliente (-3 Meses y Próxima Mantención)');
           
           $('#label-filter-localId').html('<i class="fa-solid fa-hashtag"></i> Local / ID CCU');
           
@@ -1743,8 +1743,9 @@
       }
 
       const thColId = esUrgencias ? "N° Llamado" : "ID CCU";
-      const colPenultima = esUrgencias ? "Penúltima Urgencia" : "Penúltima Mantención";
-      const colUltima = esUrgencias ? "Última Urgencia" : "Última Mantención";
+      const colAntepenultima = esUrgencias ? "Antepenúltima Urgencia" : "Antepenúltima Mant.";
+      const colPenultima = esUrgencias ? "Penúltima Urgencia" : "Penúltima Mant.";
+      const colUltima = esUrgencias ? "Última Urgencia" : "Última Mant.";
       const thProxima = esUrgencias ? "" : `<th style="text-align:center;">Próxima Mantención</th>`;
 
       let html = `
@@ -1756,6 +1757,7 @@
               <th class="left">Nombre Fantasía</th>
               <th class="left">Oficina Comercial</th>
               <th class="left">Jefe de Ventas</th>
+              <th style="text-align:center;">${colAntepenultima}</th>
               <th style="text-align:center;">${colPenultima}</th>
               <th style="text-align:center;">${colUltima}</th>
               ${thProxima}
@@ -1804,33 +1806,26 @@
         const totalRegistros = c.mantenciones.length;
         const ultIndex = totalRegistros - 1;
         const penultIndex = totalRegistros - 2;
+        const antepenultIndex = totalRegistros - 3;
 
         const ult = totalRegistros > 0 ? c.mantenciones[ultIndex] : null;
         const penult = totalRegistros > 1 ? c.mantenciones[penultIndex] : null;
+        const antepenult = totalRegistros > 2 ? c.mantenciones[antepenultIndex] : null;
 
-        let penultHtml = '<span style="color:#bbb;">-</span>';
-        if (penult) {
-          const fStr = formatDiaMes(penult.rawFecha);
-          const txtStatus = esUrgencias ? (penult.realizado ? 'RESUELTO' : 'NO RESUELTO') : (penult.realizado ? 'REALIZADO' : 'PENDIENTE');
-          const pillClass = penult.realizado ? 'pill-ok' : 'pill-no';
+        const buildHistHtml = (reg) => {
+          if (!reg) return '<span style="color:#bbb;">-</span>';
+          const fStr = formatDiaMes(reg.rawFecha);
+          const txtStatus = esUrgencias ? (reg.realizado ? 'RESUELTO' : 'NO RESUELTO') : (reg.realizado ? 'REALIZADO' : 'PENDIENTE');
+          const pillClass = reg.realizado ? 'pill-ok' : 'pill-no';
+          return `<div>
+                    <strong>${fStr}</strong> <span class="status-pill ${pillClass}">${txtStatus}</span>
+                    ${!reg.realizado ? `<div style="font-size:10px; color:#c62828; margin-top:2px;">${reg.motivo}</div>` : ''}
+                  </div>`;
+        };
 
-          penultHtml = `<div>
-                          <strong>${fStr}</strong> <span class="status-pill ${pillClass}">${txtStatus}</span>
-                          ${!penult.realizado ? `<div style="font-size:10px; color:#c62828; margin-top:2px;">${penult.motivo}</div>` : ''}
-                        </div>`;
-        }
-
-        let ultHtml = '<span style="color:#bbb;">-</span>';
-        if (ult) {
-          const fStr = formatDiaMes(ult.rawFecha);
-          const txtStatus = esUrgencias ? (ult.realizado ? 'RESUELTO' : 'NO RESUELTO') : (ult.realizado ? 'REALIZADO' : 'PENDIENTE');
-          const pillClass = ult.realizado ? 'pill-ok' : 'pill-no';
-
-          ultHtml = `<div>
-                        <strong>${fStr}</strong> <span class="status-pill ${pillClass}">${txtStatus}</span>
-                        ${!ult.realizado ? `<div style="font-size:10px; color:#c62828; margin-top:2px;">${ult.motivo}</div>` : ''}
-                      </div>`;
-        }
+        const antepenultHtml = buildHistHtml(antepenult);
+        const penultHtml = buildHistHtml(penult);
+        const ultHtml = buildHistHtml(ult);
 
         const tdProxima = esUrgencias ? "" : `<td style="text-align:center;"><strong style="color: var(--pepsi-blue);">${formatDiaMes(c.proxima)}</strong></td>`;
         
@@ -1850,6 +1845,7 @@
             <td class="left">${c.cliente}</td>
             <td class="left">${c.oficina}</td>
             <td class="left">${c.jefe}</td>
+            <td style="text-align:center;">${antepenultHtml}</td>
             <td style="text-align:center;">${penultHtml}</td>
             <td style="text-align:center;">${ultHtml}</td>
             ${tdProxima}
